@@ -194,6 +194,36 @@ const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000]];
+const clothes=[
+ {id:'hat',name:'Olive Bucket Hat',slot:'head',price:75,color:'#638b5a',icon:'👒'},
+ {id:'cap',name:'Navy Fishing Cap',slot:'head',price:120,color:'#416f9b',icon:'🧢'},
+ {id:'beanie',name:'Cosy Red Beanie',slot:'head',price:180,color:'#cd5763',icon:'🧶'},
+ {id:'crown',name:'Mythic Crown',slot:'head',price:50000,color:'#ffd869',icon:'👑'},
+ {id:'raincoat',name:'Yellow Raincoat',slot:'body',price:250,color:'#f1cb4e',icon:'🧥'},
+ {id:'hoodie',name:'Purple Hoodie',slot:'body',price:450,color:'#9674d2',icon:'👕'},
+ {id:'vest',name:'Explorer Vest',slot:'body',price:700,color:'#638b6a',icon:'🦺'},
+ {id:'mythiccoat',name:'Mythic Star Coat',slot:'body',price:35000,color:'#7750b9',icon:'✨'},
+ {id:'boots',name:'Brown Boots',slot:'feet',price:190,color:'#795338',icon:'🥾'},
+ {id:'goldboots',name:'Golden Boots',slot:'feet',price:7500,color:'#efca55',icon:'👢'}
+];
+const equipped={head:null,body:null,feet:null};
+function clothingMenu(){
+ if(room!=='rod')return;
+ panel('👕 Clothing & Outfits','Buy clothing to wear immediately, or equip any outfit you already own. Clothing does not replace your rod.',[
+ ...clothes.map(item=>[
+  (item.icon+' '+item.name+' — '+(equipped[item.slot]===item.id?'EQUIPPED':collectibles.has(item.id)?'Equip':item.price+' coins')),
+  ()=>{
+   if(!collectibles.has(item.id)){
+    if(coins<item.price)return panel('🪙 Not enough coins','You need '+item.price+' coins to buy '+item.name+'.',[['Back',clothingMenu]]);
+    coins-=item.price;collectibles.add(item.id);
+   }
+   equipped[item.slot]=item.id;hud();draw();clothingMenu();
+  }
+ ]),
+ ['👟 Wear default clothes',()=>{equipped.head=null;equipped.body=null;equipped.feet=null;draw();clothingMenu()}],
+ ['🎣 Back to Rod Shop',visit]
+ ]);
+}
 let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 const discoveredFish=new Set();
 const discoveredTreasures=new Set();
@@ -415,11 +445,24 @@ function tree(x,y){r(x+16,y+26,13,32,'#75502f');r(x+3,y+11,42,35,'#477c47');r(x+
 function character(x,y,npc=false){
  r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
  r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
- if(!npc)drawHeldRod(x,y);
- if(!npc&&collectibles.has('hat')){
-  // Olive-green bucket hat with a wide downward brim.
-  r(x-9,y-29,18,4,'#638b5a');r(x-11,y-25,22,8,'#729b66');
-  r(x-15,y-20,30,5,'#567f52');r(x-12,y-19,24,2,'#9dbe89');
+ if(!npc){
+  const body=clothes.find(item=>item.id===equipped.body);
+  const feet=clothes.find(item=>item.id===equipped.feet);
+  const head=clothes.find(item=>item.id===(equipped.head||(collectibles.has('hat')?'hat':null)));
+  if(body){
+   r(x-11,y,22,18,body.color);r(x-16,y+1,5,13,body.color);r(x+11,y+1,5,13,body.color);
+   r(x-3,y+1,6,11,body.id==='mythiccoat'?'#ffd5f6':'#e6e3bc');
+   if(body.id==='vest'){r(x-8,y+5,6,7,'#dbb66e');r(x+3,y+5,6,7,'#dbb66e')}
+   if(body.id==='mythiccoat'){r(x-10,y+11,5,5,'#fff3a7');r(x+7,y+3,4,4,'#ffe8ab')}
+  }
+  if(feet){r(x-9,y+23,9,7,feet.color);r(x+1,y+23,9,7,feet.color)}
+  drawHeldRod(x,y);
+  if(head){
+   if(head.id==='hat'){r(x-9,y-29,18,4,head.color);r(x-11,y-25,22,8,'#729b66');r(x-15,y-20,30,5,'#567f52')}
+   else if(head.id==='cap'){r(x-11,y-27,22,9,head.color);r(x-13,y-20,27,4,head.color)}
+   else if(head.id==='beanie'){r(x-10,y-28,20,11,head.color);r(x-13,y-19,26,5,'#e68d95');r(x-3,y-33,6,6,'#f5b3b3')}
+   else if(head.id==='crown'){r(x-11,y-22,23,7,'#edc35e');r(x-12,y-30,5,9,'#fff0a8');r(x-3,y-35,6,15,'#ffde61');r(x+7,y-30,5,9,'#fff0a8')}
+  }
  }
 }
 // The equipped rod is visible in the player's hand and changes with every upgrade.
@@ -857,7 +900,7 @@ if(room==='rod'){
  panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider! Final rod: Big Bertha Hunter — 300,000 coins.',[
   [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
   [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
-  [collectibles.has('hat')?'👒 Bucket Hat — owned':'👒 Bucket Hat — 75',()=>buyItem('hat','Bucket Hat',75)],
+  ['👕 Browse clothing & outfits',clothingMenu],
   ['🚪 Exit',leave]
  ]);return;
 }
@@ -871,7 +914,7 @@ if(room==='auction'){
 }
 }
 function backpack(){
-const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Bucket Hat',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
+const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Olive Bucket Hat',cap:'Navy Fishing Cap',beanie:'Cosy Red Beanie',crown:'Mythic Crown',raincoat:'Yellow Raincoat',hoodie:'Purple Hoodie',vest:'Explorer Vest',mythiccoat:'Mythic Star Coat',boots:'Brown Boots',goldboots:'Golden Boots',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
 if(bid)items.push('Pearl Compass');
 panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 let celebrationTimer=null;
