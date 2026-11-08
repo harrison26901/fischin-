@@ -424,6 +424,10 @@ function skyScene(){
  if(!skyChestOpened){r(480,328,33,17,'#eec66c');r(488,321,17,11,'#fff1b3')}
  t(skyChestOpened?'✓ TREASURE FOUND':'⭐ STAR CHEST',495,374,12,'#574d8b');
  r(283,343,73,16,'#8b694c');r(301,328,37,15,'#c8a36a');r(317,303,5,26,'#f8e9c5');
+ // Floating gardens, rainbow paths and glowing sky crystals.
+ for(let i=0;i<7;i++){const px=25+i*89,py=55+(i%3)*22;r(px,py,57,9,'#f5fffd');r(px+8,py+9,42,6,'#c7e6e9');r(px+18,py-9,6,11,'#e7f7ff');islandGlow(px+22,py-11,'#fff9ce',3)}
+ for(let i=0;i<12;i++){const px=35+i*48,py=283+(i%4)*18;r(px,py,6,5,i%2?'#f7b3d3':'#fff2a5');r(px+2,py-5,2,6,'#579f87')}
+ for(let i=0;i<18;i++){const px=70+i*27,py=38+Math.sin(sec+i)*6;r(px,py,5,3,['#f5a9b5','#fff1ad','#b2e6ff'][i%3])}
  drawPet();character(x,y);
 }
 
@@ -525,6 +529,10 @@ function volcanoDungeonScene(){
   r(413,156,49,54,'#b84c36');r(420,140,35,26,'#dc6b3b');r(416,135,11,13,'#e5a056');r(449,135,11,13,'#e5a056');
   r(427,155,8,7,'#ffe387');r(443,155,8,7,'#ffe387');r(408,205,15,17,'#e9783a');r(452,205,15,17,'#e9783a');
  }
+ // Molten river, stone columns and drifting embers (away from the walkable traps).
+ for(let i=0;i<12;i++){const px=28+i*51;r(px,47,17,49,'#46323a');r(px-5,42,27,11,'#8b5446');r(px+4,53,4,34,'#a36c51')}
+ for(let i=0;i<22;i++){const px=(i*67+sec*9)%640,py=45+(i*43)%300;r(px,py,3,4,i%2?'#ffcb70':'#e87d4d')}
+ for(let i=0;i<8;i++){const px=i*84,py=377;r(px,py,62,9,'#a64c30');r(px+9,py+2,30,4,'#ffb24e')}
  r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');t('❤️ '+dungeonHealth+'/100   🌋 '+d.name,185,34,13,'#ffe8c4');
  drawPet();character(x,y);
 }
@@ -660,6 +668,9 @@ function festivalScene(){
  for(let i=0;i<9;i++){const px=452+(i*37)%80,py=249-(i*23)%65;r(px,py,4+i%3*3,4+i%3*3,['#f6c77b','#a9edff','#f2a0d2'][i%3])}
  t('🎆 FIREWORKS',483,375,12,'#fff0b3');
  for(let i=0;i<12;i++){const px=(i*57+sec*6)%640,py=270+(i*31)%110;r(px,py,8,10,'#f4c26f');r(px+2,py-6,4,7,'#ffeb9c')}
+ // Festoon lights, fireworks bursts and decorative lantern strings.
+ for(let i=0;i<22;i++){const px=i*30;r(px,48+Math.sin(i*.35)*13,5,7,['#ffd583','#ff9fc3','#9ee9ed'][i%3]);islandGlow(px+2,50+Math.sin(i*.35)*13,'#fff0c0',2)}
+ for(let i=0;i<3;i++){const cx=100+i*210,cy=72+(i%2)*34;for(let j=0;j<8;j++){const a=j*Math.PI/4+sec*.3;r(cx+Math.cos(a)*18,cy+Math.sin(a)*18,5,5,['#ffdc87','#f6a5d3','#9adff2'][i%3])}}
  drawPet();character(x,y);
 }
 
@@ -725,6 +736,10 @@ function mermaidScene(){
  t(mermaidPearlClaimed?'✓ PEARL FOUND':'🫧 PEARL SHRINE',490,375,12,'#fff0bf');
  mermaidCharacter(348,230,false);
  for(let i=0;i<8;i++){const px=45+i*78,py=40+i%3*65;r(px,py,4,4,'#d7f6fb');r(px+8,py+9,3,3,'#e4fcff')}
+ // Pearl mosaics, swaying kelp and bioluminescent palace details.
+ for(let i=0;i<14;i++){const px=30+i*43,py=352+(i%3)*9;r(px,py-17,5,24,i%2?'#6acbb0':'#92e6ca');r(px+3,py-21,7,5,'#b4f8db')}
+ for(let i=0;i<11;i++){const px=413+i*13,py=112+(i%3)*12;islandGlow(px,py,'#d7faff',2)}
+ for(let i=0;i<7;i++){const px=55+i*80,py=40+(i%3)*25;r(px,py,5,5,'#fff5dd');r(px-4,py+3,3,3,'#b5f8f4')}
  drawPet();character(x,y);
 }
 function travelToFrozenIsland(){
@@ -812,6 +827,10 @@ function frozenScene(){
  r(460,290,77,62,'#8dbad0');r(479,308,41,44,'#527ea7');r(467,284,16,23,'#a8f2fa');r(522,282,13,25,'#b8f6fa');
  if(!frozenChestOpened){r(483,333,29,14,'#d4ad65');r(490,326,14,11,'#fff1ae')}
  t(frozenChestOpened?'✓ CAVE EXPLORED':'💎 CRYSTAL CAVE',493,372,12,'#3c6486');
+ // Frosted pine forest, frozen crystal spires and aurora ribbons.
+ for(let i=0;i<7;i++){const tx=20+i*55;r(tx+12,300,9,45,'#779ba8');for(let j=0;j<3;j++){r(tx-j*5,279+j*13,34+j*10,12,'#8ab7bb');r(tx+6-j*4,276+j*13,23+j*8,4,'#f4fcff')}}
+ for(let i=0;i<8;i++){const px=350+i*31,py=246+(i%3)*15;r(px,py-19,10,25,'#8de0ee');r(px+3,py-27,4,12,'#e3fcff');islandGlow(px+5,py-20,'#b5faff',2)}
+ for(let i=0;i<15;i++){const px=i*48,py=30+Math.sin(i*.8+sec*.7)*15;r(px,py,40,4,i%2?'#d5f7e9':'#c5e9ff')}
  drawPet();character(x,y);
 }
 function nearbyIsland(){
@@ -917,6 +936,38 @@ function boatShop(){
   ['🌊 Back to lake',()=>panel('🌊 Sunshine Lake','Fish from the dock or explore the village.')]
  ]);
 }
+
+function islandGlow(px,py,color='#fff2bd',size=5){
+ const pulse=.7+.3*Math.sin(performance.now()/380+px);
+ g.save();g.globalAlpha=pulse;g.fillStyle=color;g.beginPath();g.arc(px,py,size,0,Math.PI*2);g.fill();g.restore();
+}
+function islandFlowers(cx,cy,count=14){
+ for(let i=0;i<count;i++){const xx=cx+(i*37)%145-72,yy=cy+(i*19)%61-30;r(xx,yy,4,4,['#ffe6a1','#ffb6d2','#e9faff'][i%3]);r(xx+1,yy-4,2,5,'#5c9b72')}
+}
+function islandDecorations(sec){
+ // Details on each of the three original playable islands.
+ const palm=islands[0],crystal=islands[1],volcano=islands[2];
+ for(let i=0;i<12;i++){
+  const a=i*2.4,px=palm.x+Math.cos(a)*42,py=palm.y+Math.sin(a)*26;
+  r(px,py,5,4,i%3?'#f8d9a5':'#ffb5b0');
+ }
+ r(palm.x-8,palm.y+8,23,12,'#d9a36e');r(palm.x-5,palm.y+4,16,7,'#f9e3a7');
+ islandGlow(palm.x+21,palm.y-17,'#ffe6a4',4);
+ for(let i=0;i<8;i++){
+  const px=crystal.x-42+i*12,py=crystal.y+15+(i%3)*6;
+  r(px,py-13,8,21,i%2?'#a2eff5':'#d9f9ff');
+  r(px+2,py-18,4,8,'#f1ffff');
+  islandGlow(px+4,py-15,'#b9f9ff',2);
+ }
+ r(crystal.x-12,crystal.y+8,24,10,'#e6fbff');
+ for(let i=0;i<12;i++){
+  const px=volcano.x-46+(i*19)%91,py=volcano.y+10+(i*13)%27;
+  r(px,py,8,4,i%2?'#f6a64c':'#5e3b42');
+ }
+ r(volcano.x-13,volcano.y-28,29,13,'#4d3940');
+ r(volcano.x-9,volcano.y-25,21,7,Math.sin(sec*3)>0?'#ffcc68':'#f7803f');
+ for(let i=0;i<7;i++){const px=volcano.x-8+i*4,py=volcano.y-38-(sec*12+i*17)%34;r(px,py,3,5,i%2?'#ffd386':'#e99772')}
+}
 function seaScene(){
  const sec=performance.now()/1000;
  r(0,0,640,400,'#247b9d');
@@ -929,6 +980,7 @@ function seaScene(){
   if(n===2){r(s.x-29,s.y+2,62,31,'#714842');r(s.x-13,s.y-24,31,31,'#72473f');r(s.x-7,s.y-35,19,17,'#e87543')}
   t(discoveredIslands.has(n)?s.name:'??? Secret Island',s.x,s.y+s.ry+22,12,'#fff6d8');
  }
+ islandDecorations(sec);
  // Underwater treasure spots: bubbles, sea-floor ruins and unopened glowing chests.
  drawPirateShips(sec);
  for(const chest of underwaterChests){
