@@ -93,12 +93,14 @@ canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;backg
 <script>
 (()=>{
 const $=id=>document.getElementById(id),g=$('world').getContext('2d');g.imageSmoothingEnabled=false;
-const home=[{id:'red',name:'RED COTTAGE',x:19,y:20,col:'#b65a4d',cost:300},{id:'blue',name:'BLUE HOUSE',x:475,y:24,col:'#5488b3',cost:450},{id:'green',name:'GREEN CABIN',x:23,y:274,col:'#4f895e',cost:600},{id:'purple',name:'PURPLE HOUSE',x:474,y:270,col:'#956db0',cost:1200}];
-const places=[...home,{id:'bait',name:'BAIT SHOP',x:246,y:19,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:242,y:282,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:455,y:151,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:17,y:151,col:'#836948'}];
+const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:'blue',name:'BLUE HOUSE',x:850,y:70,col:'#5488b3',cost:450},{id:'green',name:'GREEN CABIN',x:100,y:530,col:'#4f895e',cost:600},{id:'purple',name:'PURPLE HOUSE',x:850,y:530,col:'#956db0',cost:1200}];
+const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:595,y:70,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:350,y:530,col:'#836948'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500]];
 let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,shopName="The Lucky Minnow",shopColor="#587b63";
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
+const VILLAGE_W=1100,VILLAGE_H=780;
+let outdoorX=35,outdoorY=350;
 const keys=new Set();
 function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
 function t(s,x,y,n=13,c='#fff3cf'){g.fillStyle='#493222';g.font='bold '+n+'px monospace';g.textAlign='center';g.fillText(s,x+1,y+2);g.fillStyle=c;g.fillText(s,x,y)}
@@ -124,16 +126,39 @@ r(506,165,43,110,'#563823');r(510,170,35,105,'#88542e');r(514,177,27,43,'#91c7ce
 
 if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156);g.stroke();r(154,152,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
 }
-function village(){grass();r(283,121,72,167,'#d4b98e');r(159,193,328,44,'#d3b586');r(227,151,195,122,'#e5d0b0');
-r(275,164,94,95,'#85aeb5');r(284,171,76,80,'#6fb6c6');r(294,225,55,19,'#8d9993');r(304,191,34,33,'#92a49a');r(312,169,19,22,'#9eb4a6');r(304,162,35,8,'#738c80');r(298,198,14,10,'#eabc52');r(342,143,3,68,'#776043');
-tree(170,38);tree(582,43);tree(170,318);tree(395,327);r(0,139,215,20,'#d4b88a');r(0,144,215,8,'#e9d0a2');places.forEach(building);r(1,192,80,31,'#f2ddad')}
+function village(){
+r(0,0,VILLAGE_W,VILLAGE_H,'#8fbd75');
+for(let i=0;i<300;i++)r((i*79+12)%VILLAGE_W,(i*61+13)%VILLAGE_H,6,3,'#74aa64');
+// Wide village lanes with room to walk around buildings.
+r(0,335,VILLAGE_W,65,'#d4b98e');
+r(159,190,55,420,'#d4b98e');r(414,190,55,420,'#d4b98e');
+r(670,190,55,420,'#d4b98e');r(920,190,55,420,'#d4b98e');
+r(478,305,142,120,'#e5d0b0');
+// Captain Finn's central fountain.
+r(504,313,90,87,'#85aeb5');r(511,320,76,73,'#6fb6c6');
+r(523,372,53,16,'#8d9993');r(538,339,23,29,'#92a49a');
+r(543,319,15,22,'#9eb4a6');r(535,310,30,9,'#738c80');
+r(516,348,13,10,'#eabc52');r(576,305,3,66,'#776043');
+for(const p of [[20,35],[275,42],[533,45],[790,44],[1030,48],[24,590],[285,705],[535,715],[795,710],[1023,700]])tree(p[0],p[1]);
+places.forEach(building);
+}
 function interior(){r(0,0,640,400,'#b58a56');for(let yy=0;yy<400;yy+=24)r(0,yy,640,3,'#805a36');r(0,0,640,105,'#785133');for(let xx=0;xx<640;xx+=30)r(xx,0,4,105,'#5b3a25');
 let p=places.find(b=>b.id===room);let name=room==='fishshop'?shopName:p?p.name:'SHOP';
 r(114,22,410,73,'#705037');r(128,33,383,48,'#92694a');
 for(let xx of [52,462]){r(xx,145,128,154,'#604029');for(let yy of [180,220,262])r(xx+9,yy,109,6,'#c18e57')}
 r(193,168,255,86,'#573a28');r(199,175,243,70,'#c08952');character(320,149);
 r(275,350,91,50,'#62432a')}
-function draw(){if(room)interior();else if(area==='lake')lake();else village();character(x,y)}
+function draw(){
+g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
+if(room){interior();character(x,y)}
+else if(area==='lake'){lake();character(x,y)}
+else{
+ const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
+ const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
+ g.translate(-cx,-cy);village();character(x,y);
+}
+g.restore();
+}
 function hud(){$('coins').textContent=coins;$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
@@ -144,9 +169,9 @@ function redrawMenu(){let wrap=$('actions');wrap.replaceChildren();menu.forEach(
 function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:149;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'You entered through the clear path between the cottages. Walk right to reach the town square, or left to return to the lake. Press A by shops.')}
-function enter(id){token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
-function leave(){room='';x=area==='lake'?530:405;y=308;hud();draw();panel('🌿 Outside','Explore more of the village.')}
+function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
+function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
+function leave(){room='';x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function visit(){
 if(room==='pawn'){
@@ -185,7 +210,7 @@ function near(){
     if(x>=201&&x<=495&&y>=136&&y<=260)return 'fish';
     return '';
   }
-  if(x>259&&x<381&&y>148&&y<277)return 'statue';
+  if(x>490&&x<610&&y>297&&y<420)return 'statue';
   // Stand beside a building or outside its doorway and press A.
   let p=places.find(b=>{
     const w=b.id==='auction'?167:145;
@@ -219,7 +244,7 @@ function blocked(nx,ny){
     if(hitsBox(nx,ny,b.x,b.y+12,w,103))return true;
   }
   // Captain Finn and fountain are solid too.
-  if(hitsBox(nx,ny,275,164,94,95))return true;
+  if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
 function interact(){if(room){if(menu.length)menuSelect();else if(near()==='exit')leave();else visit();return}let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
@@ -228,7 +253,8 @@ function move(dir){
   if(room&&menu.length){if(dir==='up'||dir==='down')menuStep(dir);return}
   const d={up:[0,-7],down:[0,7],left:[-7,0],right:[7,0]}[dir];
   if(!d)return;
-  const nx=Math.max(10,Math.min(632,x+d[0])),ny=Math.max(30,Math.min(367,y+d[1]));
+  const nx=Math.max(10,Math.min(room||area==='lake'?632:VILLAGE_W-10,x+d[0]));
+  const ny=Math.max(30,Math.min(room||area==='lake'?367:VILLAGE_H-30,y+d[1]));
   if(!blocked(nx,ny)){
     x=nx;y=ny;
   }else{
