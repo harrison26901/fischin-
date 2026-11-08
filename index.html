@@ -901,7 +901,11 @@ function frozenScene(){
   g.beginPath();g.moveTo(px,266);g.lineTo(px+57,peak);g.lineTo(px+124,266);g.closePath();g.fill();
   g.fillStyle='#f0fbff';g.beginPath();g.moveTo(px+57,peak);g.lineTo(px+35,peak+60);g.lineTo(px+55,peak+48);g.lineTo(px+76,peak+65);g.closePath();g.fill();
  }
- r(0,251,640,149,'#dceef4');r(0,273,640,127,'#f1faff');
+ // One continuous snowy island floor supports the pond, temple, trees and cave.
+ r(0,151,640,249,'#dceef4');r(0,168,640,232,'#f1faff');
+ for(let i=0;i<11;i++){const sx=i*64-15;r(sx,157+(i%3)*8,83,11,'#ffffff');r(sx+8,172+(i%2)*12,67,5,'#e1f1f8')}
+ // Footpaths are cut into the snow, rather than floating above it.
+ r(274,218,138,12,'#d5e7ed');r(401,218,80,12,'#d5e7ed');r(477,230,24,63,'#d5e7ed');
  for(let i=0;i<17;i++){const px=(i*59)%640,py=272+(i*37)%111;r(px,py,26,5,i%2?'#d5eaf3':'#ffffff')}
  // Frozen pond, with an ice-crusted shore at the original fishing hotspot.
  g.fillStyle='#a4dbe8';g.beginPath();g.ellipse(170,184,91,62,0,0,Math.PI*2);g.fill();
@@ -919,7 +923,8 @@ function frozenScene(){
  }
  for(const [tx,ty,s] of [[30,256,.8],[58,282,.7],[302,252,.78],[336,271,.58],[592,260,.88],[618,287,.65],[37,354,.85],[89,370,.6]])pine(tx,ty,s);
  // Frozen dragon's glacier temple is anchored to the snow at its original position.
- r(420,184,139,23,'#b4d9e8');r(431,93,117,97,'#8daecc');r(445,76,89,24,'#e8faff');
+ // Broad packed-snow foundation meets the surrounding snowy ground.
+ r(412,185,155,28,'#b4d9e8');r(419,207,143,12,'#f7fdff');r(431,93,117,97,'#8daecc');r(445,76,89,24,'#e8faff');
  r(446,106,18,78,'#b9ddec');r(518,106,18,78,'#b9ddec');
  r(471,119,44,68,'#558bb7');r(478,128,29,59,'#3c659b');
  for(let i=0;i<5;i++){const px=441+i*22;r(px,91,14,9,'#eafaff');r(px+4,84,7,8,'#fff')}
@@ -927,13 +932,17 @@ function frozenScene(){
  for(let i=0;i<7;i++){const px=444+i*16;islandGlow(px,110+(i%2)*12,'#d6faff',2)}
  t(frostDragonDefeated?'✓ DRAGON DEFEATED':'🐉 ICE DRAGON',490,215,12,'#3b527c');
  // Glowing crystal cave at its original treasure position.
- r(452,287,96,69,'#a6d1e3');r(460,298,80,57,'#85afce');
+ // Cave is carved into a raised snowbank connected to the island floor.
+ r(440,275,119,83,'#d5eaf3');r(446,283,109,75,'#a6d1e3');r(460,298,80,57,'#85afce');
  g.fillStyle='#426b9c';g.beginPath();g.moveTo(474,354);g.lineTo(474,319);g.lineTo(490,305);g.lineTo(512,305);g.lineTo(529,322);g.lineTo(529,354);g.closePath();g.fill();
  for(const [px,py,h,col] of [[459,311,23,'#93e5f3'],[472,296,18,'#c8faff'],[531,309,26,'#a6d5ff'],[544,327,17,'#b3eaf7']]){
   const w=h*.32;g.fillStyle=col;g.beginPath();g.moveTo(px,py-h);g.lineTo(px+w,py-h*.4);g.lineTo(px+w,py);g.lineTo(px-w,py);g.lineTo(px-w,py-h*.4);g.closePath();g.fill();r(px-2,py-h*.65,3,h*.4,'#f4ffff');
  }
  if(!frozenChestOpened){r(483,333,29,14,'#d4ad65');r(490,326,14,11,'#fff1ae')}
  t(frozenChestOpened?'✓ CAVE EXPLORED':'💎 CRYSTAL CAVE',493,372,12,'#3c6486');
+ // Snow at the bases of structures reinforces that everything is grounded.
+ r(419,210,143,8,'#ffffff');r(443,351,116,9,'#ffffff');
+ for(let i=0;i<11;i++){const px=419+i*13;r(px,218+(i%2)*2,10,3,'#d1e7ef')}
  // Glittering ice shards, frosty flowers and windblown snow.
  for(let i=0;i<13;i++){const px=274+(i*31)%330,py=244+(i%3)*17;if(px>420&&px<555)continue;r(px,py-13,7,17,i%2?'#9be5f4':'#c4f6ff');r(px+2,py-19,3,8,'#f0ffff');islandGlow(px+3,py-15,'#d8faff',2)}
  for(let i=0;i<17;i++){const px=24+(i*37)%590,py=304+(i*23)%78;r(px,py,5,3,i%2?'#d0e6f5':'#ffffff');r(px+1,py-4,2,5,'#a5d7e7')}
