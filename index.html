@@ -105,7 +105,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 </div>
 
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
-<div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
+<div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">1/∞</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
@@ -417,7 +417,7 @@ else{
 }
 g.restore();
 }
-function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/∞';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'Press X when the moving white marker is in the BIG green zone.',reeling:'Press X three times to reel your fish in.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -536,9 +536,9 @@ function celebrateFish(f){
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
 if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'?'🌟 MYTHIC! BIG BERTHA! 🌟':'🎉 '+pending[0]+' caught!',pending[0]==='Big Bertha'?'A once-in-a-lifetime catch worth 200,000 coins!':'Worth '+pending[1]+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
-if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches first.',[['Visit shop',()=>tab('shop')]]);
+
 if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
-phase='waiting';needle=0;direction=1;targetWidth=Math.min(88,54+rod*3);target=10+Math.random()*(80-targetWidth);const roll=Math.random();pending=fish[roll<.47?0:roll<.74?1:roll<.9?2:roll<.98?3:roll<.999?4:5];const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
+phase='waiting';needle=0;direction=1;targetWidth=Math.min(88,54+rod*3);target=10+Math.random()*(80-targetWidth);pending=fish[5]; // Infinite luck: every new hooked fish is mythic Big Bertha.const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
 setTimeout(()=>{if(id!==token||phase!=='waiting')return;phase='timing';hud();panel('‼️ FISH ON!','Stop the moving marker in green.')},850)}
 function near(){
   if(room)return y>343?'exit':'counter';
