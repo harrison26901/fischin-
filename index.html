@@ -166,7 +166,7 @@ const $=id=>document.getElementById(id),g=$('world').getContext('2d');g.imageSmo
 const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:'blue',name:'BLUE HOUSE',x:850,y:70,col:'#5488b3',cost:450},{id:'green',name:'GREEN CABIN',x:100,y:530,col:'#4f895e',cost:600},{id:'purple',name:'PURPLE HOUSE',x:850,y:530,col:'#956db0',cost:1200}];
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:595,y:70,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:350,y:530,col:'#836948'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
-const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500]];
+const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000]];
 let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[['Big Bertha',200000]],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 const VILLAGE_W=1100,VILLAGE_H=780;
@@ -490,7 +490,7 @@ if(room==='bait'){
 }
 if(room==='rod'){
  const next=rods[rod+1];
- panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider!',[
+ panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider! Final rod: Big Bertha Hunter — 300,000 coins.',[
   [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
   [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
   [collectibles.has('hat')?'👒 Bucket Hat — owned':'👒 Bucket Hat — 75',()=>buyItem('hat','Bucket Hat',75)],
@@ -538,7 +538,7 @@ if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='r
 if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'?'🌟 MYTHIC! BIG BERTHA! 🌟':'🎉 '+pending[0]+' caught!',pending[0]==='Big Bertha'?'A once-in-a-lifetime catch worth 200,000 coins!':'Worth '+pending[1]+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
 if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches first.',[['Visit shop',()=>tab('shop')]]);
 if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
-phase='waiting';needle=0;direction=1;targetWidth=Math.min(74,54+rod*4);target=10+Math.random()*(80-targetWidth);const roll=Math.random();pending=fish[roll<.47?0:roll<.74?1:roll<.9?2:roll<.98?3:roll<.999?4:5];const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
+phase='waiting';needle=0;direction=1;targetWidth=Math.min(88,54+rod*3);target=10+Math.random()*(80-targetWidth);const roll=Math.random();pending=fish[roll<.47?0:roll<.74?1:roll<.9?2:roll<.98?3:roll<.999?4:5];const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
 setTimeout(()=>{if(id!==token||phase!=='waiting')return;phase='timing';hud();panel('‼️ FISH ON!','Stop the moving marker in green.')},850)}
 function near(){
   if(room)return y>343?'exit':'counter';
