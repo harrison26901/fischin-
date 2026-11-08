@@ -482,6 +482,16 @@ function skyScene(){
  r(396,160,8,11,'#f5dc9b');r(404,183,4,4,'#eec879');
  for(let i=0;i<9;i++){const bx=354+i*11;r(bx,205,8,6,i%2?'#d9d7ed':'#9daed2')}
  t('🏰 SKY CASTLE',397,222,11,'#fff0ce');
+ // Shimmering crystal gardens around the Sky Castle and floating island.
+ function skyCrystal(cx,cy,height,tint){
+  const w=Math.max(8,Math.round(height*.43));
+  g.fillStyle=tint;g.beginPath();g.moveTo(cx,cy-height);g.lineTo(cx+w,cy-height*.55);g.lineTo(cx+w,cy-5);g.lineTo(cx,cy+3);g.lineTo(cx-w,cy-5);g.lineTo(cx-w,cy-height*.55);g.closePath();g.fill();
+  g.fillStyle='#e8ffff';g.beginPath();g.moveTo(cx,cy-height);g.lineTo(cx-3,cy-height*.57);g.lineTo(cx-3,cy-4);g.lineTo(cx-w,cy-5);g.lineTo(cx-w,cy-height*.55);g.closePath();g.fill();
+  r(cx+2,cy-height*.65,3,height*.4,'#ffffff');
+  islandGlow(cx,cy-height*.8,'#d7ffff',3);
+ }
+ for(const [cx,cy,h,col] of [[322,219,31,'#8e8df1'],[342,228,21,'#9fe8fa'],[559,225,35,'#a59bf2'],[583,232,25,'#75d7e9'],[70,234,24,'#a6a4f5'],[305,280,17,'#a1f0ef'],[546,275,19,'#c5a5ff']])skyCrystal(cx,cy,h,col);
+ for(let i=0;i<14;i++){const px=330+(i*19)%260,py=237+(i%3)*8;islandGlow(px,py-8,i%2?'#b5f8ff':'#e9c8ff',2)}
  // Phoenix sanctuary and its golden flame.
  r(424,111,128,102,'#9eacd8');r(435,94,106,23,'#e8dbf1');
  r(466,128,51,63,'#a17eb0');r(477,115,30,31,'#eab06e');
