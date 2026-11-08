@@ -322,6 +322,75 @@ const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
 let robberActive=false,robberAt=0,nextRobbery=0,defenceFlash=0,robbersStopped=0;
 let aimX=461,aimY=243,lastShotAt=0,shotMissUntil=0;
+const pawnCustomers=[
+ {name:'Mia',color:'#bf7085',skin:'#e1b28c',item:'Silver Necklace',emoji:'📿',value:180,type:'pawn'},
+ {name:'Oliver',color:'#5587b9',skin:'#c48c64',item:'Old Pocket Watch',emoji:'⌚',value:240,type:'pawn'},
+ {name:'Ava',color:'#7d65a8',skin:'#efc5a1',item:'Ruby Ring',emoji:'💍',value:550,type:'pawn'},
+ {name:'Leo',color:'#539874',skin:'#b87958',item:'Antique Clock',emoji:'🕰️',value:350,type:'buy'},
+ {name:'Isla',color:'#d29d4f',skin:'#df9b75',item:'Golden Bracelet',emoji:'📿',value:750,type:'pawn'},
+ {name:'Noah',color:'#72919b',skin:'#c99477',item:'Mystery Chest',emoji:'📦',value:800,type:'buy'},
+ {name:'Zoe',color:'#cf7888',skin:'#ecc4a2',item:'Giant Pearl',emoji:'🦪',value:325,type:'buy'}
+];
+let pawnCustomer=null,nextCustomerAt=0,customerServed=0;
+function scheduleCustomer(){nextCustomerAt=performance.now()+3500+Math.random()*6500}
+function serveCustomer(accept){
+ const customer=pawnCustomer;
+ if(!customer||customer.progress<1||room!=='pawn')return;
+ if(accept){
+  if(customer.type==='pawn'){
+   if(coins<customer.value)return panel('🪙 Not enough coins','You need '+customer.value+' coins to buy '+customer.item+'.',[['Back',visit]]);
+   coins-=customer.value;
+   discoveredTreasures.add(customer.item);
+  }else{
+   coins+=customer.value;
+  }
+  customerServed++;
+ }
+ const message=accept?(customer.type==='pawn'?'You paid ':'You earned ')+customer.value+' coins for '+customer.item+'.':customer.name+' leaves politely.';
+ pawnCustomer=null;scheduleCustomer();hud();draw();
+ panel(accept?'✅ DEAL COMPLETE!':'👋 NEXT CUSTOMER',message+' Customers served: '+customerServed+'.',[['Back to shop',visit]]);
+}
+function customerOptions(){
+ if(!pawnCustomer||pawnCustomer.progress<1)return null;
+ const customer=pawnCustomer;
+ const verb=customer.type==='pawn'?'pawn their':'buy your';
+ return [
+  ['✅ '+(customer.type==='pawn'?'Buy':'Sell')+' '+customer.item+' — '+customer.value+' coins',()=>serveCustomer(true)],
+  ['❌ Decline offer',()=>serveCustomer(false)],
+  ['🏪 Regular shop menu',()=>{pawnCustomerMenu=false;visit()}]
+ ];
+}
+let pawnCustomerMenu=true;
+function updateCustomers(now,dt){
+ if(room!=='pawn'||!pawnOwned||robberActive)return;
+ if(!nextCustomerAt)scheduleCustomer();
+ if(!pawnCustomer&&now>=nextCustomerAt){
+  const data=pawnCustomers[Math.floor(Math.random()*pawnCustomers.length)];
+  pawnCustomer={...data,progress:0,lastShown:false};
+  pawnCustomerMenu=true;
+ }
+ if(!pawnCustomer)return;
+ pawnCustomer.progress=Math.min(1,pawnCustomer.progress+dt/2300);
+ if(pawnCustomer.progress>=1&&!pawnCustomer.lastShown){
+  pawnCustomer.lastShown=true;
+  pawnCustomerMenu=true;
+  visit();
+ }
+}
+function drawPawnCustomer(){
+ if(!pawnCustomer)return;
+ const p=pawnCustomer.progress;
+ const cx=320+Math.sin(p*Math.PI)*25,feet=242+p*55;
+ const scale=.45+p*.8;
+ g.save();g.translate(cx,feet);g.scale(scale,scale);
+ r(-21,-82,42,46,pawnCustomer.color);r(-14,-36,12,27,'#393944');r(2,-36,12,27,'#393944');
+ r(-16,-113,32,34,pawnCustomer.skin);r(-18,-120,36,13,'#3e322d');
+ r(-23,-77,9,37,pawnCustomer.skin);r(14,-77,9,37,pawnCustomer.skin);
+ r(-8,-98,4,4,'#302e35');r(6,-98,4,4,'#302e35');r(-3,-86,8,2,'#a16b66');
+ g.restore();
+ if(p>=1){t(pawnCustomer.name,320,155,15,'#fff1b0');t(pawnCustomer.emoji+' '+pawnCustomer.item,320,174,12,'#ffefa4')}
+}
+
 function firePawn(){
  if(room!=='pawn'||!pawnOwned)return;
  const now=performance.now();
@@ -630,6 +699,7 @@ function pawnFirstPerson(){
  r(215,245,205,12,'#644b38');
  // Floor mat just inside the entrance.
  r(255,262,129,30,'#70534c');r(263,266,113,20,'#b08d69');
+ drawPawnCustomer();
  // Cartoon robber with a loot sack.
  if(robberActive){
   r(435,176,49,29,'#594035');r(443,190,34,33,'#d39b7b');r(444,198,32,10,'#2b3444');
@@ -698,8 +768,8 @@ function panel(a,b,options=[]){$('heading').textContent=a;$('message').textConte
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
 function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;if(id==='pawn')scheduleRobbery();hud();draw();visit()}
-function leave(){room='';shopping=false;robberActive=false;nextRobbery=0;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
+function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;if(id==='pawn'){scheduleRobbery();scheduleCustomer()}hud();draw();visit()}
+function leave(){room='';shopping=false;robberActive=false;nextRobbery=0;pawnCustomer=null;nextCustomerAt=0;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
 if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
@@ -716,7 +786,12 @@ if(room==='pawn'){
    ['🚪 Leave',leave]
   ]);
  }else{
-  panel('🏪 Your Pawn Shop','Buy antiques or guard your shop! Press X if a robber appears. Robbers stopped: '+robbersStopped+'.',[
+  if(pawnCustomer&&pawnCustomer.progress>=1&&pawnCustomerMenu){
+   const customer=pawnCustomer;
+   panel('🧑 '+customer.name+' at your counter',customer.name+' wants to '+(customer.type==='pawn'?'pawn a '+customer.item+' for ':'buy a '+customer.item+' for ')+customer.value+' coins. Choose what to do!',customerOptions());
+   return;
+  }
+  panel('🏪 Your Pawn Shop','Customers served: '+customerServed+'. People visit to buy and pawn treasures. Press X if a robber appears! Robbers stopped: '+robbersStopped+'.',[
    [bid?'💎 Sell Pearl Compass — +400':'💎 Pearl Compass unavailable',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
    [treasureOwned?'⚓ Golden Anchor — owned':'⚓ Golden Anchor — 2,000',()=>{if(treasureOwned)return;buyItem('anchor','Golden Anchor',2000,()=>{treasureOwned=true})}],
    [collectibles.has('clock')?'🕰️ Antique Clock — owned':'🕰️ Antique Clock — 350',()=>buyItem('clock','Antique Clock',350)],
@@ -851,7 +926,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(room==='pawn'){if(!shopping){shopping=true;visit()}else menuSelect();return}
+function interact(){if(room==='pawn'){if(!shopping){shopping=true;pawnCustomerMenu=true;visit()}else menuSelect();return}
 if(room){
  if(shopping){menuSelect();return}
  if(y>337){leave();return}
@@ -896,7 +971,7 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>mov
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;function frame(time){checkRobbery(time);if(room==='pawn'&&(robberActive||time<defenceFlash||time<shotMissUntil))draw();let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
+let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
 function adminCommand(raw){
  if(!adminMode)return;
