@@ -98,6 +98,16 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 @keyframes rare-burst{0%{opacity:0;transform:translate(0,0) scale(.2) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.6) rotate(160deg)}}
 @media(prefers-reduced-motion:reduce){#rare-celebration *,#rare-celebration,#rare-celebration::before,#rare-celebration::after{animation:none!important}}
 
+.reel-track{height:37px;border-radius:12px;background:linear-gradient(90deg,#244858,#45909b);position:relative;border:2px solid #9fd2c7;overflow:hidden;margin:8px 0}
+.reel-safe{position:absolute;inset:0 auto 0 0;width:100%;background:repeating-linear-gradient(115deg,#77c2a516 0 10px,transparent 10px 20px)}
+.reel-fish{position:absolute;top:3px;left:5%;font-size:21px;transition:left .12s;filter:drop-shadow(0 2px 2px #143c42)}
+.reel-labels{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;margin:8px 0 3px}
+.reel-gauge,.tension-gauge{height:13px;border:2px solid #9bb4a3;border-radius:8px;background:#263e42;overflow:hidden;margin-bottom:6px}
+#reel-fill,#tension-fill{height:100%;width:0%;transition:width .09s linear}
+#reel-fill{background:linear-gradient(90deg,#d6e28a,#76dba0)}
+#tension-fill{background:linear-gradient(90deg,#81d494 0%,#f0da76 48%,#f17f72 90%)}
+#fishingPanel .bite-alert{color:#fff1ac;animation:bite-pulse .35s ease-in-out infinite alternate}
+@keyframes bite-pulse{to{color:#fff;transform:scale(1.03)}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -136,7 +146,14 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 <button id="pawn-shoot" type="button" hidden aria-label="Shoot in pawn shop">🎯 SHOOT (X)</button>
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
-<div id="reeling"><p id="reelstatus">Reel 0 / 3</p><progress id="progress" value="0" max="3" style="width:100%;height:20px"></progress></div>
+<div id="reeling">
+ <p id="reelstatus">Fish distance: 0%</p>
+ <div class="reel-track"><div class="reel-safe"></div><div id="reel-fish" class="reel-fish">🐟</div></div>
+ <div class="reel-labels"><span>REEL PROGRESS <b id="reel-percent">0%</b></span><span>LINE TENSION <b id="tension-value">Low</b></span></div>
+ <div class="reel-gauge"><div id="reel-fill"></div></div>
+ <div class="tension-gauge"><div id="tension-fill"></div></div>
+ <small>Tap X to reel! Don't mash too fast — the line can snap!</small>
+</div>
 <small>Use the X control to cast, hook and reel.</small></div>
 <div class="card messagePanel"><b id="heading">🌊 Sunshine Lake</b><p id="message">Fish from the dock or visit your shop!</p><div class="actions" id="actions"></div></div>
 
@@ -294,6 +311,35 @@ $('collection-found-only').onchange=()=>{collectionPage=0;renderCollection()};
 $('collection-prev').onclick=()=>{collectionPage--;renderCollection()};
 $('collection-next').onclick=()=>{collectionPage++;renderCollection()};
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
+let reelProgress=0,lineTension=0,lastReelPress=0,fishResistance=1,lastBiteAt=0;
+function updateFishingDisplay(){
+ $('reel-percent').textContent=Math.round(reelProgress)+'%';
+ $('reel-fill').style.width=Math.min(100,reelProgress)+'%';
+ $('tension-fill').style.width=Math.min(100,lineTension)+'%';
+ $('tension-value').textContent=lineTension>75?'HIGH!':lineTension>42?'Medium':'Low';
+ $('reel-fish').style.left=Math.max(2,Math.min(90,90-reelProgress*.86))+'%';
+ $('reeling').classList.toggle('danger',lineTension>75);
+ $('phase').classList.toggle('bite-alert',phase==='timing');
+}
+function fishingDifficulty(f){
+ if(!f)return 1;
+ if(f[0]==='Big Bertha'||mythicFish.some(v=>v[0]===f[0]))return 2.3;
+ if(f[0]==='Legendary Shark')return 1.8;
+ if(f[0]==='Golden Koi')return 1.4;
+ return f[1]>=65?1.15:1;
+}
+function landFish(){
+ bag.push(pending);discoveredFish.add(pending[0]);phase='caught';celebrateFish(pending);
+ panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!',
+ 'Worth '+pending[1].toLocaleString('en-GB')+' coins. Great catch!',[['Fish again',fishAction],['Visit Fish Shop',()=>enter('fishshop')]]);
+ hud();
+}
+function loseFish(reason){
+ phase='missed';reelProgress=0;lineTension=0;
+ panel('💦 The fish got away!',reason+' Try again — your next cast costs no bait.');
+ hud();
+}
+
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
 let robberActive=false,robberAt=0,nextRobbery=0,defenceFlash=0,robbersStopped=0;
@@ -822,8 +868,8 @@ g.restore();
 function hud(){$('pawn-shoot').hidden=room!=='pawn'||!pawnOwned;$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
-$('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'Press X when the moving white marker is in the BIG green zone.',reeling:'Press X three times to reel your fish in.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
-$('reelstatus').textContent='Reel '+reels+' / 3';$('progress').value=reels}
+$('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X with a steady rhythm. Let the tension drop between pulls.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
+$('reelstatus').textContent=phase==='reeling'?'Reel the fish in!':'Get ready to reel';updateFishingDisplay()}
 let menu=[],selection=0,shopping=false;
 function redrawMenu(){
  let wrap=$('actions');wrap.replaceChildren();
@@ -940,16 +986,45 @@ function celebrateFish(f){
  }
  celebrationTimer=setTimeout(()=>{overlay.className='';overlay.querySelectorAll('.sparkle').forEach(el=>el.remove())},mythic?4800:legendary?3800:3000);
 }
-function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
-if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
-if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);discoveredFish.add(pending[0]);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!','Worth '+pending[1].toLocaleString('en-GB')+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
-
-if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
-if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
-phase='waiting';needle=0;direction=1;targetWidth=Math.min(88,54+rod*3);target=10+Math.random()*(80-targetWidth);const roll=Math.random();
-pending=roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
-const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
-setTimeout(()=>{if(id!==token||phase!=='waiting')return;phase='timing';hud();panel('‼️ FISH ON!','Stop the moving marker in green.')},850)}
+function fishAction(){
+ if(room||area!=='lake')return;
+ if(phase==='waiting')return;
+ if(phase==='timing'){
+  const within=needle>=target-3&&needle<=target+targetWidth+3;
+  if(!within){loseFish('You missed the hook timing!');return}
+  phase='reeling';reelProgress=6;lineTension=14;lastReelPress=performance.now()-500;
+  fishResistance=fishingDifficulty(pending);
+  panel('🎯 HOOKED! '+(fishResistance>2?'Something enormous!':'Fish on!'),
+    'Tap X steadily to pull the fish closer. High tension can snap the line!');
+  hud();return;
+ }
+ if(phase==='reeling'){
+  const now=performance.now();
+  const delay=now-lastReelPress;
+  if(delay<115){lineTension=Math.min(100,lineTension+18*fishResistance);updateFishingDisplay();return}
+  lastReelPress=now;
+  const power=Math.max(3,11+rod*.75-fishResistance*2);
+  reelProgress=Math.min(100,reelProgress+power);
+  lineTension=Math.min(105,lineTension+(delay<240?21:11)*fishResistance);
+  if(lineTension>=100){loseFish('The line snapped from too much tension!');return}
+  if(reelProgress>=100){landFish();return}
+  updateFishingDisplay();return;
+ }
+ if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
+ if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
+ phase='waiting';needle=0;direction=1;lineTension=0;reelProgress=0;
+ targetWidth=Math.min(76,38+rod*3);
+ target=8+Math.random()*(84-targetWidth);
+ const roll=Math.random();
+ pending=roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
+ const id=++token;hud();draw();panel('🎣 Line cast!','Watch for a bite...');
+ const delay=750+Math.random()*1450;
+ setTimeout(()=>{
+  if(id!==token||phase!=='waiting')return;
+  phase='timing';lastBiteAt=performance.now();hud();
+  panel('‼️ BITE! HOOK IT!','Press X while the marker is in the green zone!');
+ },delay);
+}
 function near(){
   if(room)return y>343?'exit':'counter';
   if(area==='lake'){
@@ -1040,7 +1115,20 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>mov
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
+let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){
+ needle+=direction*dt*(.04+Math.min(rod,6)*.001);
+ if(needle>=99){needle=99;direction=-1}
+ if(needle<=0){needle=0;direction=1}
+ $('needle').style.left=needle+'%';
+ if(time-lastBiteAt>4500)loseFish('You took too long to hook it!');
+}
+if(phase==='reeling'){
+ const rest=dt*.028;
+ lineTension=Math.max(0,lineTension-rest*(1+rod*.07));
+ reelProgress=Math.max(0,reelProgress-dt*.003*fishResistance);
+ if(time-lastReelPress>13000)loseFish('You stopped reeling and the fish swam away!');
+ else updateFishingDisplay();
+}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
 $('fullscreenToggle').onclick=async()=>{
  try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}}catch(e){console.warn('Fullscreen unavailable',e)}
