@@ -332,6 +332,31 @@ const pawnCustomers=[
  {name:'Zoe',color:'#cf7888',skin:'#ecc4a2',item:'Giant Pearl',emoji:'🦪',value:325,type:'buy'}
 ];
 let pawnCustomer=null,nextCustomerAt=0,customerServed=0;
+let authenticAppraisals=0,fakeDetected=0;
+const appraisalTools=[
+ {id:'loupe',label:'🔍 Jeweller’s Loupe',real:'Tiny maker’s marks and fine craftsmanship.',fake:'Rough edges and a copied hallmark.'},
+ {id:'magnet',label:'🧲 Magnet Tester',real:'No suspicious reaction from the tested metal.',fake:'The metal reacts strongly to the test magnet.'},
+ {id:'scanner',label:'💎 Gem Scanner',real:'The scanner reports a genuine material match.',fake:'The scanner flags imitation materials.'}
+];
+function appraiseWith(toolId){
+ if(!pawnCustomer||pawnCustomer.progress<1||pawnCustomer.type!=='pawn')return;
+ const customer=pawnCustomer;
+ if(customer.tests.includes(toolId))return visit();
+ customer.tests.push(toolId);
+ customer.lastTest=toolId;
+ if(customer.tests.length>=2)customer.identified=true;
+ visit();draw();
+}
+function appraisalDescription(customer){
+ if(customer.type!=='pawn')return 'They want to buy an item from your shop.';
+ const findings=customer.tests.map(id=>{
+  const tool=appraisalTools.find(v=>v.id===id);
+  return tool.label+': '+(customer.genuine?tool.real:tool.fake);
+ });
+ return (findings.length?findings.join('  |  '):'Use your appraisal tools to check this jewellery before paying.')+
+ (customer.identified?'  VERDICT: '+(customer.genuine?'✅ GENUINE':'❌ COUNTERFEIT'):'  Tests completed: '+customer.tests.length+'/2');
+}
+
 function scheduleCustomer(){nextCustomerAt=performance.now()+3500+Math.random()*6500}
 function serveCustomer(accept){
  const customer=pawnCustomer;
@@ -340,25 +365,32 @@ function serveCustomer(accept){
   if(customer.type==='pawn'){
    if(coins<customer.value)return panel('🪙 Not enough coins','You need '+customer.value+' coins to buy '+customer.item+'.',[['Back',visit]]);
    coins-=customer.value;
-   discoveredTreasures.add(customer.item);
-  }else{
-   coins+=customer.value;
-  }
+   if(customer.genuine){
+    authenticAppraisals++;discoveredTreasures.add(customer.item);
+   }
+  }else coins+=customer.value;
   customerServed++;
- }
- const message=accept?(customer.type==='pawn'?'You paid ':'You earned ')+customer.value+' coins for '+customer.item+'.':customer.name+' leaves politely.';
+ }else if(customer.type==='pawn'&&!customer.genuine)fakeDetected++;
+ const outcome=accept&&customer.type==='pawn'
+  ?customer.genuine?'✅ Authentic '+customer.item+' added to your collection.':'⚠️ That '+customer.item+' was FAKE! You lost '+customer.value+' coins.'
+  :accept?'You earned '+customer.value+' coins selling '+customer.item+'.'
+  :customer.name+' leaves politely.';
  pawnCustomer=null;scheduleCustomer();hud();draw();
- panel(accept?'✅ DEAL COMPLETE!':'👋 NEXT CUSTOMER',message+' Customers served: '+customerServed+'.',[['Back to shop',visit]]);
+ panel(accept?'🧾 TRANSACTION COMPLETE':'👋 NEXT CUSTOMER',outcome+' Customers served: '+customerServed+'. Fakes refused: '+fakeDetected+'.',[['Back to shop',visit]]);
 }
 function customerOptions(){
  if(!pawnCustomer||pawnCustomer.progress<1)return null;
  const customer=pawnCustomer;
- const verb=customer.type==='pawn'?'pawn their':'buy your';
- return [
-  ['✅ '+(customer.type==='pawn'?'Buy':'Sell')+' '+customer.item+' — '+customer.value+' coins',()=>serveCustomer(true)],
-  ['❌ Decline offer',()=>serveCustomer(false)],
-  ['🏪 Regular shop menu',()=>{pawnCustomerMenu=false;visit()}]
- ];
+ const result=[];
+ if(customer.type==='pawn'){
+  for(const tool of appraisalTools){
+   result.push([customer.tests.includes(tool.id)?'✅ '+tool.label+' — checked':tool.label+' — test item',()=>appraiseWith(tool.id)]);
+  }
+ }
+ result.push(['✅ '+(customer.type==='pawn'?'Buy':'Sell')+' '+customer.item+' — '+customer.value+' coins',()=>serveCustomer(true)]);
+ result.push(['❌ Decline offer',()=>serveCustomer(false)]);
+ result.push(['🏪 Regular shop menu',()=>{pawnCustomerMenu=false;visit()}]);
+ return result;
 }
 let pawnCustomerMenu=true;
 function updateCustomers(now,dt){
@@ -366,7 +398,7 @@ function updateCustomers(now,dt){
  if(!nextCustomerAt)scheduleCustomer();
  if(!pawnCustomer&&now>=nextCustomerAt){
   const data=pawnCustomers[Math.floor(Math.random()*pawnCustomers.length)];
-  pawnCustomer={...data,progress:0,lastShown:false};
+  pawnCustomer={...data,progress:0,lastShown:false,genuine:Math.random()<.64,tests:[],identified:false,lastTest:null};
   pawnCustomerMenu=true;
  }
  if(!pawnCustomer)return;
@@ -717,6 +749,17 @@ function pawnFirstPerson(){
  r(257,302,97,25,'#e5d1a0');r(263,296,85,8,'#c5a46e');
  for(let i=0;i<4;i++)r(271,306+i*4,60,1,'#ab8b5e');
  r(398,304,34,17,'#d5b15b');r(408,298,14,9,'#ffe199');
+ // Appraisal workstation on the counter: loupe, magnet and gem tester.
+ r(357,289,16,18,'#58798a');r(362,282,10,10,'#c5e8fa');
+ r(365,285,4,4,'#537e98');r(356,301,9,5,'#b5bdba');
+ r(455,291,20,14,'#b3444b');r(459,293,12,5,'#d8d8d8');
+ r(223,288,27,19,'#4e5969');r(228,290,17,11,'#8cf0b9');
+ r(231,303,10,4,'#e8d787');
+ if(pawnCustomer&&pawnCustomer.progress>=1&&pawnCustomer.type==='pawn'){
+  const checked=pawnCustomer.tests.length;
+  t(checked>=2?(pawnCustomer.genuine?'REAL':'FAKE'):checked+'/2 TESTS',320,288,12,
+    checked>=2?(pawnCustomer.genuine?'#9affb2':'#ff9f95'):'#fff0ac');
+ }
  t('YOUR COUNTER',320,375,14,'#ffe9b9');
  // Stylised toy-like first-person defence prop.
  if(pawnOwned){
@@ -788,10 +831,10 @@ if(room==='pawn'){
  }else{
   if(pawnCustomer&&pawnCustomer.progress>=1&&pawnCustomerMenu){
    const customer=pawnCustomer;
-   panel('🧑 '+customer.name+' at your counter',customer.name+' wants to '+(customer.type==='pawn'?'pawn a '+customer.item+' for ':'buy a '+customer.item+' for ')+customer.value+' coins. Choose what to do!',customerOptions());
+   panel('🧑 '+customer.name+' at your counter',customer.name+' wants to '+(customer.type==='pawn'?'pawn a '+customer.item+' for ':'buy a '+customer.item+' for ')+customer.value+' coins. '+appraisalDescription(customer),customerOptions());
    return;
   }
-  panel('🏪 Your Pawn Shop','Customers served: '+customerServed+'. People visit to buy and pawn treasures. Press X if a robber appears! Robbers stopped: '+robbersStopped+'.',[
+  panel('🏪 Your Pawn Shop','Customers served: '+customerServed+'. Fakes refused: '+fakeDetected+'. Test jewellery with the loupe, magnet and gem scanner before buying. Press X if a robber appears! Robbers stopped: '+robbersStopped+'.',[
    [bid?'💎 Sell Pearl Compass — +400':'💎 Pearl Compass unavailable',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
    [treasureOwned?'⚓ Golden Anchor — owned':'⚓ Golden Anchor — 2,000',()=>{if(treasureOwned)return;buyItem('anchor','Golden Anchor',2000,()=>{treasureOwned=true})}],
    [collectibles.has('clock')?'🕰️ Antique Clock — owned':'🕰️ Antique Clock — 350',()=>buyItem('clock','Antique Clock',350)],
