@@ -662,6 +662,71 @@ function festivalScene(){
  for(let i=0;i<12;i++){const px=(i*57+sec*6)%640,py=270+(i*31)%110;r(px,py,8,10,'#f4c26f');r(px+2,py-6,4,7,'#ffeb9c')}
  drawPet();character(x,y);
 }
+
+const mermaidFish=[['Pearlfin',350],['Sapphire Seahorse',850],['Royal Coral Koi',1600],['Moon Jelly',3100],['Queen’s Golden Ray',7400]];
+let mermaidFishCaught=new Set(),mermaidPearlClaimed=false,mermaidQueenBlessing=false;
+function enterMermaidKingdom(){
+ token++;phase='ready';pending=null;room='';area='mermaid';x=320;y=335;petX=x-24;petY=y+16;keys.clear();hud();draw();saveGame(true);
+ panel('🧜‍♀️ MERMAID KINGDOM','Welcome to Pearlwater Palace! Explore the royal coral reef, glowing pearl shrine and Mermaid Queen. Walk with WASD or arrows, A to interact, B to surface.');
+}
+function leaveMermaidKingdom(){
+ area='lake';room='';x=142;y=309;keys.clear();hud();draw();saveGame(true);
+ panel('🌊 Back to Sunshine Lake','Your royal discoveries are safely stored!');
+}
+function mermaidInteract(){
+ if(Math.hypot(x-160,y-175)<82)return mermaidFishing();
+ if(Math.hypot(x-475,y-155)<85)return mermaidQueen();
+ if(Math.hypot(x-490,y-322)<75)return mermaidShrine();
+ panel('🧜‍♀️ Pearlwater Palace','Visit the coral reef (left), the Mermaid Queen (top right) or the pearl shrine (bottom right). Press B to surface.');
+}
+function mermaidFishing(){
+ if(Math.hypot(x-160,y-175)>=82)return panel('🐠 Royal Reef','Walk to the glowing coral reef to fish.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Bag full','Sell some fish before catching more.');
+ if(bait<=0)return panel('🪱 Out of bait','Buy more bait at the village.');
+ const f=mermaidFish[Math.floor(Math.random()*mermaidFish.length)];
+ bait--;bag.push([...f]);discoveredFish.add(f[0]);mermaidFishCaught.add(f[0]);hud();draw();saveGame(true);
+ panel('🐠 '+f[0]+' CAUGHT!','Worth '+f[1].toLocaleString('en-GB')+' coins. Royal reef discoveries: '+mermaidFishCaught.size+'/5.',[['🎣 Fish again',mermaidFishing],['🧜‍♀️ Queen’s quest',mermaidQueen]]);
+}
+function mermaidShrine(){
+ if(mermaidPearlClaimed)return panel('🫧 Pearl Shrine','The Moon Pearl is already yours. Its glow remains in the shrine.');
+ mermaidPearlClaimed=true;coins+=1800;collectibles.add('mermaid-moon-pearl');discoveredTreasures.add('mermaid-moon-pearl');hud();draw();saveGame(true);
+ panel('🫧 MOON PEARL DISCOVERED!','You found the enchanted Moon Pearl and 1,800 coins!');
+}
+function mermaidQueen(){
+ if(mermaidQueenBlessing)return panel('👑 Mermaid Queen','Thank you for restoring the reef! Your royal seahorse is waiting at the Pet Adoption Centre.');
+ if(mermaidFishCaught.size<5)return panel('👑 Queen Marina','Welcome, traveller! Discover all five rare fish in our coral reef to earn my blessing and a magical seahorse pet. Progress: '+mermaidFishCaught.size+'/5.');
+ mermaidQueenBlessing=true;adoptedPets.add('royal-seahorse');collectibles.add('mermaid-royal-crown');discoveredTreasures.add('mermaid-royal-crown');coins+=3500;hud();draw();saveGame(true);
+ panel('👑 THE QUEEN’S BLESSING!','You found all five reef fish! Marina grants you the Royal Coral Crown, 3,500 coins and Pearl the magical seahorse pet. Equip Pearl at the Pet Adoption Centre!');
+}
+function mermaidCharacter(px,py,queen=false){
+ const bob=Math.sin(performance.now()/480+(queen?1:0))*3;
+ g.save();g.translate(0,bob);
+ r(px-11,py+4,22,24,queen?'#f4b7da':'#68d7c5');r(px-19,py+23,19,11,queen?'#f4b7da':'#68d7c5');r(px+5,py+22,20,10,queen?'#e49dd5':'#7ee8c7');
+ r(px-11,py-22,22,27,queen?'#d7a46e':'#b78964');r(px-13,py-35,26,19,queen?'#efc38e':'#e8b88d');
+ r(px-15,py-34,6,23,queen?'#f8df8e':'#9e73cf');r(px+9,py-34,6,23,queen?'#f8df8e':'#9e73cf');
+ r(px-7,py-24,4,4,'#26384d');r(px+4,py-24,4,4,'#26384d');
+ r(px-7,py-2,8,7,queen?'#f5d9aa':'#b9e9e2');r(px+2,py-2,8,7,queen?'#f5d9aa':'#b9e9e2');
+ if(queen){r(px-14,py-42,28,6,'#f4d878');r(px-8,py-49,6,8,'#ffe9a1');r(px+4,py-49,6,8,'#ffe9a1');r(px-2,py-47,5,5,'#86dafa')}
+ g.restore();
+}
+function mermaidScene(){
+ const sec=performance.now()/1000;
+ r(0,0,640,400,'#155d8b');r(0,295,640,105,'#2b7b9a');
+ for(let i=0;i<45;i++){const px=(i*83)%630,py=(i*67+sec*18)%390;r(px,py,3+i%3,3+i%3,'#a9e9f3')}
+ for(let i=0;i<24;i++){const px=(i*79)%630,py=300+(i*37)%90;r(px,py,8,7,i%3===0?'#ecb5cc':'#8bd6bf')}
+ r(72,116,184,124,'#257e9d');r(89,134,147,88,'#3aa7b7');
+ for(let i=0;i<12;i++){const px=92+i*12,py=190+i%3*8;r(px,py-28,8,36,i%2?'#ef9ca8':'#f7c17c');r(px-3,py-33,13,8,'#ffb9cf')}
+ t('🐠 ROYAL REEF',164,263,13,'#f8e7c2');
+ r(410,89,151,119,'#6f8ab7');r(422,70,127,32,'#c4c7ec');r(433,56,18,28,'#d5dcf2');r(485,45,20,40,'#d5dcf2');r(532,56,16,28,'#d5dcf2');
+ r(453,140,63,68,'#4b679a');r(464,149,42,59,'#a9c1d8');
+ mermaidCharacter(485,161,true);t('👑 QUEEN MARINA',485,237,12,'#fff0bf');
+ r(447,290,87,68,'#7197b7');r(459,276,63,23,'#a7bde0');
+ r(478,313,24,25,mermaidPearlClaimed?'#a0bed1':'#fff0d4');r(484,310,12,9,'#fff8e9');
+ t(mermaidPearlClaimed?'✓ PEARL FOUND':'🫧 PEARL SHRINE',490,375,12,'#fff0bf');
+ mermaidCharacter(348,230,false);
+ for(let i=0;i<8;i++){const px=45+i*78,py=40+i%3*65;r(px,py,4,4,'#d7f6fb');r(px+8,py+9,3,3,'#e4fcff')}
+ drawPet();character(x,y);
+}
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
@@ -839,6 +904,7 @@ function boatShop(){
   ['🏆 Fishing Tournaments',tournamentMenu],
   ['🌟 Secret Mythic Fish Hunt',secretMythicJournal],
   ['🎆 Nighttime Festival',festivalJournal],
+  ['🧜‍♀️ Mermaid Kingdom',enterMermaidKingdom],
   ['❄️ Travel to Frozen Island',travelToFrozenIsland],
   ['🌋 Explore Volcano Dungeon',enterVolcanoDungeon],
   ['☁️ Sky Island Airship',skyAirshipMenu],
@@ -1664,7 +1730,8 @@ const petTypes=[
  {id:'golden-dragon',name:'Aurelia the Golden Dragon',price:0,color:'#f5d76c',emoji:'🐲',legendary:true,requirement:'Defeat all 3 pirate ships'},
  {id:'ghost-fox',name:'Luna the Ghost Fox',price:0,color:'#b9e8f6',emoji:'🦊',legendary:true,requirement:'Find all 4 scuba treasures'},
  {id:'star-unicorn',name:'Nova the Star Unicorn',price:0,color:'#e6baf6',emoji:'🦄',legendary:true,requirement:'Win all 3 fishing tournaments'},
- {id:'phoenix',name:'Sol the Phoenix',price:0,color:'#f6a351',emoji:'🔥',legendary:true,requirement:'Discover all 5 cloud fish on Sky Island'}
+ {id:'phoenix',name:'Sol the Phoenix',price:0,color:'#f6a351',emoji:'🔥',legendary:true,requirement:'Discover all 5 cloud fish on Sky Island'},
+ {id:'royal-seahorse',name:'Pearl the Royal Seahorse',price:0,color:'#76dfd1',emoji:'🐚',legendary:true,requirement:'Discover all 5 Mermaid Kingdom reef fish'}
 ];
 let adoptedPets=new Set(),activePet=null,petX=0,petY=0;
 function unlockLegendaryPets(announce=false){
@@ -1685,6 +1752,7 @@ function legendaryPetProgress(id){
  if(id==='ghost-fox')return diveSites.filter(s=>diveDiscoveries.has(s.id)).length+'/4 scuba treasures discovered';
  if(id==='star-unicorn')return tournamentTiers.filter((_,i)=>tournamentWins.has(i)).length+'/3 tournament trophies earned';
  if(id==='phoenix')return skyFishCaught.size+'/5 cloud fish discovered';
+ if(id==='royal-seahorse')return mermaidFishCaught.size+'/5 royal reef fish discovered';
  return '';
 }
 function petShop(){
@@ -1720,6 +1788,7 @@ function drawPet(){
  if(p.id==='ghost-fox'){r(px-14,py-19,8,13,'#e9faff');r(px+7,py-19,8,13,'#e9faff');r(px+9,py+1,16,7,'#b9e8f6')}
  if(p.id==='star-unicorn'){r(px-2,py-25,5,13,'#fff3a4');r(px+10,py+1,13,5,'#f4d2fc')}
  if(p.id==='phoenix'){r(px-20,py-9,13,16,'#f8cc67');r(px+8,py-9,13,16,'#f8cc67');r(px-5,py-24,10,15,'#ffdf8a')}
+ if(p.id==='royal-seahorse'){r(px+8,py-19,8,18,'#a7fff0');r(px+13,py-12,9,6,'#76dfd1');r(px-10,py+6,8,11,'#8ff0dc')}
  if(p.legendary){const sparkle=Math.sin(performance.now()/240);r(px-17,py-22+sparkle*2,4,4,'#fff6bf');r(px+15,py-19-sparkle*2,4,4,'#ffffff')}
  if(p.id==='penguin')r(px-6,py-2,12,11,'#e9f0e5');
  if(p.id==='dog')r(px+9,py+1,11,4,'#b48a5d');
@@ -1742,6 +1811,7 @@ else if(area==='frozen'){frozenScene()}
 else if(area==='sky'){skyScene()}
 else if(area==='dungeon'){volcanoDungeonScene()}
 else if(area==='festival'){festivalScene()}
+else if(area==='mermaid'){mermaidScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1935,7 +2005,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon'||area==='festival')return false;
+  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon'||area==='festival'||area==='mermaid')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1959,7 +2029,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(area==='festival'){festivalInteract();return}if(area==='dungeon'){dungeonInteract();return}if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='mermaid'){mermaidInteract();return}if(area==='festival'){festivalInteract();return}if(area==='dungeon'){dungeonInteract();return}if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1974,6 +2044,7 @@ function interact(){if(area==='festival'){festivalInteract();return}if(area==='d
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='mermaid'){if(k==='a'||k==='x')mermaidInteract();else if(k==='b')leaveMermaidKingdom();else if(k==='y')backpack();return}
  if(area==='festival'){if(k==='a'||k==='x')festivalInteract();else if(k==='b')leaveNightFestival();else if(k==='y')backpack();return}
  if(area==='dungeon'){if(fireGolemBattle){if(k==='a'||k==='x')fireGolemTurn('attack');else if(k==='b')fireGolemTurn('block');else if(k==='y')fireGolemMenu();return}if(k==='a'||k==='x')dungeonInteract();else if(k==='b')leaveVolcanoDungeon();else if(k==='y')backpack();return}
  if(area==='sky'){if(k==='a')skyInteract();else if(k==='x')secretMythicCast();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
@@ -2115,6 +2186,7 @@ function saveGame(automatic=false){
    dungeonRoom,dungeonHealth,dungeonChests:[...dungeonChests],fireGolemDefeated,
    secretMythicCaught:[...secretMythicCaught],secretMythicCasts,
    festivalFishCaught:[...festivalFishCaught],festivalPrizes:[...festivalPrizes],festivalGamesPlayed,festivalFireworksWatched,festivalLanterns,
+   mermaidFishCaught:[...mermaidFishCaught],mermaidPearlClaimed,mermaidQueenBlessing,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -2142,7 +2214,11 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':data.area==='festival'?'festival':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':data.area==='festival'?'festival':data.area==='mermaid'?'mermaid':'lake';
+ mermaidFishCaught=new Set((Array.isArray(data.mermaidFishCaught)?data.mermaidFishCaught:[]).filter(name=>mermaidFish.some(f=>f[0]===name)));
+ for(const f of mermaidFish)if(data.discoveredFish&&data.discoveredFish.includes(f[0]))mermaidFishCaught.add(f[0]);
+ mermaidPearlClaimed=data.mermaidPearlClaimed===true||data.collectibles.includes('mermaid-moon-pearl');
+ mermaidQueenBlessing=data.mermaidQueenBlessing===true||data.collectibles.includes('mermaid-royal-crown');
  festivalFishCaught=new Set((Array.isArray(data.festivalFishCaught)?data.festivalFishCaught:[]).filter(name=>festivalFish.some(f=>f[0]===name)));
  for(const f of festivalFish)if(data.discoveredFish&&data.discoveredFish.includes(f[0]))festivalFishCaught.add(f[0]);
  festivalPrizes=new Set((Array.isArray(data.festivalPrizes)?data.festivalPrizes:[]).filter(id=>['festival-ticket','festival-wheel-master','festival-lantern','festival-crown','festival-fireworks'].includes(id)));
@@ -2164,6 +2240,7 @@ function loadGame(manual=false){
  frostDragonDefeated=data.frostDragonDefeated===true||data.collectibles.includes('frost-dragon-trophy');frozenChestOpened=data.frozenChestOpened===true||data.collectibles.includes('frozen-crown');frostDragonBattle=null;
  adoptedPets=new Set((Array.isArray(data.adoptedPets)?data.adoptedPets:[]).filter(id=>petTypes.some(p=>p.id===id)));
  if(skyPhoenixUnlocked)adoptedPets.add('phoenix');
+ if(mermaidQueenBlessing)adoptedPets.add('royal-seahorse');
  activePet=adoptedPets.has(data.activePet)?data.activePet:null;petX=x-24;petY=y+14;
  diveDiscoveries=new Set((Array.isArray(data.diveDiscoveries)?data.diveDiscoveries:[]).filter(id=>diveSites.some(s=>s.id===id)));
  for(const site of diveSites)if(data.collectibles.includes('scuba-'+site.id))diveDiscoveries.add(site.id);
