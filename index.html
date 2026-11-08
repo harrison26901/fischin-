@@ -456,6 +456,7 @@ function boatShop(){
  panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
+  ['🐾 Adopt a Pet',petShop],
   ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
   ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
     if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['Back',boatShop]]);
@@ -1267,16 +1268,63 @@ character(320,149,true);
 r(275,350,91,50,theme.trim);
 }
 
+
+const petTypes=[
+ {id:'dog',name:'Biscuit the Dog',price:150,color:'#c28d56',emoji:'🐶'},
+ {id:'cat',name:'Mochi the Cat',price:250,color:'#c7a1c9',emoji:'🐱'},
+ {id:'penguin',name:'Pip the Penguin',price:600,color:'#344959',emoji:'🐧'},
+ {id:'dragon',name:'Ember the Dragon',price:1800,color:'#73b782',emoji:'🐉'}
+];
+let adoptedPets=new Set(),activePet=null,petX=0,petY=0;
+function petShop(){
+ panel('🐾 Pet Adoption Centre','Adopt a companion to follow you around Sunshine Lake, the village and inside houses! You can switch pets whenever you like.',[
+  ...petTypes.map(p=>[
+   (activePet===p.id?'💚 ':adoptedPets.has(p.id)?'✓ ':p.emoji+' ')+p.name+(adoptedPets.has(p.id)?' — adopted':' — '+p.price+' coins'),
+   ()=>{
+    if(!adoptedPets.has(p.id)){
+     if(coins<p.price)return need(p.price);
+     coins-=p.price;adoptedPets.add(p.id);
+    }
+    activePet=p.id;petX=x-24;petY=y+14;hud();draw();saveGame(true);
+    panel('🐾 '+p.name+' is your new buddy!',p.name+' will follow you on land!',[['🐾 See all pets',petShop]]);
+   }
+  ]),
+  ...(activePet?[['🏡 Let my pet rest',()=>{activePet=null;draw();saveGame(true);petShop()}]]:[]),
+  ['🌿 Back to exploring',()=>panel('🐾 Happy tails!','Your pets will be here whenever you want to change companions.')]
+ ]);
+}
+function drawPet(){
+ if(!activePet||area==='sea'||area==='dive')return;
+ const p=petTypes.find(p=>p.id===activePet);if(!p)return;
+ const px=petX,py=petY;
+ r(px-10,py-5,20,13,p.color);r(px-7,py-13,14,13,p.color);
+ r(px-12,py-12,6,9,p.id==='penguin'?'#344959':p.color);
+ r(px+6,py-12,6,9,p.id==='penguin'?'#344959':p.color);
+ r(px-5,py-8,3,3,'#25313a');r(px+3,py-8,3,3,'#25313a');
+ r(px-3,py-2,6,4,p.id==='penguin'?'#e6aa65':'#f2d9ba');
+ r(px-8,py+8,5,6,'#483e3c');r(px+4,py+8,5,6,'#483e3c');
+ if(p.id==='dragon'){r(px+10,py-2,13,7,'#b8e28a');r(px-4,py-20,8,9,'#d9f2ac')}
+ if(p.id==='penguin')r(px-6,py-2,12,11,'#e9f0e5');
+ if(p.id==='dog')r(px+9,py+1,11,4,'#b48a5d');
+ if(p.id==='cat')r(px+9,py+1,13,4,'#b99bbd');
+}
+function updatePet(dt){
+ if(!activePet||area==='sea'||area==='dive')return;
+ const targetX=x-23,targetY=y+17;
+ if(Math.hypot(petX-targetX,petY-targetY)>180){petX=targetX;petY=targetY;return}
+ const step=Math.min(1,dt*.008);
+ petX+=(targetX-petX)*step;petY+=(targetY-petY)*step;
+}
 function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
-if(room){if(aquariumViewing&&room==='fishshop')aquariumScene();else {interior();character(x,y)}}
-else if(area==='lake'){lake();character(x,y)}
+if(room){if(aquariumViewing&&room==='fishshop')aquariumScene();else {interior();drawPet();character(x,y)}}
+else if(area==='lake'){lake();drawPet();character(x,y)}
 else if(area==='sea'){seaScene()}
 else if(area==='dive'){scubaScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
- g.translate(-cx,-cy);village();character(x,y);
+ g.translate(-cx,-cy);village();drawPet();character(x,y);
 }
 g.restore();drawWeather();drawBossOverlay();
 }
@@ -1315,6 +1363,7 @@ const p=places.find(v=>v.id===room);
 if(p&&p.cost){
  const mine=owned.has(room);
  panel('🏠 '+p.name,mine?'Welcome home!':'This house costs '+p.cost+' coins.',[
+  ['🐾 Pet Adoption Centre',petShop],
   [mine?'☕ Relax':'🏠 Buy for '+p.cost,()=>{if(!mine){if(coins<p.cost)return need(p.cost);coins-=p.cost;owned.add(room);hud()}visit()}],['🚪 Exit',leave]
  ]);return;
 }
@@ -1634,6 +1683,7 @@ function saveGame(automatic=false){
    coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],diveDiscoveries:[...diveDiscoveries],
+   adoptedPets:[...adoptedPets],activePet,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1662,6 +1712,8 @@ function loadGame(manual=false){
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':'lake';
+ adoptedPets=new Set((Array.isArray(data.adoptedPets)?data.adoptedPets:[]).filter(id=>petTypes.some(p=>p.id===id)));
+ activePet=adoptedPets.has(data.activePet)?data.activePet:null;petX=x-24;petY=y+14;
  diveDiscoveries=new Set((Array.isArray(data.diveDiscoveries)?data.diveDiscoveries:[]).filter(id=>diveSites.some(s=>s.id===id)));
  for(const site of diveSites)if(data.collectibles.includes('scuba-'+site.id))diveDiscoveries.add(site.id);
  bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
@@ -1730,7 +1782,7 @@ $('delete-save').onclick=()=>{
 };
 $('scuba-button').addEventListener('click',beginScubaDive);
 $('surface-button').addEventListener('click',()=>surfaceFromDive());
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
