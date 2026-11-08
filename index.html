@@ -849,7 +849,7 @@ function festivalScene(){
  // Firework bursts in the upper sky, with twinkling sparks.
  for(let i=0;i<3;i++){const cx=100+i*218,cy=51+(i%2)*29;for(let j=0;j<12;j++){const angle=j*Math.PI/6+sec*.25,rad=18+Math.sin(sec*2+i)*4;r(cx+Math.cos(angle)*rad,cy+Math.sin(angle)*rad,4,4,['#ffdc87','#f6a5d3','#9adff2'][i%3])}islandGlow(cx,cy,'#fff1c6',5)}
  // Ground lanterns line the walkable path.
- for(let i=0;i<10;i++){const px=262+(i%2)*111,py=276+Math.floor(i/2)*25;r(px-3,py,8,13,'#b9764f');r(px-1,py-5,4,7,'#ffe9a0');islandGlow(px,py,'#ffdb8b',3)}
+ for(let i=0;i<10;i++){const px=(i%2===0?32:606),py=276+Math.floor(i/2)*25;r(px-3,py,8,13,'#b9764f');r(px-1,py-5,4,7,'#ffe9a0');islandGlow(px,py,'#ffdb8b',3)}
  drawPet();character(x,y);
 }
 
