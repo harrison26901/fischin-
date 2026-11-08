@@ -412,104 +412,70 @@ function skyPhoenixQuest(){
 }
 function skyScene(){
  const sec=performance.now()/1000;
- // Layered sky, drifting clouds and distant floating islands.
- const gradient=g.createLinearGradient(0,0,0,400);
- gradient.addColorStop(0,'#679de5');gradient.addColorStop(.52,'#b6e9f9');gradient.addColorStop(1,'#e8f9e9');
- g.fillStyle=gradient;g.fillRect(0,0,640,400);
- for(let i=0;i<9;i++){
-  const cx=(i*103+sec*(3+i%3))%780-90,cy=32+(i*47)%175;
-  r(cx,cy,105,19,'#ffffffaa');r(cx+21,cy-13,56,19,'#ffffffbb');r(cx+12,cy+16,77,10,'#eaf7ff99');
- }
- for(let i=0;i<4;i++){const ix=55+i*172,iy=98+i%2*34;r(ix,iy,95,15,'#b3d9e2');r(ix+16,iy+15,66,23,'#8ea7c7');r(ix+31,iy+37,35,13,'#7793b5')}
- // Layered distant floating islands with little forests, waterfalls and soft atmospheric haze.
- for(let i=0;i<5;i++){
-  const ix=24+i*143+(Math.sin(sec*.25+i)*3),iy=95+(i%3)*32;
-  g.save();g.globalAlpha=.52+i%2*.12;
-  r(ix,iy,90,9,'#9ed8bd');r(ix+8,iy+9,74,14,'#839bb8');r(ix+24,iy+23,40,17,'#6d83a6');
-  for(let j=0;j<4;j++){
-   const tx=ix+13+j*19,ty=iy-4-(j%2)*4;
-   r(tx,ty-17,4,17,'#647f79');r(tx-9,ty-25,22,15,'#559b90');r(tx-5,ty-32,14,12,'#70b6a3');
-  }
-  if(i%2===0){r(ix+62,iy+6,9,38,'#c4f6ff');r(ix+64,iy+12,3,31,'#ffffff')}
+ const sky=g.createLinearGradient(0,0,0,400);
+ sky.addColorStop(0,'#729fe4');sky.addColorStop(.65,'#bcebf5');sky.addColorStop(1,'#e5f9f4');
+ g.fillStyle=sky;g.fillRect(0,0,640,400);
+ // Faraway islands and drifting cloud banks remain behind the playable island.
+ for(let i=0;i<6;i++){
+  const ix=(i*127+Math.sin(sec*.22+i)*4)%740-35,iy=72+(i%3)*36;
+  g.save();g.globalAlpha=.45;
+  r(ix,iy,84,9,'#a3dfc2');r(ix+11,iy+9,62,15,'#849ebc');r(ix+26,iy+23,30,16,'#718aab');
+  for(let j=0;j<3;j++){const tx=ix+17+j*21;r(tx,iy-18,5,18,'#7e8e8a');r(tx-8,iy-29,21,15,'#67ae9d')}
+  if(i%2===0){r(ix+58,iy+6,8,31,'#a9e9f7');r(ix+60,iy+9,3,26,'#f3ffff')}
   g.restore();
  }
- // Tall whimsical trees on the main island, positioned around existing activity spots.
- function skyTree(tx,ty,scale=1){
-  g.save();g.translate(tx,ty);g.scale(scale,scale);
-  r(-6,-39,12,42,'#775c71');r(-3,-34,5,33,'#aa8290');
-  r(-27,-64,54,30,'#428e83');r(-22,-79,44,24,'#61b79d');r(-15,-89,30,22,'#8bd2ae');
-  r(-17,-69,11,7,'#a9e5bc');r(8,-78,9,6,'#a9e5bc');
-  for(let j=0;j<4;j++){const fx=-16+j*11,fy=-55-(j%2)*17;r(fx,fy,5,5,j%2?'#f6b4d7':'#fff2a3')}
-  g.restore();
- }
- // A giant floating island with an overhanging mossy rim and a rocky underside.
- g.fillStyle='#6586a2';g.beginPath();g.moveTo(18,257);g.lineTo(620,257);g.lineTo(557,318);g.lineTo(448,346);g.lineTo(334,380);g.lineTo(215,348);g.lineTo(97,314);g.closePath();g.fill();
- for(let i=0;i<20;i++){const px=44+i*28,py=282+Math.sin(i*.6)*25;r(px,py,24,13,i%3?'#8099b5':'#9fb5c9')}
- r(18,247,606,25,'#76bd91');r(30,237,580,16,'#a9e2a5');r(43,231,552,9,'#e1f6b9');
- for(let i=0;i<20;i++){const px=36+i*29;r(px,251,13,8,i%3?'#4e9c87':'#b3eaa6')}
- // Soft mossy paths and trees frame the attractions without blocking them.
- r(292,231,105,12,'#e4d8ad');r(391,230,145,12,'#e4d8ad');
- skyTree(49,239,.8);skyTree(335,232,.9);skyTree(393,242,.7);skyTree(581,239,.85);
- // Cloud Lake stays at its original fishing coordinates (165,180).
- g.fillStyle='#63c7e9';g.beginPath();g.ellipse(165,179,95,60,0,0,Math.PI*2);g.fill();
- g.fillStyle='#9eeaf6';g.beginPath();g.ellipse(165,173,81,45,0,0,Math.PI*2);g.fill();
- for(let i=0;i<14;i++){const px=95+i*11,py=150+(i%4)*16;r(px,py,13,3,'#e5ffff')}
- // Animated waterfall: flows from Cloud Lake, over the island edge and into the clouds.
- // Drawn as several moving translucent streams, with bright ripples and foam.
- const fallX=227,fallY=185,fallW=56;
- r(fallX-7,fallY-7,fallW+14,13,'#c9faff');
- g.save();g.beginPath();g.rect(fallX,fallY,fallW,215);g.clip();
+ for(let i=0;i<8;i++){const px=(i*109+sec*(3+i%3))%770-100,py=25+(i*41)%140;r(px,py,87,13,'#ffffff99');r(px+15,py-10,51,16,'#ffffffbb')}
+ // Island underside sits below the playable grass, not behind the castle or pond.
+ g.fillStyle='#7a93b0';g.beginPath();g.moveTo(17,257);g.lineTo(622,257);g.lineTo(557,316);g.lineTo(439,348);g.lineTo(332,388);g.lineTo(207,348);g.lineTo(88,313);g.closePath();g.fill();
+ for(let i=0;i<18;i++){const px=39+i*30,py=285+Math.sin(i*.7)*16;r(px,py,22,12,i%2?'#9aafc7':'#6c87a5')}
+ // The entire upper island is a broad, lush walkable grassy floor.
+ g.fillStyle='#82c88f';g.beginPath();g.moveTo(18,245);g.lineTo(30,169);g.lineTo(94,123);g.lineTo(185,111);g.lineTo(303,120);g.lineTo(402,106);g.lineTo(521,119);g.lineTo(603,155);g.lineTo(622,246);g.closePath();g.fill();
+ g.fillStyle='#b3e5a3';g.beginPath();g.moveTo(30,235);g.lineTo(42,169);g.lineTo(99,135);g.lineTo(191,122);g.lineTo(306,131);g.lineTo(404,118);g.lineTo(518,131);g.lineTo(591,165);g.lineTo(609,236);g.closePath();g.fill();
+ r(18,244,604,13,'#549d83');r(28,256,582,8,'#6db587');
+ // Cloud Pond is embedded IN the grassy island floor at the original fishing spot.
+ g.fillStyle='#5b9f91';g.beginPath();g.ellipse(164,182,103,64,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#5bbbd8';g.beginPath();g.ellipse(164,179,95,56,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#8ce0f0';g.beginPath();g.ellipse(161,172,81,44,0,0,Math.PI*2);g.fill();
+ for(let i=0;i<13;i++){const px=94+i*11,py=150+(i%4)*15;r(px,py,12,3,'#d7fbff')}
+ for(let i=0;i<10;i++){const angle=i*2.4,px=164+Math.cos(angle)*100,py=180+Math.sin(angle)*61;r(px,py,7,5,i%2?'#f7d6a4':'#b4edc5')}
+ // Pond outlet runs along the ground to the front edge, then becomes a waterfall.
+ g.fillStyle='#65c9e8';g.beginPath();g.moveTo(224,198);g.lineTo(271,208);g.lineTo(283,253);g.lineTo(227,253);g.closePath();g.fill();
+ for(let i=0;i<8;i++){const py=207+i*6;r(235+(i%2)*7,py,30,2,'#d8faff')}
+ const fallX=229,fallY=256,fallW=54;
  const water=g.createLinearGradient(fallX,0,fallX+fallW,0);
- water.addColorStop(0,'#4bafe1');water.addColorStop(.22,'#b4f3ff');water.addColorStop(.52,'#6dcfea');water.addColorStop(.83,'#e6ffff');water.addColorStop(1,'#3f9acb');
- g.fillStyle=water;g.fillRect(fallX,fallY,fallW,215);
- for(let i=0;i<20;i++){
-  const wx=fallX+3+(i*17)%(fallW-9),wy=fallY+(i*31+sec*(55+i%4*15))%232;
-  r(wx,wy,2+i%3*2,16+i%4*9,i%3?'#d9faff':'#75cce9');
- }
- for(let i=0;i<9;i++){const wy=fallY+(i*37+sec*73)%215;r(fallX+7,wy,fallW-14,2,'#f5ffff88')}
- g.restore();
- for(let i=0;i<14;i++){const px=fallX-14+(i*19)%85,py=367+(i%3)*8;r(px,py,9,3,'#ffffffaa')}
- for(let i=0;i<9;i++){const px=fallX+Math.sin(sec*2+i)*24+25,py=245+(i*29+sec*21)%155;r(px,py,4,5,'#e9ffff')}
- // Enchanted sky castle behind the Phoenix sanctuary, with glowing windows and flags.
- r(358,99,84,110,'#778ab7');r(369,84,62,25,'#b6b9e2');
- r(349,65,23,142,'#91a4cf');r(428,65,23,142,'#91a4cf');
- r(380,42,38,155,'#a3b3db');r(385,29,28,18,'#e4d8ee');
- for(const cx of [349,428]){r(cx-4,54,31,14,'#d9d6ed');for(let i=0;i<3;i++)r(cx-3+i*10,46,7,12,'#f0e6f6')}
- for(let i=0;i<3;i++)r(384+i*11,24,7,12,'#f7e9f6');
- r(396,3,4,24,'#f9f1d4');r(400,4,24,12,'#f2b6d6');r(403,7,16,5,'#ffe6a5');
- for(const [wx,wy] of [[361,100],[436,100],[389,80],[411,80],[365,145],[433,145]]){
-  r(wx,wy,9,16,'#4c608f');r(wx+2,wy+3,5,11,'#fff0ae');r(wx+3,wy+5,3,5,'#ffffff');
- }
- r(387,149,27,58,'#536b9e');r(392,156,17,51,'#293e70');
- r(396,160,8,11,'#f5dc9b');r(404,183,4,4,'#eec879');
- for(let i=0;i<9;i++){const bx=354+i*11;r(bx,205,8,6,i%2?'#d9d7ed':'#9daed2')}
- t('🏰 SKY CASTLE',397,222,11,'#fff0ce');
- // Shimmering crystal gardens around the Sky Castle and floating island.
- function skyCrystal(cx,cy,height,tint){
-  const w=Math.max(8,Math.round(height*.43));
-  g.fillStyle=tint;g.beginPath();g.moveTo(cx,cy-height);g.lineTo(cx+w,cy-height*.55);g.lineTo(cx+w,cy-5);g.lineTo(cx,cy+3);g.lineTo(cx-w,cy-5);g.lineTo(cx-w,cy-height*.55);g.closePath();g.fill();
-  g.fillStyle='#e8ffff';g.beginPath();g.moveTo(cx,cy-height);g.lineTo(cx-3,cy-height*.57);g.lineTo(cx-3,cy-4);g.lineTo(cx-w,cy-5);g.lineTo(cx-w,cy-height*.55);g.closePath();g.fill();
-  r(cx+2,cy-height*.65,3,height*.4,'#ffffff');
-  islandGlow(cx,cy-height*.8,'#d7ffff',3);
- }
- for(const [cx,cy,h,col] of [[322,219,31,'#8e8df1'],[342,228,21,'#9fe8fa'],[559,225,35,'#a59bf2'],[583,232,25,'#75d7e9'],[70,234,24,'#a6a4f5'],[305,280,17,'#a1f0ef'],[546,275,19,'#c5a5ff']])skyCrystal(cx,cy,h,col);
- for(let i=0;i<14;i++){const px=330+(i*19)%260,py=237+(i%3)*8;islandGlow(px,py-8,i%2?'#b5f8ff':'#e9c8ff',2)}
- // Phoenix sanctuary and its golden flame, in front of the castle.
- r(455,121,85,83,'#9eacd8');r(464,109,67,18,'#e8dbf1');
- r(466,128,51,63,'#a17eb0');r(477,115,30,31,'#eab06e');
- r(479,105,27,20,'#ffdf80');r(485,96+Math.sin(sec*4)*3,15,16,'#fff4ad');
- for(let i=0;i<6;i++){const px=449+i*18;r(px,197,10,8,'#d8b4d8')}
- t(skyPhoenixUnlocked?'✓ PHOENIX FOUND':'🔥 PHOENIX NEST',489,225,12,'#684c80');
- // Star treasure alcove.
- r(450,288,92,65,'#a79bd1');r(463,300,68,53,'#7f72b1');
- for(let i=0;i<5;i++)islandGlow(462+i*16,301+i%2*12,'#fff5bf',3);
+ water.addColorStop(0,'#3b9ed1');water.addColorStop(.3,'#b8f5ff');water.addColorStop(.65,'#66cce8');water.addColorStop(1,'#e5ffff');
+ g.fillStyle=water;g.fillRect(fallX,fallY,fallW,144);
+ for(let i=0;i<20;i++){const wx=fallX+3+(i*17)%48,wy=fallY+(i*29+sec*(50+i%3*15))%150;r(wx,wy,2+i%3,12+i%4*7,i%2?'#f1ffff':'#6bc8e9')}
+ for(let i=0;i<12;i++){const px=fallX-8+(i*13)%72,py=386+(i%3)*5;r(px,py,9,3,'#ffffffaa')}
+ // Castle is firmly grounded on the grassy floor, with a stone foundation.
+ r(344,215,121,19,'#8298b8');r(355,204,98,14,'#bdc8e1');
+ r(363,117,82,93,'#a3b2d7');r(374,104,60,22,'#d5d8ed');
+ r(351,83,25,126,'#94a7d1');r(433,83,25,126,'#94a7d1');
+ r(388,67,34,142,'#b0bce0');r(393,55,24,18,'#e7e4f4');
+ for(const tx of [351,433]){r(tx-3,73,31,13,'#e6e2f1');for(let j=0;j<3;j++)r(tx+j*10-2,64,7,12,'#f5eaf7')}
+ for(let j=0;j<3;j++)r(390+j*11,45,8,13,'#f6ecf7');
+ r(402,26,4,21,'#f9f2d5');r(406,27,25,12,'#f4aecd');r(409,30,16,5,'#ffe4a7');
+ for(const [wx,wy] of [[359,111],[440,111],[393,95],[414,95],[362,156],[440,156]]){r(wx,wy,9,15,'#546e9d');r(wx+2,wy+2,5,11,'#fff0ac')}
+ r(391,164,27,46,'#526b9d');r(397,170,15,40,'#314b79');r(406,187,4,5,'#ffe2a0');
+ // Castle pathway lies on the same grass as the pond and character.
+ r(383,230,41,14,'#e5d6ac');r(392,244,23,10,'#dfd0a6');
+ // Decorative trees and crystals are planted on the island's grassy surface.
+ function skyTree(tx,ty,s=1){g.save();g.translate(tx,ty);g.scale(s,s);r(-5,-34,10,38,'#7e6275');r(-25,-59,50,29,'#4c9d8c');r(-20,-74,40,23,'#6cbea0');r(-12,-85,25,19,'#a2dbb2');r(-13,-62,8,5,'#e5f8c5');g.restore()}
+ skyTree(43,215,.7);skyTree(315,201,.66);skyTree(568,204,.78);skyTree(595,237,.56);
+ function crystal(cx,cy,h,color){const w=Math.max(6,h*.35);g.fillStyle=color;g.beginPath();g.moveTo(cx,cy-h);g.lineTo(cx+w,cy-h*.5);g.lineTo(cx+w,cy);g.lineTo(cx-w,cy);g.lineTo(cx-w,cy-h*.5);g.closePath();g.fill();r(cx-2,cy-h*.7,4,h*.5,'#e7ffff');islandGlow(cx,cy-h,'#efffff',2)}
+ for(const [px,py,h,col] of [[327,221,24,'#9c9aee'],[341,228,15,'#8cdeec'],[551,225,29,'#b09af1'],[575,234,18,'#8fe2e9'],[69,231,14,'#b8a9f5']])crystal(px,py,h,col);
+ // Phoenix nest remains at (490,158) with the same interaction and quest.
+ r(461,175,67,31,'#a28cbd');r(470,164,49,22,'#c6a3c7');
+ r(478,146,30,26,'#e8a15b');r(483,134,21,19,'#ffdc7e');r(489,127+Math.sin(sec*4)*3,11,14,'#fff3b0');
+ t(skyPhoenixUnlocked?'✓ PHOENIX FOUND':'🔥 PHOENIX NEST',491,223,12,'#684c80');
+ // Star chest stays at its existing interaction point (495,316).
+ r(452,289,90,63,'#b4a9d8');r(464,302,65,50,'#8172b3');
+ for(let i=0;i<5;i++)islandGlow(464+i*16,301+i%2*13,'#fff3bd',3);
  if(!skyChestOpened){r(480,328,33,17,'#eec66c');r(488,321,17,11,'#fff1b3')}
  t(skyChestOpened?'✓ TREASURE FOUND':'⭐ STAR CHEST',495,374,12,'#574d8b');
- // Airship landing platform.
- r(293,340,66,14,'#a17d5c');r(305,329,41,12,'#e0bd87');r(323,300,5,28,'#fff2d2');
- for(let i=0;i<10;i++){const px=42+i*57,py=246+(i%3)*12;r(px,py,6,5,i%2?'#f9b7d6':'#fff3a9');r(px+2,py-5,2,6,'#599f87')}
- for(let i=0;i<18;i++){const px=50+i*29,py=31+Math.sin(sec+i)*7;r(px,py,4,3,['#f5a9b5','#fff1ad','#b2e6ff'][i%3])}
- t('🎣 CLOUD FISHING',156,261,13,'#305b7c');
+ r(294,340,64,15,'#a88462');r(304,329,42,12,'#e0c28e');r(324,303,5,26,'#fff0d2');
+ for(let i=0;i<16;i++){const px=35+i*37,py=232+(i%3)*5;r(px,py,5,4,i%2?'#f7b6d5':'#fff2a3')}
+ t('🎣 CLOUD POND',155,264,13,'#305b7c');
  drawPet();character(x,y);
 }
 
