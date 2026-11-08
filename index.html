@@ -470,7 +470,34 @@ function building(p){
   r(x+w-24,y+96,4,4,'#f7d875');
 }
 function lake(){grass();r(0,0,408,270,'#328db0');for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
-for(let i=0;i<21;i++)r((i*57+12)%395,(i*43+18)%255,19,3,'#9adbe6');
+// Gentle water animation. Clip every effect inside the lake so the shore stays still.
+const waveTime=performance.now()/1000;
+g.save();
+g.beginPath();g.rect(0,0,407,269);g.clip();
+for(let i=0;i<24;i++){
+ const wx=(i*71+waveTime*(8+i%3*3))%428-16;
+ const wy=16+(i*43)%234;
+ const bob=Math.sin(waveTime*2+i)*2;
+ r(wx,wy+bob,14+i%3*4,2,i%4===0?'#a8e7ed':'#78cddd');
+ r(wx+6,wy+bob+5,8,1,'#4ba9c3');
+}
+for(let i=0;i<9;i++){
+ const bx=(i*47+23)%392;
+ const by=255-((waveTime*(9+i%3*4)+i*43)%239);
+ r(bx,by,3,3,'#b8eff0');
+}
+for(let i=0;i<3;i++){
+ const fx=(i*137+waveTime*(10+i*3))%444-22;
+ const fy=37+i*67+Math.sin(waveTime+i)*4;
+ r(fx-12,fy-2,23,5,'#337c9b');
+ r(fx-18,fy-4,8,9,'#337c9b');
+ r(fx+8,fy,5,2,'#2a6f91');
+}
+for(let i=0;i<20;i++){
+ const foam=Math.round(Math.sin(waveTime*2+i*.8)*2);
+ r(i*21,265+foam,12,2,'#bce6de');
+}
+g.restore();
 for(let i=0;i<6;i++){let xx=(i*63+21)%380,yy=55+i%3*58;r(xx,yy,19,8,i%2?'#f3c46a':'#9cd0dc');r(xx+18,yy-3,9,14,i%2?'#f3c46a':'#9cd0dc')}
 r(0,269,411,10,'#dfcd97');r(407,0,10,278,'#dfcd97');r(0,319,640,47,'#c8a679');
 r(208,152,277,83,'#60402a');for(let i=0;i<15;i++){r(214+i*18,158,16,72,i%2?'#b8854e':'#c9985d');r(218+i*18,162,8,3,'#e0b274')}for(let xx of [204,470]){r(xx,137,16,108,'#5e3f2b');r(xx,137,16,11,'#d8a267')}
@@ -482,7 +509,7 @@ r(443,66,167,38,'#4d3325');r(448,71,157,28,'#efd49b');t('FISH SHOP',526,90,16,'#
 for(let i=0;i<9;i++)r(431+i*21,123,11,22,'#f2e4bf');r(446,166,51,58,'#573b28');r(451,171,41,48,'#88cbd4');r(560,166,48,58,'#573b28');r(565,171,38,48,'#8bced2');
 r(506,165,43,110,'#563823');r(510,170,35,105,'#88542e');r(514,177,27,43,'#91c7ce');r(535,228,4,4,'#f4d179');
 
-if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156);g.stroke();r(154,152,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
+if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156+Math.sin(waveTime*3)*2);g.stroke();r(154,152+Math.sin(waveTime*3)*2,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
 }
 function cobblePath(px,py,w,h){
   // Clipping ensures the staggered cobbles stay inside paths and plazas.
@@ -838,7 +865,7 @@ const keys=new Set();
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;
+let prior=0,lastWaterDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
 const SAVE_KEY='little-fishing-village-save-v1';
 let saveReady=false;
@@ -912,7 +939,7 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(!room&&area==='lake'&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
