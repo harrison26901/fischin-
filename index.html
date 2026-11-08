@@ -780,24 +780,55 @@ function festivalJournal(){
 }
 function festivalScene(){
  const sec=performance.now()/1000;
- r(0,0,640,400,'#171b42');r(0,270,640,130,'#335b4d');
- for(let i=0;i<65;i++)r((i*113)%640,(i*59)%270,2+(i%3),2,'#e9e2b6');
- r(83,118,155,112,'#366c9c');r(99,132,122,82,'#428ca9');
- for(let i=0;i<7;i++){r(105+i*17,150+i%2*21,10,6,'#e8bf6d');r(109+i*17,155+i%2*21,3,4,'#fff5bb')}
- t('🌙 NIGHT FISHING',162,250,12,'#fff0b3');
- r(430,98,105,90,'#b05b80');r(442,84,82,20,'#edc98b');
- for(let i=0;i<8;i++){const a=sec*.7+i*Math.PI/4;r(480+Math.cos(a)*33,137+Math.sin(a)*32,11,11,i%2?'#f9d66d':'#8bdbe2')}
- r(475,132,13,13,'#f5e5ac');t('🎡 PRIZE WHEEL',480,222,12,'#ffe9b5');
- r(95,286,120,63,'#a96c55');r(89,276,132,17,'#f4b36c');
- for(let i=0;i<4;i++)r(105+i*26,294,15,21,i%2?'#f8d98b':'#a8dfd7');
- t('🏮 NIGHT MARKET',155,375,12,'#fff0b3');
- r(430,290,110,62,'#694e86');r(443,281,84,14,'#c68bc9');
- for(let i=0;i<9;i++){const px=452+(i*37)%80,py=249-(i*23)%65;r(px,py,4+i%3*3,4+i%3*3,['#f6c77b','#a9edff','#f2a0d2'][i%3])}
- t('🎆 FIREWORKS',483,375,12,'#fff0b3');
- for(let i=0;i<12;i++){const px=(i*57+sec*6)%640,py=270+(i*31)%110;r(px,py,8,10,'#f4c26f');r(px+2,py-6,4,7,'#ffeb9c')}
- // Festoon lights, fireworks bursts and decorative lantern strings.
- for(let i=0;i<22;i++){const px=i*30;r(px,48+Math.sin(i*.35)*13,5,7,['#ffd583','#ff9fc3','#9ee9ed'][i%3]);islandGlow(px+2,50+Math.sin(i*.35)*13,'#fff0c0',2)}
- for(let i=0;i<3;i++){const cx=100+i*210,cy=72+(i%2)*34;for(let j=0;j<8;j++){const a=j*Math.PI/4+sec*.3;r(cx+Math.cos(a)*18,cy+Math.sin(a)*18,5,5,['#ffdc87','#f6a5d3','#9adff2'][i%3])}}
+ // A moonlit festival village, with every stall resting on the ground.
+ const sky=g.createLinearGradient(0,0,0,400);
+ sky.addColorStop(0,'#0d1238');sky.addColorStop(.65,'#292451');sky.addColorStop(1,'#544c69');
+ g.fillStyle=sky;g.fillRect(0,0,640,400);
+ for(let i=0;i<75;i++){const px=(i*113)%640,py=(i*59)%258;r(px,py,2+i%3,2,'#e9e2c4')}
+ islandGlow(316,62,'#fff2bb',36);
+ g.fillStyle='#fff3c9';g.beginPath();g.arc(316,62,23,0,Math.PI*2);g.fill();
+ g.fillStyle='#16183f';g.beginPath();g.arc(327,54,20,0,Math.PI*2);g.fill();
+ // Village rooftops in the distance.
+ for(let i=0;i<11;i++){const px=i*66-14,h=29+(i%3)*15;r(px,236-h,61,h,'#252849');g.fillStyle='#353253';g.beginPath();g.moveTo(px-6,236-h);g.lineTo(px+30,217-h);g.lineTo(px+67,236-h);g.fill();r(px+19,225-h,9,12,'#f6cb80')}
+ // One continuous grassy plaza and lantern-lit paths.
+ r(0,264,640,136,'#31594e');r(0,280,640,120,'#426c56');
+ r(277,265,84,135,'#937e74');r(286,265,66,135,'#b29a83');
+ r(62,261,515,14,'#8c7c75');
+ for(let i=0;i<18;i++){const px=292+(i%3)*20,py=276+Math.floor(i/3)*21;r(px,py,12,3,'#d3b7a0')}
+ // Lake at the original night-fishing hotspot, embedded into the plaza.
+ g.fillStyle='#86aaa9';g.beginPath();g.ellipse(160,171,104,77,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#224e83';g.beginPath();g.ellipse(160,169,91,64,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#367ba1';g.beginPath();g.ellipse(160,167,78,51,0,0,Math.PI*2);g.fill();
+ for(let i=0;i<9;i++){const px=95+i*17,py=145+(i%3)*19;r(px,py,11,3,'#8fcbd4')}
+ for(let i=0;i<12;i++){const angle=i*Math.PI/6,rpx=160+Math.cos(angle)*101,rpy=171+Math.sin(angle)*73;r(rpx-6,rpy-2,12,5,'#9cc3a7')}
+ t('🌙 NIGHT FISHING',160,254,12,'#fff0b3');
+ // Prize wheel pavilion with a grounded stage.
+ r(416,182,132,18,'#634d67');r(424,192,117,8,'#a27775');
+ r(426,97,111,86,'#844c78');r(421,87,121,16,'#f6b982');
+ for(let i=0;i<8;i++){const angle=sec*.65+i*Math.PI/4;const px=480+Math.cos(angle)*33,py=140+Math.sin(angle)*33;r(px-6,py-6,13,13,['#f9d66d','#8bdbe2','#ef94b5','#b5a6fa'][i%4])}
+ g.fillStyle='#f7d99d';g.beginPath();g.arc(480,140,10,0,Math.PI*2);g.fill();
+ r(477,137,6,6,'#e07b61');r(475,176,11,12,'#f0c38e');
+ t('🎡 PRIZE WHEEL',480,223,12,'#ffe9b5');
+ // Night market has a proper counter, striped canopy and warm windows.
+ r(90,302,133,55,'#835a65');r(94,315,125,34,'#ad776b');
+ r(85,286,144,19,'#eeb77b');
+ for(let i=0;i<8;i++)r(87+i*18,287,15,17,i%2?'#ffe2a7':'#d77f92');
+ r(100,321,113,9,'#f1cb91');
+ for(let i=0;i<5;i++){const px=108+i*23;r(px,308,11,12,['#f4b5b8','#f9db85','#9edfd4'][i%3]);r(px+3,303,5,5,'#fff3c7')}
+ t('🏮 NIGHT MARKET',156,378,12,'#fff0b3');
+ // Fireworks stage is grounded on stone steps.
+ r(420,350,132,13,'#534566');r(429,341,114,12,'#7e6585');
+ r(433,291,105,52,'#725286');r(440,279,92,15,'#cf93c4');
+ for(let i=0;i<5;i++)r(446+i*18,305,11,23,i%2?'#f8ca9a':'#a8d5d9');
+ t('🎆 FIREWORKS',482,378,12,'#fff0b3');
+ // Lantern strings swoop across the sky and connect to wooden poles.
+ for(let i=0;i<3;i++){const px=48+i*280;r(px,65,7,205,'#594451');r(px-5,65,17,9,'#aa7c69')}
+ g.save();g.strokeStyle='#c9a78b';g.lineWidth=2;g.beginPath();g.moveTo(51,68);g.quadraticCurveTo(190,136,331,68);g.quadraticCurveTo(471,133,614,68);g.stroke();g.restore();
+ for(let i=0;i<23;i++){const px=54+i*25,py=68+Math.sin(i/22*Math.PI*2)*32;r(px-4,py,10,13,['#ffd583','#ff9fc3','#9ee9ed'][i%3]);r(px-2,py+3,6,6,'#fff4c2');islandGlow(px,py+7,'#ffdb9d',3)}
+ // Firework bursts in the upper sky, with twinkling sparks.
+ for(let i=0;i<3;i++){const cx=100+i*218,cy=51+(i%2)*29;for(let j=0;j<12;j++){const angle=j*Math.PI/6+sec*.25,rad=18+Math.sin(sec*2+i)*4;r(cx+Math.cos(angle)*rad,cy+Math.sin(angle)*rad,4,4,['#ffdc87','#f6a5d3','#9adff2'][i%3])}islandGlow(cx,cy,'#fff1c6',5)}
+ // Ground lanterns line the walkable path.
+ for(let i=0;i<10;i++){const px=262+(i%2)*111,py=276+Math.floor(i/2)*25;r(px-3,py,8,13,'#b9764f');r(px-1,py-5,4,7,'#ffe9a0');islandGlow(px,py,'#ffdb8b',3)}
  drawPet();character(x,y);
 }
 
