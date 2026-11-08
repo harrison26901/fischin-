@@ -137,7 +137,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
 <div id="save-controls"><button id="save-game" type="button">💾 Save Game</button><button id="load-game" type="button">📂 Load Game</button><button id="delete-save" type="button">🗑️ Delete Save</button><small id="save-status" role="status" aria-live="polite">Autosave enabled</small></div>
-<div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
+<div class="hud"><span>⭐ <b id="quest-status">0/3</b></span><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
 <button id="collection-open" type="button" title="Open your collection book (C)">📖 Collection Book</button>
 <div id="collection-modal" hidden role="dialog" aria-modal="true" aria-labelledby="collection-heading">
@@ -251,12 +251,6 @@ let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(
 const discoveredFish=new Set();
 const discoveredTreasures=new Set();
 const treasureCards=[
- ['pearl','Giant Pearl',325,'🦪','Rare'],
- ['compass','Pearl Compass',120,'🧭','Rare'],
- ['anchor','Golden Anchor',2000,'⚓','Legendary'],
- ['clock','Antique Clock',350,'🕰️','Uncommon'],
- ['chest','Mystery Chest',800,'📦','Rare'],
- ['trophy','Captain Finn Trophy',600,'🏆','Rare'],
  ['reel','Silver Reel',225,'⚙️','Uncommon'],
  ['hat','Bucket Hat',75,'👒','Common'],
  ['aquarium','Aquarium',250,'🐠','Uncommon'],
@@ -281,7 +275,7 @@ function cardEmoji(name,rarity){
 }
 function renderCollection(){
  const all=collectionType==='fish'?[...fish,...mythicFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
- treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)||(id==='compass'&&bid)}));
+ treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)}));
  const filter=$('collection-query').value.trim().toLowerCase(),only=$('collection-found-only').checked;
  const filtered=all.filter(v=>(!filter||v.name.toLowerCase().includes(filter))&&(!only||v.found));
  const pages=Math.max(1,Math.ceil(filtered.length/cardsPerPage));
@@ -317,6 +311,22 @@ $('collection-found-only').onchange=()=>{collectionPage=0;renderCollection()};
 $('collection-prev').onclick=()=>{collectionPage--;renderCollection()};
 $('collection-next').onclick=()=>{collectionPage++;renderCollection()};
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
+let totalCaught=0,questLevel=0;
+const fishingQuests=[
+ {goal:3,reward:60,title:'First Three Fish'},
+ {goal:10,reward:250,title:'Village Angler'},
+ {goal:25,reward:900,title:'Seasoned Fisher'},
+ {goal:50,reward:2500,title:'Fishing Legend'}
+];
+function recordCatch(){
+ totalCaught++;
+ const quest=fishingQuests[questLevel];
+ if(quest&&totalCaught>=quest.goal){
+  coins+=quest.reward;questLevel++;
+  return ' ⭐ QUEST COMPLETE: '+quest.title+'! Bonus +'+quest.reward+' coins.';
+ }
+ return '';
+}
 let reelProgress=0,lineTension=0,lastReelPress=0,fishResistance=1,lastBiteAt=0;
 function updateFishingDisplay(){
  $('reel-percent').textContent=Math.round(reelProgress)+'%';
@@ -335,9 +345,9 @@ function fishingDifficulty(f){
  return f[1]>=65?1.15:1;
 }
 function landFish(){
- bag.push(pending);discoveredFish.add(pending[0]);phase='caught';celebrateFish(pending);
+ bag.push(pending);discoveredFish.add(pending[0]);phase='caught';const bonus=recordCatch();celebrateFish(pending);
  panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!',
- 'Worth '+pending[1].toLocaleString('en-GB')+' coins. Great catch!',[['Fish again',fishAction],['Visit Fish Shop',()=>enter('fishshop')]]);
+ 'Worth '+pending[1].toLocaleString('en-GB')+' coins. Great catch!'+bonus,[['Fish again',fishAction],['Visit Fish Shop',()=>enter('fishshop')]]);
  hud();
 }
 function loseFish(reason){
@@ -413,7 +423,7 @@ function drawHeldRod(px,py){
 }
 function grass(){r(0,0,640,400,'#8fbd75');for(let i=0;i<95;i++)r((i*79+12)%640,(i*61+13)%400,6,3,'#74aa64')}
 function building(p){
-  const x=p.x,y=p.y,w=p.id==='auction'?167:145;
+  const x=p.x,y=p.y,w=145;
   const isShop=!p.cost;
   const walls={bait:'#f3d697',rod:'#a9794a',};
   const trims={bait:'#e5a952',rod:'#4e7f85',};
@@ -458,7 +468,9 @@ function building(p){
   r(x+w-39,y+75,23,40,p.id==='bait'?'#b57b4f':p.id==='rod'?'#426b73':'#82512e');
   r(x+w-24,y+96,4,4,'#f7d875');
 }
-function lake(){grass();r(0,0,408,270,'#328db0');for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
+function lake(){grass();r(0,0,408,270,'#328db0');
+const shimmer=performance.now()*.001;
+for(let i=0;i<16;i++){const xx=(i*73+39)%390,yy=(i*41+30)%250;const off=Math.sin(shimmer*1.2+i)*3;r(xx+off,yy,12,2,'#8bd6e0');}for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
 for(let i=0;i<21;i++)r((i*57+12)%395,(i*43+18)%255,19,3,'#9adbe6');
 for(let i=0;i<6;i++){let xx=(i*63+21)%380,yy=55+i%3*58;r(xx,yy,19,8,i%2?'#f3c46a':'#9cd0dc');r(xx+18,yy-3,9,14,i%2?'#f3c46a':'#9cd0dc')}
 r(0,269,411,10,'#dfcd97');r(407,0,10,278,'#dfcd97');r(0,319,640,47,'#c8a679');
@@ -544,6 +556,17 @@ function village(){
   }
   for(const xy of [[244,302],[742,307],[244,430],[741,433],[82,323],[1005,323]])lantern(xy[0],xy[1]);
   villageBench(295,422);villageBench(774,415);
+  // Flowering picnic spots in the two newly opened village squares.
+  for(const site of [{x:350,y:540},{x:600,y:80}]){
+    r(site.x-4,site.y,128,108,'#87ae74');
+    for(let i=0;i<15;i++){
+      const fx=site.x+10+(i*37)%105,fy=site.y+9+(i*29)%87;
+      flower(fx,fy,['#f4d27c','#f69cbe','#c5a8eb'][i%3]);
+    }
+    r(site.x+21,site.y+48,80,11,'#ccad79');
+    r(site.x+27,site.y+59,7,12,'#866347');
+    r(site.x+86,site.y+59,7,12,'#866347');
+  }
   // Flower planters around Captain Finn's fountain.
   r(490,300,116,116,'#b7a48b');r(497,307,102,102,'#d9c9b0');
   r(504,313,90,87,'#77969a');r(509,318,80,77,'#6ec2cd');
@@ -611,7 +634,7 @@ else{
 }
 g.restore();
 }
-function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+function hud(){$('quest-status').textContent=questLevel<fishingQuests.length?totalCaught+'/'+fishingQuests[questLevel].goal:'COMPLETE';$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X with a steady rhythm. Let the tension drop between pulls.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -751,7 +774,7 @@ function near(){
   if(x>490&&x<610&&y>297&&y<420)return 'statue';
   // Stand beside a building or outside its doorway and press A.
   let p=places.find(b=>{
-    const w=b.id==='auction'?167:145;
+    const w=145;
     const left=b.x-20,right=b.x+w+20,top=b.y+8,bottom=b.y+143;
     return x>=left&&x<=right&&y>=top&&y<=bottom;
   });
@@ -778,7 +801,7 @@ function blocked(nx,ny){
   }
   // All village house and shop walls are solid.
   for(const b of places){
-    const w=b.id==='auction'?167:145;
+    const w=145;
     if(hitsBox(nx,ny,b.x,b.y+12,w,103))return true;
   }
   // Captain Finn and fountain are solid too.
@@ -826,7 +849,7 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>mov
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;
+let prior=0,lastSceneryDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
 const SAVE_KEY='little-fishing-village-save-v1';
 let saveReady=false;
@@ -837,7 +860,7 @@ function saveGame(automatic=false){
   const snapshot={
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
-   coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
+   coins,bait,rod,totalCaught,questLevel,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -869,6 +892,8 @@ function loadGame(manual=false){
  coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
  rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
+ totalCaught=Math.max(0,Math.floor(Number(data.totalCaught)||0));
+ questLevel=Math.max(0,Math.min(fishingQuests.length,Math.floor(Number(data.questLevel)||0)));
  const knownFish=new Map([...fish,...mythicFish].map(([name,value])=>[name,value]));
  bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
@@ -900,7 +925,7 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(!room&&area==='lake'&&time-lastSceneryDraw>90){draw();lastSceneryDraw=time}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
