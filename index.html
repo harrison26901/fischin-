@@ -713,7 +713,7 @@ const rodPaint=[
  ['#eea63d','#f9eea0'],
  ['#31a9cf','#c9f4ff'],['#7652cc','#e2c7ff'],['#d14428','#ffcb65'],
  ['#71d5ed','#e8fcff'],['#282044','#b49dff'],['#6961e0','#ffe4fa'],
- ['#1679a3','#a0fbf4'],['#eccfa0','#ffffff'],['#e9c24b','#bffbff'],['#aa63ff','#ffe67a']
+ ['#1679a3','#a0fbf4'],['#eccfa0','#ffffff'],['#e9c24b','#bffbff'],['#18b96c','#ffdc58']
 ];
 function drawHeldRod(px,py){
  const colour=rodPaint[Math.min(rod,rodPaint.length-1)];
@@ -739,8 +739,22 @@ function drawHeldRod(px,py){
  r(handleX-2,handleY-11,6,5,colour[1]);
  r(handleX-7,handleY-7,7,3,'#d8a76f');
  if(ownerAccess&&rod===OWNER_ROD_INDEX){
-  r(tipX-11,tipY-12,22,18,'#8d55d7');r(tipX-8,tipY-9,16,12,'#ffde6c');
-  r(tipX-3,tipY-15,6,6,'#f9f3ff');r(handleX-8,handleY-14,16,5,'#b781ec');
+  const glowTime=performance.now()/1000;
+  g.save();g.shadowColor='#55ff93';g.shadowBlur=13+Math.sin(glowTime*4)*5;
+  g.strokeStyle='#70ffa5';g.lineWidth=6;
+  g.beginPath();g.moveTo(handleX,handleY);g.lineTo(tipX,tipY);g.stroke();
+  g.shadowColor='#ffdb43';g.shadowBlur=18+Math.sin(glowTime*3)*5;
+  r(tipX-9,tipY-10,18,15,'#108d4a');r(tipX-6,tipY-7,12,9,'#ffdf54');
+  r(handleX-8,handleY-14,16,5,'#d1ae48');
+  g.restore();
+  for(let i=0;i<6;i++){
+   const sparkleTime=glowTime*2.5+i*1.6;
+   const fraction=(Math.sin(sparkleTime)+1)/2;
+   const sx=handleX+(tipX-handleX)*fraction+Math.cos(sparkleTime*1.3)*8;
+   const sy=handleY+(tipY-handleY)*fraction+Math.sin(sparkleTime*1.5)*7;
+   r(sx-3,sy,7,2,i%2?'#fce86d':'#a0ffb2');
+   r(sx,sy-3,2,7,i%2?'#fce86d':'#a0ffb2');
+  }
  }
  if(rod>=4){r(tipX-3,tipY-4,7,7,colour[1]);r(tipX-1,tipY-7,3,13,'#fff6d0')}
  if(rod>=9){r(tipX-7,tipY-1,15,2,colour[1]);r(tipX-1,tipY-8,2,15,colour[1])}
@@ -1306,7 +1320,7 @@ let prior=0,lastWaterDraw=0;
 const SAVE_KEY='little-fishing-village-save-v1';
 // This is a bearer-link unlock for this static browser game, not strong account authentication.
 // Keep the private unlock link secret. The GitHub source contains only its SHA-256 digest.
-const OWNER_HASH='6cceaaeb5119caa2e9eda8b3dc72c1bb078d70fbd79455e2606cbd5cef8e75f0';
+const OWNER_HASH='67dffbb03e6228d595078bb53a95e5ffef5adf03288cc5ca34b7cf0be01d7c55';
 const OWNER_LOCAL_KEY='little-fishing-village-owner-unlock-v1';
 const OWNER_COINS=Number('111111111111111111111');
 let ownerAccess=false,ownerPreviousRod=0;
@@ -1328,7 +1342,7 @@ async function redeemOwnerLink(){
   // Remove the token from the URL after redeeming, so it is not copied accidentally.
   try{window.history?.replaceState(null,'',window.location.pathname+window.location.search)}catch(e){}
   hud();draw();saveGame(false);
-  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod is equipped! Only this browser has your owner unlock. You also have your special coin balance. The purple-and-gold rod makes fishing easier and boss battles quicker.');
+  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod is equipped! Only this browser has your owner unlock. You also have your special coin balance. The glowing green-and-gold rod makes fishing easier and boss battles quicker.');
  }catch(e){panel('🔒 Owner unlock','Could not verify the private unlock link in this browser.')}
 }
 
@@ -1424,7 +1438,7 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(((!room&&(area==='lake'||area==='sea'))||(room==='fishshop'&&aquariumViewing))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
