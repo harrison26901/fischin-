@@ -7,7 +7,7 @@ button,input{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padd
 nav,.hud,.controls,.actions,.locations{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}nav button{flex:1}nav button.active{background:#8ac1a0}.hud span{background:#355448;border-radius:8px;padding:9px;flex:1;text-align:center}
 canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;background:#80b471;border:5px solid #5a755b;border-radius:12px;touch-action:none}
 .card{background:#304940;border:1px solid #627968;padding:14px;border-radius:12px;margin:10px 0}.actions>div{flex:1;min-width:110px}.locations button{flex:1;min-width:95px}
-.controls{justify-content:space-between;align-items:center}.pad{display:grid;grid-template-columns:repeat(3,45px);gap:4px}.pad button{padding:9px;background:#54695e;color:white}.face{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);align-items:center;justify-items:center}.face button{border-radius:50%;width:43px;height:43px;background:#192d2b;color:white;border:2px solid #819489;padding:0}
+.controls{justify-content:flex-end;align-items:center}.pad{display:grid;grid-template-columns:repeat(3,45px);gap:4px}.pad button{padding:9px;background:#54695e;color:white}.face{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);align-items:center;justify-items:center}.face button{border-radius:50%;width:43px;height:43px;background:#192d2b;color:white;border:2px solid #819489;padding:0}
 .meter{height:32px;background:#b76f62;border:3px solid #d0ae84;border-radius:7px;position:relative;overflow:hidden}.target{position:absolute;top:0;bottom:0;background:#7acd72}.needle{position:absolute;top:0;bottom:0;width:6px;background:#fff}
 #timing,#reeling{display:none}#primary{width:100%;background:#91d28b}#name{width:100%;padding:9px;border-radius:7px;background:#fff8e5;border:0;color:#342514}
 
@@ -652,7 +652,7 @@ function redrawMenu(){
 function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
+function tab(name){token++;phase='ready';keys.clear();room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
 function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
 function leave(){room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
@@ -673,7 +673,9 @@ if(p&&p.cost){
 }
 if(room==='fishshop'){
  const total=bag.reduce((sum,f)=>sum+f[1],0);
- panel('🐟 Fresh Fish Market','Your '+bag.length+' fish are worth '+total+' coins. Pick a service!',[
+ const nextQuest=fishingQuests[questLevel];
+ const questText=nextQuest?' ⭐ Current quest: '+nextQuest.title+' — catch '+nextQuest.goal+' fish total for '+nextQuest.reward+' bonus coins. Progress: '+totalCaught+'/'+nextQuest.goal+'.':' ⭐ You have completed every fishing quest!';
+ panel('🐟 Fresh Fish Market','Your '+bag.length+' fish are worth '+total+' coins. Pick a service!'+questText,[
   ['🪙 Sell all fish — +'+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],
   ['🪱 Buy 3 bait — 20',()=>{if(coins<20)return need(20);coins-=20;bait+=3;hud();visit()}],
   [collectibles.has('aquarium')?'🐠 Aquarium — owned':'🐠 Aquarium — 250',()=>buyItem('aquarium','Aquarium',250)],
@@ -847,7 +849,23 @@ document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
+window.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}
+ if(!$('collection-modal').hidden)return;
+ if(e.target.tagName==='INPUT')return;
+ if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}
+ const k=e.key.toLowerCase();
+ if(room&&shopping&&(keyMap[k]==='up'||keyMap[k]==='down')){
+  e.preventDefault();keys.delete(keyMap[k]);
+  if(!e.repeat)menuStep(keyMap[k]);
+  return;
+ }
+ if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}
+ else if(k===' '){e.preventDefault();if(!e.repeat)press('x')}
+ else if(k==='e'||k==='enter'){e.preventDefault();if(!e.repeat)press('a')}
+ else if(k==='tab'){e.preventDefault();if(!e.repeat)press('y')}
+ else if(k==='escape'){e.preventDefault();if(!e.repeat)press('b')}
+});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
 let prior=0,lastSceneryDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
