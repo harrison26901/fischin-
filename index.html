@@ -98,47 +98,6 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 @keyframes rare-burst{0%{opacity:0;transform:translate(0,0) scale(.2) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.6) rotate(160deg)}}
 @media(prefers-reduced-motion:reduce){#rare-celebration *,#rare-celebration,#rare-celebration::before,#rare-celebration::after{animation:none!important}}
 
-#captain-tools{position:absolute;z-index:30;right:12px;top:58px;font:14px system-ui}
-#captain-tools[hidden],#captain-panel[hidden]{display:none}
-#captain-toggle{padding:8px 12px;background:#e4c174;color:#29352c}
-#captain-panel{width:min(330px,calc(100vw - 24px));margin-top:6px;padding:13px;background:#183b37f5;border:2px solid #e4c174;border-radius:10px;box-shadow:0 9px 25px #122a27a8}
-#captain-panel p{font-size:12px;margin:6px 0}
-#captain-panel .captain-row{display:flex;gap:5px}
-#captain-panel button{font-size:12px;padding:7px}
-#captain-panel input{width:75%;min-width:0;border:0;border-radius:6px;background:#fff4d6;color:#1f3025;padding:8px;margin:8px 0}
-#captain-panel small{display:block;font-size:11px}
-#collection-open{position:absolute;z-index:7;top:53px;right:12px;background:#f0d99d;color:#3f3024;border:2px solid #7a5734;padding:8px 10px;font-weight:900}
-#collection-modal[hidden]{display:none}
-#collection-modal{position:absolute;inset:0;z-index:50;background:#0b1819d8;display:flex;align-items:center;justify-content:center;padding:10px}
-.collection-book{display:flex;flex-direction:column;gap:10px;background:#e5c99a;color:#3f2d22;border:6px double #785232;border-radius:16px;width:min(850px,97vw);max-height:96%;padding:clamp(9px,2vw,20px);box-shadow:0 12px 0 #402e25,0 18px 50px #000b;overflow:hidden}
-.collection-header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid #9b754b;padding-bottom:8px}
-.collection-header strong{display:block;font-size:clamp(18px,3vw,27px)}
-.collection-header small{color:#6a5039;display:block;font-size:12px}
-.collection-header button{padding:6px 11px}
-.collection-tabs{display:flex;gap:8px}
-.collection-tabs button{flex:1;background:#aa865c;color:#2c221e;padding:9px 6px;font-size:clamp(12px,2vw,15px)}
-.collection-tabs button.active{background:#4f715d;color:#fff8d5}
-.collection-search{display:flex;align-items:center;gap:9px;justify-content:space-between;font-size:12px;flex-wrap:wrap}
-.collection-search input[type=search]{min-width:120px;flex:1;background:#fff7e5;border:2px solid #a27a4f;border-radius:8px;color:#2f2a24;padding:9px}
-.collection-search label{white-space:nowrap}
-.collection-cards{min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:4px}
-.collection-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:5px;min-height:153px;padding:10px 5px;color:#fff8eb;background:linear-gradient(150deg,#54798a,#274655);border:3px solid #d5b47c;border-radius:12px;box-shadow:inset 0 0 0 2px #ffffff24,0 3px 5px #65452f45}
-.collection-card.mythic{background:linear-gradient(135deg,#482568,#8347a0 60%,#4e2c73);border-color:#ffdd82}
-.collection-card.legendary{background:linear-gradient(135deg,#215a86,#397fa3);border-color:#90e2ff}
-.collection-card.rare{background:linear-gradient(135deg,#647f3b,#85a05b);border-color:#b6f0a2}
-.collection-card.locked{filter:saturate(.2);background:linear-gradient(140deg,#727078,#4d5055);border-color:#a09d98}
-.collection-card .art{font-size:clamp(28px,5vw,48px);line-height:1.2}
-.collection-card strong{font-size:clamp(11px,1.6vw,15px);overflow-wrap:anywhere}
-.collection-card .tier{font-size:10px;font-weight:800;letter-spacing:.05em}
-.collection-card .price{font-size:12px;color:#ffea9c}
-.collection-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:2px solid #a9855a;padding-top:8px}
-.collection-footer button{padding:8px 11px}
-.collection-footer button:disabled{opacity:.4;cursor:default}
-@media(max-width:650px){.collection-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-card{min-height:130px}.collection-book{max-height:95%}#collection-open{top:8px;right:56px;font-size:11px;padding:6px}#captain-tools{top:84px}}
-#pawn-shoot{position:absolute;z-index:8;right:20px;bottom:145px;background:#a63b3e;border:3px solid #ffd49f;color:white;font-size:20px;box-shadow:0 5px 16px #0009}
-#pawn-shoot[hidden]{display:none}
-#pawn-shoot:active{transform:scale(.95)}
-@media(max-width:900px){#pawn-shoot{right:8px;bottom:150px;font-size:15px;padding:8px}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -150,17 +109,6 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
   </div>
 </div>
 <main id="game-screen">
-<div id="captain-tools" hidden>
- <button type="button" id="captain-toggle" aria-expanded="false">⚓ Admin</button>
- <section id="captain-panel" hidden aria-label="Captain admin commands">
-   <strong>⚓ Captain Commands</strong>
-   <p>Only shown through your special admin link.</p>
-   <div class="captain-row"><button type="button" data-command="money">♾️ Money</button><button type="button" data-command="luck">🍀 Luck</button><button type="button" data-command="bag">🎒 Bag</button></div>
-   <input id="captain-input" placeholder="e.g. give bertha 3" aria-label="Admin command" autocomplete="off">
-   <button type="button" id="captain-run">Run</button>
-   <small id="captain-feedback">Commands: money, luck, bag, bait 50, give bertha 1, rod max, help</small>
- </section>
-</div>
 <div id="rare-celebration" aria-live="polite" role="status" aria-atomic="true">
  <div class="rare-panel">
   <div class="rare-tier" id="rare-tier">RARE CATCH!</div>
@@ -246,10 +194,8 @@ const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000]];
-const adminMode=new URLSearchParams(location.search).get('captain')==='1';
-let infiniteLuck=adminMode,infiniteBag=adminMode;
-let area='lake',room='',x=430,y=307,coins=adminMode?Infinity:100,bait=8,rod=0,bag=adminMode?[['Big Bertha',200000]]:[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
-const discoveredFish=new Set(adminMode?['Big Bertha']:[]);
+let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+const discoveredFish=new Set();
 const discoveredTreasures=new Set();
 const treasureCards=[
  ['pearl','Giant Pearl',325,'🦪','Rare'],
@@ -792,7 +738,7 @@ else{
 }
 g.restore();
 }
-function hud(){$('pawn-shoot').hidden=room!=='pawn'||!pawnOwned;$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/'+(infiniteBag?'∞':'15');$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+function hud(){$('pawn-shoot').hidden=room!=='pawn'||!pawnOwned;$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'Press X when the moving white marker is in the BIG green zone.',reeling:'Press X three times to reel your fish in.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -917,11 +863,10 @@ function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
 if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);discoveredFish.add(pending[0]);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!','Worth '+pending[1].toLocaleString('en-GB')+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
 
-if(!infiniteBag&&bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
+if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
 if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
 phase='waiting';needle=0;direction=1;targetWidth=Math.min(88,54+rod*3);target=10+Math.random()*(80-targetWidth);const roll=Math.random();
-pending=infiniteLuck?mythicFish[Math.floor(Math.random()*mythicFish.length)]:
-  roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
+pending=roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
 const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
 setTimeout(()=>{if(id!==token||phase!=='waiting')return;phase='timing';hud();panel('‼️ FISH ON!','Stop the moving marker in green.')},850)}
 function near(){
@@ -1016,31 +961,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal'
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
 let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
-function adminCommand(raw){
- if(!adminMode)return;
- const parts=raw.trim().toLowerCase().split(/\s+/);
- const cmd=parts[0]||'help';let reply='';
- if(cmd==='money'){coins=Infinity;reply='Unlimited coins activated!'}
- else if(cmd==='luck'){infiniteLuck=true;reply='Every catch is a random mythic!'}
- else if(cmd==='bag'){infiniteBag=true;reply='Unlimited backpack activated!'}
- else if(cmd==='bait'){const n=Math.max(1,Math.min(100000,Number(parts[1])||50));bait+=n;reply='Added '+n+' bait.'}
- else if(cmd==='rod'&&parts[1]==='max'){rod=rods.length-1;reply='Ultimate rod equipped!'}
- else if(cmd==='give'){
-  const count=Math.max(1,Math.min(100,Number(parts[parts.length-1])||1));
-  const term=parts.slice(1,parts[parts.length-1]&&/^\d+$/.test(parts[parts.length-1])? -1:undefined).join(' ');
-  const matches=[...fish,...mythicFish].filter(v=>v[0].toLowerCase().includes(term||'bertha'));
-  if(matches.length){for(let i=0;i<count;i++)bag.push(matches[0]);discoveredFish.add(matches[0][0]);reply='Added '+count+' '+matches[0][0]+'!'}
-  else reply='Fish not found. Try give bertha 1.';
- }else reply='Try: money, luck, bag, bait 50, rod max, give bertha 1, help';
- $('captain-feedback').textContent=reply;hud();draw();
-}
-if(adminMode){
- $('captain-tools').hidden=false;
- $('captain-toggle').onclick=()=>{const box=$('captain-panel');box.hidden=!box.hidden;$('captain-toggle').setAttribute('aria-expanded',String(!box.hidden))};
- $('captain-run').onclick=()=>adminCommand($('captain-input').value);
- $('captain-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopPropagation();adminCommand(e.target.value)}});
- document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>adminCommand(b.dataset.command));
-}
 $('fullscreenToggle').onclick=async()=>{
  try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}}catch(e){console.warn('Fullscreen unavailable',e)}
 };
