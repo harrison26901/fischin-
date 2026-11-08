@@ -118,7 +118,14 @@ if(!p.cost){
   r(x+7,y+44,w-14,31,'#513621');r(x+11,y+48,w-22,23,'#8ac4d0');r(x+Math.floor(w/2)-2,y+48,4,23,'#513621');
 }
 r(x+13,y+84,33,23,'#513621');r(x+17,y+87,25,18,'#85c4d1');
-r(x+w-43,y+71,31,44,'#533520');r(x+w-39,y+75,23,40,'#82512e');r(x+w-24,y+96,4,4,'#f7d875')}
+r(x+w-43,y+71,31,44,'#533520');r(x+w-39,y+75,23,40,'#82512e');r(x+w-24,y+96,4,4,'#f7d875');
+if(p.id==='pawn'){
+  // Sale placard stays visible until the 10,000-coin purchase.
+  r(x+5,y+79,95,44,'#503925');r(x+9,y+83,87,36,pawnOwned?'#abd7a4':'#fff0be');
+  t(pawnOwned?'SOLD!':'FOR SALE',x+52,y+99,12,'#453123');
+  t(pawnOwned?'YOUR SHOP':'10,000 COINS',x+52,y+113,10,'#453123');
+}
+}
 function lake(){grass();r(0,0,408,270,'#328db0');for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
 for(let i=0;i<21;i++)r((i*57+12)%395,(i*43+18)%255,19,3,'#9adbe6');
 for(let i=0;i<6;i++){let xx=(i*63+21)%380,yy=55+i%3*58;r(xx,yy,19,8,i%2?'#f3c46a':'#9cd0dc');r(xx+18,yy-3,9,14,i%2?'#f3c46a':'#9cd0dc')}
