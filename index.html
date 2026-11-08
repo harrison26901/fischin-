@@ -411,23 +411,57 @@ function skyPhoenixQuest(){
  panel('🔥 PHOENIX UNLOCKED!','Sol the legendary Phoenix has joined your pets! Equip Sol at the Pet Adoption Centre.');
 }
 function skyScene(){
- const sec=performance.now()/1000;r(0,0,640,400,'#81c9f0');
- for(let i=0;i<22;i++){const px=(i*97+sec*6)%720-70,py=(i*71)%380;r(px,py,75,17,'#e8f9ff');r(px+18,py-13,43,17,'#fff')}
- r(18,258,606,142,'#9fd4a4');r(39,244,558,30,'#effff9');
- r(80,130,174,112,'#9ceaf5');r(98,147,139,82,'#65c3e6');
- for(let i=0;i<9;i++)r(104+i*15,160+i%3*12,11,3,'#dcfaff');
- t('🎣 CLOUD FISHING',166,261,13,'#305b7c');
- r(437,110,107,95,'#a9bbdf');r(447,91,85,30,'#f8e4bb');
- r(475,117,39,56,'#ed8d4e');r(481,103,27,26,'#ffd56a');r(484,94,21,16,'#fff0ab');
+ const sec=performance.now()/1000;
+ // Layered sky, drifting clouds and distant floating islands.
+ const gradient=g.createLinearGradient(0,0,0,400);
+ gradient.addColorStop(0,'#679de5');gradient.addColorStop(.52,'#b6e9f9');gradient.addColorStop(1,'#e8f9e9');
+ g.fillStyle=gradient;g.fillRect(0,0,640,400);
+ for(let i=0;i<9;i++){
+  const cx=(i*103+sec*(3+i%3))%780-90,cy=32+(i*47)%175;
+  r(cx,cy,105,19,'#ffffffaa');r(cx+21,cy-13,56,19,'#ffffffbb');r(cx+12,cy+16,77,10,'#eaf7ff99');
+ }
+ for(let i=0;i<4;i++){const ix=55+i*172,iy=98+i%2*34;r(ix,iy,95,15,'#b3d9e2');r(ix+16,iy+15,66,23,'#8ea7c7');r(ix+31,iy+37,35,13,'#7793b5')}
+ // A giant floating island with an overhanging mossy rim and a rocky underside.
+ g.fillStyle='#6586a2';g.beginPath();g.moveTo(18,257);g.lineTo(620,257);g.lineTo(557,318);g.lineTo(448,346);g.lineTo(334,380);g.lineTo(215,348);g.lineTo(97,314);g.closePath();g.fill();
+ for(let i=0;i<20;i++){const px=44+i*28,py=282+Math.sin(i*.6)*25;r(px,py,24,13,i%3?'#8099b5':'#9fb5c9')}
+ r(18,247,606,25,'#76bd91');r(30,237,580,16,'#a9e2a5');r(43,231,552,9,'#e1f6b9');
+ for(let i=0;i<20;i++){const px=36+i*29;r(px,251,13,8,i%3?'#4e9c87':'#b3eaa6')}
+ // Cloud Lake stays at its original fishing coordinates (165,180).
+ g.fillStyle='#63c7e9';g.beginPath();g.ellipse(165,179,95,60,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#9eeaf6';g.beginPath();g.ellipse(165,173,81,45,0,0,Math.PI*2);g.fill();
+ for(let i=0;i<14;i++){const px=95+i*11,py=150+(i%4)*16;r(px,py,13,3,'#e5ffff')}
+ // Animated waterfall: flows from Cloud Lake, over the island edge and into the clouds.
+ // Drawn as several moving translucent streams, with bright ripples and foam.
+ const fallX=227,fallY=185,fallW=56;
+ r(fallX-7,fallY-7,fallW+14,13,'#c9faff');
+ g.save();g.beginPath();g.rect(fallX,fallY,fallW,215);g.clip();
+ const water=g.createLinearGradient(fallX,0,fallX+fallW,0);
+ water.addColorStop(0,'#4bafe1');water.addColorStop(.22,'#b4f3ff');water.addColorStop(.52,'#6dcfea');water.addColorStop(.83,'#e6ffff');water.addColorStop(1,'#3f9acb');
+ g.fillStyle=water;g.fillRect(fallX,fallY,fallW,215);
+ for(let i=0;i<20;i++){
+  const wx=fallX+3+(i*17)%(fallW-9),wy=fallY+(i*31+sec*(55+i%4*15))%232;
+  r(wx,wy,2+i%3*2,16+i%4*9,i%3?'#d9faff':'#75cce9');
+ }
+ for(let i=0;i<9;i++){const wy=fallY+(i*37+sec*73)%215;r(fallX+7,wy,fallW-14,2,'#f5ffff88')}
+ g.restore();
+ for(let i=0;i<14;i++){const px=fallX-14+(i*19)%85,py=367+(i%3)*8;r(px,py,9,3,'#ffffffaa')}
+ for(let i=0;i<9;i++){const px=fallX+Math.sin(sec*2+i)*24+25,py=245+(i*29+sec*21)%155;r(px,py,4,5,'#e9ffff')}
+ // Phoenix sanctuary and its golden flame.
+ r(424,111,128,102,'#9eacd8');r(435,94,106,23,'#e8dbf1');
+ r(466,128,51,63,'#a17eb0');r(477,115,30,31,'#eab06e');
+ r(479,105,27,20,'#ffdf80');r(485,96+Math.sin(sec*4)*3,15,16,'#fff4ad');
+ for(let i=0;i<6;i++){const px=449+i*18;r(px,197,10,8,'#d8b4d8')}
  t(skyPhoenixUnlocked?'✓ PHOENIX FOUND':'🔥 PHOENIX NEST',489,225,12,'#684c80');
- r(459,288,80,64,'#b4a5d9');r(478,306,43,44,'#806db4');
+ // Star treasure alcove.
+ r(450,288,92,65,'#a79bd1');r(463,300,68,53,'#7f72b1');
+ for(let i=0;i<5;i++)islandGlow(462+i*16,301+i%2*12,'#fff5bf',3);
  if(!skyChestOpened){r(480,328,33,17,'#eec66c');r(488,321,17,11,'#fff1b3')}
  t(skyChestOpened?'✓ TREASURE FOUND':'⭐ STAR CHEST',495,374,12,'#574d8b');
- r(283,343,73,16,'#8b694c');r(301,328,37,15,'#c8a36a');r(317,303,5,26,'#f8e9c5');
- // Floating gardens, rainbow paths and glowing sky crystals.
- for(let i=0;i<7;i++){const px=25+i*89,py=55+(i%3)*22;r(px,py,57,9,'#f5fffd');r(px+8,py+9,42,6,'#c7e6e9');r(px+18,py-9,6,11,'#e7f7ff');islandGlow(px+22,py-11,'#fff9ce',3)}
- for(let i=0;i<12;i++){const px=35+i*48,py=283+(i%4)*18;r(px,py,6,5,i%2?'#f7b3d3':'#fff2a5');r(px+2,py-5,2,6,'#579f87')}
- for(let i=0;i<18;i++){const px=70+i*27,py=38+Math.sin(sec+i)*6;r(px,py,5,3,['#f5a9b5','#fff1ad','#b2e6ff'][i%3])}
+ // Airship landing platform.
+ r(293,340,66,14,'#a17d5c');r(305,329,41,12,'#e0bd87');r(323,300,5,28,'#fff2d2');
+ for(let i=0;i<10;i++){const px=42+i*57,py=246+(i%3)*12;r(px,py,6,5,i%2?'#f9b7d6':'#fff3a9');r(px+2,py-5,2,6,'#599f87')}
+ for(let i=0;i<18;i++){const px=50+i*29,py=31+Math.sin(sec+i)*7;r(px,py,4,3,['#f5a9b5','#fff1ad','#b2e6ff'][i%3])}
+ t('🎣 CLOUD FISHING',156,261,13,'#305b7c');
  drawPet();character(x,y);
 }
 
