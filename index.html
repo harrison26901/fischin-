@@ -108,6 +108,11 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #tension-fill{background:linear-gradient(90deg,#81d494 0%,#f0da76 48%,#f17f72 90%)}
 #fishingPanel .bite-alert{color:#fff1ac;animation:bite-pulse .35s ease-in-out infinite alternate}
 @keyframes bite-pulse{to{color:#fff;transform:scale(1.03)}}
+#save-controls{position:absolute;z-index:8;top:110px;right:12px;display:flex;flex-direction:column;gap:5px;align-items:stretch;width:146px}
+#save-controls button{font-size:12px;padding:8px 9px;color:#fff9dc;background:#244a43df;border:1px solid #a1c9ad;border-radius:8px}
+#save-status{text-align:center;color:#ffefc8;background:#163b37e0;padding:4px;border-radius:6px;font-size:10px}
+@media(max-width:900px){#save-controls{top:82px;right:7px;width:119px}#save-controls button{font-size:10px;padding:6px}#save-status{font-size:9px}}
+@media(max-width:550px) and (orientation:portrait){#save-controls{top:auto;bottom:166px;width:112px}#save-controls button{font-size:10px;padding:5px}#save-status{font-size:9px}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -130,6 +135,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 </div>
 
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
+<div id="save-controls"><button id="save-game" type="button">💾 Save Game</button><button id="load-game" type="button">📂 Load Game</button><small id="save-status" role="status" aria-live="polite">Autosave enabled</small></div>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
 <button id="collection-open" type="button" title="Open your collection book (C)">📖 Collection Book</button>
@@ -1118,7 +1124,80 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>mov
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){
+let prior=0;
+// Local-only game saves. Inventory and unlocks survive a reload in this browser.
+const SAVE_KEY='little-fishing-village-save-v1';
+let saveReady=false;
+function showSaveStatus(message){$('save-status').textContent=message}
+function saveGame(automatic=false){
+ if(!saveReady)return false;
+ try{
+  const snapshot={
+   version:1,savedAt:Date.now(),area,
+   x:room?outdoorX:x,y:room?outdoorY:y,
+   coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
+   owned:[...owned],bid,pawnOwned,treasureOwned,
+   collectibles:[...collectibles],discoveredFish:[...discoveredFish],
+   discoveredTreasures:[...discoveredTreasures],
+   equipped:{...equipped},shopName,shopColor,
+   customerServed,authenticAppraisals,fakeDetected,robbersStopped
+  };
+  localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot));
+  showSaveStatus((automatic?'Autosaved ':'Saved ')+new Date(snapshot.savedAt).toLocaleTimeString());
+  return true;
+ }catch(error){
+  showSaveStatus('Saving unavailable in this browser');
+  return false;
+ }
+}
+function loadGame(manual=false){
+ let data;
+ try{
+  const raw=localStorage.getItem(SAVE_KEY);
+  if(!raw){showSaveStatus(manual?'No saved game found':'New game · autosave on');return false}
+  data=JSON.parse(raw);
+  if(!data||data.version!==1)throw Error('Invalid save version');
+  if(!Array.isArray(data.bag)||!Array.isArray(data.owned)||!Array.isArray(data.collectibles))throw Error('Invalid save');
+ }catch(error){showSaveStatus('Could not read saved game');return false}
+ // Reset transient action states to avoid resuming in the middle of an encounter.
+ token++;phase='ready';pending=null;room='';shopping=false;menu=[];
+ robberActive=false;nextRobbery=0;pawnCustomer=null;nextCustomerAt=0;
+ keys.clear();reelProgress=0;lineTension=0;
+ area=data.area==='village'?'village':'lake';
+ x=Math.max(12,Math.min(area==='village'?VILLAGE_W-12:625,Number(data.x)||430));
+ y=Math.max(30,Math.min(area==='village'?VILLAGE_H-30:365,Number(data.y)||307));
+ coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
+ bait=Math.max(0,Math.floor(Number(data.bait)||0));
+ rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
+ const knownFish=new Map([...fish,...mythicFish].map(([name,value])=>[name,value]));
+ bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
+ owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
+ bid=Boolean(data.bid);pawnOwned=Boolean(data.pawnOwned);treasureOwned=Boolean(data.treasureOwned);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium']);
+ collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
+ discoveredFish.clear();
+ for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
+ for(const item of bag)discoveredFish.add(item[0]);
+ discoveredTreasures.clear();
+ for(const id of (Array.isArray(data.discoveredTreasures)?data.discoveredTreasures:[]))if(typeof id==='string')discoveredTreasures.add(id);
+ const previousOutfits=data.equipped&&typeof data.equipped==='object'?data.equipped:{};
+ for(const slot of ['head','body','feet']){
+  const id=previousOutfits[slot];
+  equipped[slot]=clothes.some(item=>item.id===id&&item.slot===slot)&&collectibles.has(id)?id:null;
+ }
+ shopName=typeof data.shopName==='string'?data.shopName:'The Lucky Minnow';
+ shopColor=typeof data.shopColor==='string'?data.shopColor:'#587b63';
+ customerServed=Math.max(0,Math.floor(Number(data.customerServed)||0));
+ authenticAppraisals=Math.max(0,Math.floor(Number(data.authenticAppraisals)||0));
+ fakeDetected=Math.max(0,Math.floor(Number(data.fakeDetected)||0));
+ robbersStopped=Math.max(0,Math.floor(Number(data.robbersStopped)||0));
+ hud();draw();panel('📂 Game loaded!', 'Welcome back! Your coins, fish, rods, clothes, homes, treasures and achievements are restored.');
+ showSaveStatus('Loaded '+new Date(data.savedAt||Date.now()).toLocaleTimeString());
+ return true;
+}
+$('save-game').onclick=()=>saveGame(false);
+$('load-game').onclick=()=>loadGame(true);
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
@@ -1137,6 +1216,11 @@ $('fullscreenToggle').onclick=async()=>{
  try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}}catch(e){console.warn('Fullscreen unavailable',e)}
 };
 document.addEventListener('fullscreenchange',()=>{$('fullscreenToggle').textContent=document.fullscreenElement?'⤢':'⛶'});
-hud();draw();requestAnimationFrame(frame);
+saveReady=true;
+if(!loadGame(false)){hud();draw()}
+setInterval(()=>saveGame(true),10000);
+window.addEventListener('pagehide',()=>saveGame(true));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame(true)});
+requestAnimationFrame(frame);
 })();
 </script></body></html>
