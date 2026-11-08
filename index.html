@@ -1004,10 +1004,13 @@ let aquariumFish=[],aquariumViewing=false;
 function drawVillagers(){
  for(const v of villagers){
   character(v.x,v.y,true);
-  r(v.x-11,v.y,22,15,v.color);
-  t(v.name,v.x,v.y-30,12,'#fff5db');
+  r(v.x-12,v.y+1,24,16,v.color);
+  r(v.x-4,v.y+2,8,11,'#fff4cc');
+  r(v.x-14,v.y+3,5,12,v.color);r(v.x+9,v.y+3,5,12,v.color);
+  r(v.x-13,v.y+13,5,5,'#e6ae82');r(v.x+8,v.y+13,5,5,'#e6ae82');
+  t(v.name,v.x,v.y-36,12,'#fff5db');
   const q=villagerQuests[v.id];
-  t(q&&q.done?'✓':q&&q.accepted?'?':'!',v.x+16,v.y-20,19,q&&q.done?'#b9f4bb':'#ffdf75');
+  t(q&&q.done?'✓':q&&q.accepted?'?':'!',v.x+18,v.y-23,19,q&&q.done?'#b9f4bb':'#ffdf75');
  }
 }
 function nearbyVillager(){
@@ -1371,27 +1374,41 @@ function tree(x,y){
  r(x+9,y,30,27,'#6aa35a')
 }
 function character(x,y,npc=false){
- r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
- r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
- if(!npc){
-  const body=clothes.find(item=>item.id===equipped.body);
-  const feet=clothes.find(item=>item.id===equipped.feet);
-  const head=clothes.find(item=>item.id===(equipped.head||(collectibles.has('hat')?'hat':null)));
-  if(body){
-   r(x-11,y,22,18,body.color);r(x-16,y+1,5,13,body.color);r(x+11,y+1,5,13,body.color);
-   r(x-3,y+1,6,11,body.id==='mythiccoat'?'#ffd5f6':'#e6e3bc');
-   if(body.id==='vest'){r(x-8,y+5,6,7,'#dbb66e');r(x+3,y+5,6,7,'#dbb66e')}
-   if(body.id==='mythiccoat'){r(x-10,y+11,5,5,'#fff3a7');r(x+7,y+3,4,4,'#ffe8ab')}
-  }
-  if(feet){r(x-9,y+23,9,7,feet.color);r(x+1,y+23,9,7,feet.color)}
-  drawHeldRod(x,y);
-  if(head){
-   if(head.id==='hat'){r(x-9,y-29,18,4,head.color);r(x-11,y-25,22,8,'#729b66');r(x-15,y-20,30,5,'#567f52')}
-   else if(head.id==='cap'){r(x-11,y-27,22,9,head.color);r(x-13,y-20,27,4,head.color)}
-   else if(head.id==='beanie'){r(x-10,y-28,20,11,head.color);r(x-13,y-19,26,5,'#e68d95');r(x-3,y-33,6,6,'#f5b3b3')}
-   else if(head.id==='crown'){r(x-11,y-22,23,7,'#edc35e');r(x-12,y-30,5,9,'#fff0a8');r(x-3,y-35,6,15,'#ffde61');r(x+7,y-30,5,9,'#fff0a8')}
-  }
+ // Layered 16-bit character sprites: hair, skin, eyes, hands, clothing and animated footsteps.
+ const walk=!npc&&keys.size>0?Math.sin(performance.now()/105)*2:0;
+ const skin=npc?'#e6ae82':'#efbb91',shade=npc?'#ba805e':'#ce916c';
+ const hair=npc?'#6b4837':'#61422b',shirt=npc?'#5d9f90':'#df9e3f';
+ const body=!npc?clothes.find(item=>item.id===equipped.body):null;
+ const feet=!npc?clothes.find(item=>item.id===equipped.feet):null;
+ const head=!npc?clothes.find(item=>item.id===(equipped.head||(collectibles.has('hat')?'hat':null))):null;
+ g.save();
+ r(x-13,y+28,27,5,'#243b4855');
+ r(x-9,y+15+walk,8,14,feet?feet.color:'#405e82');r(x+2,y+15-walk,8,14,feet?feet.color:'#405e82');
+ r(x-11,y+26+walk,11,5,'#342f42');r(x+1,y+26-walk,11,5,'#342f42');
+ r(x-13,y-1,26,20,body?body.color:shirt);
+ r(x-15,y+1,6,14,body?body.color:shirt);r(x+9,y+1,6,14,body?body.color:shirt);
+ r(x-16,y+12,6,6,skin);r(x+10,y+12,6,6,skin);
+ r(x-9,y+16,18,3,'#ffffff55');
+ r(x-11,y-20,22,23,skin);r(x-11,y-15,3,12,shade);r(x+8,y-15,3,12,shade);
+ r(x-13,y-25,26,10,hair);r(x-14,y-18,5,12,hair);r(x+9,y-18,5,9,hair);
+ r(x-7,y-12,5,5,'#fff8ed');r(x+3,y-12,5,5,'#fff8ed');
+ r(x-5,y-11,3,4,'#283a4b');r(x+5,y-11,3,4,'#283a4b');
+ r(x-7,y-15,6,2,'#523a35');r(x+3,y-15,6,2,'#523a35');
+ r(x-8,y-5,4,2,'#eaa5a0');r(x+5,y-5,4,2,'#eaa5a0');
+ r(x-2,y-2,5,2,'#9d615c');
+ if(body){
+  r(x-4,y+2,8,13,body.id==='mythiccoat'?'#f7d4ff':'#f4e5bf');
+  if(body.id==='vest'){r(x-10,y+6,7,7,'#dbb66e');r(x+3,y+6,7,7,'#dbb66e')}
+  if(body.id==='mythiccoat'){r(x-11,y+12,6,6,'#fff3a7');r(x+7,y+4,5,5,'#ffe8ab')}
  }
+ if(head){
+  if(head.id==='hat'){r(x-11,y-30,22,9,head.color);r(x-17,y-23,34,5,'#729b66');r(x-7,y-28,14,3,'#fff0b2')}
+  else if(head.id==='cap'){r(x-12,y-29,24,10,head.color);r(x-14,y-21,29,5,head.color);r(x+7,y-26,4,3,'#fff4cf')}
+  else if(head.id==='beanie'){r(x-12,y-30,24,12,head.color);r(x-14,y-21,28,5,'#e68d95');r(x-4,y-35,8,7,'#f5b3b3')}
+  else if(head.id==='crown'){r(x-12,y-23,24,8,'#edc35e');r(x-12,y-32,6,11,'#fff0a8');r(x-3,y-37,7,16,'#ffde61');r(x+7,y-32,6,11,'#fff0a8');r(x-3,y-23,6,5,'#a9e9ff')}
+ }
+ if(!npc)drawHeldRod(x,y);
+ g.restore();
 }
 // The equipped rod is visible in the player's hand and changes with every upgrade.
 const rodPaint=[
@@ -1776,23 +1793,50 @@ function petShop(){
 }
 function drawPet(){
  if(!activePet||area==='sea'||area==='dive')return;
- const p=petTypes.find(p=>p.id===activePet);if(!p)return;
- const px=petX,py=petY;
- r(px-10,py-5,20,13,p.color);r(px-7,py-13,14,13,p.color);
- r(px-12,py-12,6,9,p.id==='penguin'?'#344959':p.color);
- r(px+6,py-12,6,9,p.id==='penguin'?'#344959':p.color);
- r(px-5,py-8,3,3,'#25313a');r(px+3,py-8,3,3,'#25313a');
- r(px-3,py-2,6,4,p.id==='penguin'?'#e6aa65':'#f2d9ba');
- r(px-8,py+8,5,6,'#483e3c');r(px+4,py+8,5,6,'#483e3c');
- if(p.id==='dragon'||p.id==='golden-dragon'){r(px+10,py-2,13,7,p.legendary?'#ffe8a4':'#b8e28a');r(px-4,py-20,8,9,p.legendary?'#fff0ba':'#d9f2ac')}
- if(p.id==='ghost-fox'){r(px-14,py-19,8,13,'#e9faff');r(px+7,py-19,8,13,'#e9faff');r(px+9,py+1,16,7,'#b9e8f6')}
- if(p.id==='star-unicorn'){r(px-2,py-25,5,13,'#fff3a4');r(px+10,py+1,13,5,'#f4d2fc')}
- if(p.id==='phoenix'){r(px-20,py-9,13,16,'#f8cc67');r(px+8,py-9,13,16,'#f8cc67');r(px-5,py-24,10,15,'#ffdf8a')}
- if(p.id==='royal-seahorse'){r(px+8,py-19,8,18,'#a7fff0');r(px+13,py-12,9,6,'#76dfd1');r(px-10,py+6,8,11,'#8ff0dc')}
- if(p.legendary){const sparkle=Math.sin(performance.now()/240);r(px-17,py-22+sparkle*2,4,4,'#fff6bf');r(px+15,py-19-sparkle*2,4,4,'#ffffff')}
- if(p.id==='penguin')r(px-6,py-2,12,11,'#e9f0e5');
- if(p.id==='dog')r(px+9,py+1,11,4,'#b48a5d');
- if(p.id==='cat')r(px+9,py+1,13,4,'#b99bbd');
+ const p=petTypes.find(item=>item.id===activePet);if(!p)return;
+ const px=petX,py=petY,sec=performance.now()/1000;
+ const bob=Math.sin(sec*4)*2;
+ g.save();g.translate(0,bob);
+ r(px-14,py+13,29,4,'#233c4b55');
+ if(p.id==='royal-seahorse'){
+  r(px-3,py-22,13,23,'#76dfd1');r(px+7,py-19,11,8,'#9affec');r(px-8,py-2,15,16,'#5cbcae');
+  r(px-14,py+6,9,9,'#8cf4e1');r(px-6,py+12,10,5,'#a6fff0');
+  r(px+2,py-15,4,4,'#223d52');r(px-5,py-27,5,9,'#b9fff1');
+ }else if(p.id==='phoenix'){
+  r(px-12,py-5,24,20,'#e47a39');r(px-18,py-14,13,20,'#ffd16e');r(px+6,py-14,13,20,'#ffb44e');
+  r(px-7,py-23,14,21,'#f4b353');r(px-5,py-31,8,11,'#ffe98b');r(px-3,py-18,4,4,'#253749');
+  r(px+4,py-14,10,5,'#fff0ad');r(px-8,py+13,5,6,'#794b39');r(px+4,py+13,5,6,'#794b39');
+ }else if(p.id==='penguin'){
+  r(px-12,py-15,24,30,'#283c51');r(px-8,py-10,16,23,'#f1f5ee');
+  r(px-7,py-17,5,5,'#f7f6e8');r(px+3,py-17,5,5,'#f7f6e8');
+  r(px-5,py-16,3,3,'#1a2635');r(px+5,py-16,3,3,'#1a2635');
+  r(px-5,py-8,10,5,'#eeb364');r(px-11,py+13,9,5,'#e7a85d');r(px+3,py+13,9,5,'#e7a85d');
+ }else if(p.id==='dragon'||p.id==='golden-dragon'){
+  r(px-13,py-8,27,22,p.color);r(px-8,py-21,19,18,p.color);
+  r(px-21,py-12,12,17,p.id==='golden-dragon'?'#fff0b2':'#b7e6a6');
+  r(px+11,py-12,12,17,p.id==='golden-dragon'?'#ffe69a':'#b7e6a6');
+  r(px-7,py-29,6,11,'#f8ebba');r(px+5,py-29,6,11,'#f8ebba');
+  r(px-4,py-16,4,4,'#26374b');r(px+6,py-16,4,4,'#26374b');
+  r(px-6,py+13,8,6,'#5d614c');r(px+6,py+13,8,6,'#5d614c');
+  r(px+13,py+5,15,7,p.color);
+ }else if(p.id==='star-unicorn'){
+  r(px-13,py-5,27,18,p.color);r(px-8,py-18,18,17,p.color);
+  r(px-3,py-35,7,18,'#fff1a1');r(px-12,py-26,8,11,'#e9d2ff');r(px+6,py-26,8,11,'#e9d2ff');
+  r(px+3,py-13,4,4,'#35445d');r(px+13,py+2,16,8,'#f8d9ff');
+  r(px-9,py+12,7,8,'#a890c9');r(px+6,py+12,7,8,'#a890c9');
+ }else{
+  const fox=p.id==='ghost-fox',cat=p.id==='cat';
+  r(px-13,py-6,27,20,p.color);r(px-10,py-19,20,18,p.color);
+  r(px-13,py-28,9,15,p.color);r(px+5,py-28,9,15,p.color);
+  r(px-10,py-25,5,7,fox?'#ffffff':'#edb5ba');r(px+6,py-25,5,7,fox?'#ffffff':'#edb5ba');
+  r(px-6,py-15,4,4,'#28394a');r(px+5,py-15,4,4,'#28394a');
+  r(px-3,py-7,7,5,'#f6e3ce');r(px-1,py-6,3,3,'#5d4b4b');
+  r(px-11,py+13,8,7,'#665451');r(px+5,py+13,8,7,'#665451');
+  r(px+12,py+3,17,6,fox?'#e9fbff':cat?'#b99bbd':'#c49c6d');
+  if(!cat&&!fox){r(px-15,py-17,6,13,'#9d7554');r(px+10,py-17,6,13,'#9d7554')}
+ }
+ if(p.legendary){for(let i=0;i<4;i++){const a=sec*2+i*Math.PI/2;r(px+Math.cos(a)*23,py-8+Math.sin(a)*19,4,4,i%2?'#fff6bd':'#b5f7ff')}}
+ g.restore();
 }
 function updatePet(dt){
  if(!activePet||area==='sea'||area==='dive')return;
