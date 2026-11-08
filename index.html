@@ -114,6 +114,11 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #save-status{text-align:center;color:#ffefc8;background:#163b37e0;padding:4px;border-radius:6px;font-size:10px}
 @media(max-width:900px){#save-controls{top:82px;right:7px;width:119px}#save-controls button{font-size:10px;padding:6px}#save-status{font-size:9px}}
 @media(max-width:550px) and (orientation:portrait){#save-controls{top:auto;bottom:166px;width:112px}#save-controls button{font-size:10px;padding:5px}#save-status{font-size:9px}}
+
+/* CSS-only immersive mode avoids Escape/B exiting native browser fullscreen. */
+#game-screen.focus-mode .game-title,#game-screen.focus-mode .helpText{display:none}
+#game-screen.focus-mode #save-controls{opacity:.22;transition:opacity .18s}
+#game-screen.focus-mode #save-controls:hover,#game-screen.focus-mode #save-controls:focus-within{opacity:1}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -166,7 +171,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 <div class="controls"><div><div class="face"><button data-key="y" style="grid-column:2;grid-row:1;color:#e5cc5d">Y</button><button data-key="x" style="grid-column:1;grid-row:2;color:#89c7ef">X</button><button data-key="a" style="grid-column:3;grid-row:2;color:#85e6a0">A</button><button data-key="b" style="grid-column:2;grid-row:3;color:#ee8f89">B</button></div><small>STEAM DECK BUTTONS</small></div></div>
 
-<small class="helpText">Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Keyboard: WASD/arrows move, E/Enter interact, Space fish, Tab backpack, Escape leave. On-screen ABXY buttons remain; use Up/Down for shop menus.</small>
+<small class="helpText">Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Keyboard: WASD/arrows move, E/Enter interact, Space fish, Tab backpack, B/Escape back. Steam Deck B may exit browser-native fullscreen; use the game-view button instead. On-screen ABXY buttons remain; use Up/Down for shop menus.</small>
 </main>
 
 <script>
@@ -1361,10 +1366,19 @@ if(phase==='reeling'){
  else updateFishingDisplay();
 }for(let k of keys)move(k);requestAnimationFrame(frame)}
 
-$('fullscreenToggle').onclick=async()=>{
- try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}}catch(e){console.warn('Fullscreen unavailable',e)}
+// Use a CSS game-focus view instead of the browser Fullscreen API.
+// Steam Deck / controller B is often mapped to Escape, which the browser uses
+// to leave native fullscreen even when JavaScript prevents the key event.
+let gameFocusMode=false;
+$('fullscreenToggle').title='Toggle distraction-free game view (B will not exit)';
+$('fullscreenToggle').onclick=e=>{
+ e.preventDefault();
+ gameFocusMode=!gameFocusMode;
+ $('game-screen').classList.toggle('focus-mode',gameFocusMode);
+ $('fullscreenToggle').textContent=gameFocusMode?'⤢':'⛶';
+ $('fullscreenToggle').setAttribute('aria-label',gameFocusMode?'Show game interface':'Hide extra interface');
+ $('world').focus({preventScroll:true});
 };
-document.addEventListener('fullscreenchange',()=>{$('fullscreenToggle').textContent=document.fullscreenElement?'⤢':'⛶'});
 saveReady=true;
 if(!loadGame(false)){hud();draw()}
 setInterval(()=>saveGame(true),10000);
