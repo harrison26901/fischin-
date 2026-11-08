@@ -442,12 +442,14 @@ function skyScene(){
   for(let j=0;j<4;j++){const fx=-16+j*11,fy=-55-(j%2)*17;r(fx,fy,5,5,j%2?'#f6b4d7':'#fff2a3')}
   g.restore();
  }
- skyTree(49,239,.8);skyTree(335,232,.9);skyTree(393,242,.7);skyTree(581,239,.85);
  // A giant floating island with an overhanging mossy rim and a rocky underside.
  g.fillStyle='#6586a2';g.beginPath();g.moveTo(18,257);g.lineTo(620,257);g.lineTo(557,318);g.lineTo(448,346);g.lineTo(334,380);g.lineTo(215,348);g.lineTo(97,314);g.closePath();g.fill();
  for(let i=0;i<20;i++){const px=44+i*28,py=282+Math.sin(i*.6)*25;r(px,py,24,13,i%3?'#8099b5':'#9fb5c9')}
  r(18,247,606,25,'#76bd91');r(30,237,580,16,'#a9e2a5');r(43,231,552,9,'#e1f6b9');
  for(let i=0;i<20;i++){const px=36+i*29;r(px,251,13,8,i%3?'#4e9c87':'#b3eaa6')}
+ // Soft mossy paths and trees frame the attractions without blocking them.
+ r(292,231,105,12,'#e4d8ad');r(391,230,145,12,'#e4d8ad');
+ skyTree(49,239,.8);skyTree(335,232,.9);skyTree(393,242,.7);skyTree(581,239,.85);
  // Cloud Lake stays at its original fishing coordinates (165,180).
  g.fillStyle='#63c7e9';g.beginPath();g.ellipse(165,179,95,60,0,0,Math.PI*2);g.fill();
  g.fillStyle='#9eeaf6';g.beginPath();g.ellipse(165,173,81,45,0,0,Math.PI*2);g.fill();
@@ -492,8 +494,8 @@ function skyScene(){
  }
  for(const [cx,cy,h,col] of [[322,219,31,'#8e8df1'],[342,228,21,'#9fe8fa'],[559,225,35,'#a59bf2'],[583,232,25,'#75d7e9'],[70,234,24,'#a6a4f5'],[305,280,17,'#a1f0ef'],[546,275,19,'#c5a5ff']])skyCrystal(cx,cy,h,col);
  for(let i=0;i<14;i++){const px=330+(i*19)%260,py=237+(i%3)*8;islandGlow(px,py-8,i%2?'#b5f8ff':'#e9c8ff',2)}
- // Phoenix sanctuary and its golden flame.
- r(424,111,128,102,'#9eacd8');r(435,94,106,23,'#e8dbf1');
+ // Phoenix sanctuary and its golden flame, in front of the castle.
+ r(455,121,85,83,'#9eacd8');r(464,109,67,18,'#e8dbf1');
  r(466,128,51,63,'#a17eb0');r(477,115,30,31,'#eab06e');
  r(479,105,27,20,'#ffdf80');r(485,96+Math.sin(sec*4)*3,15,16,'#fff4ad');
  for(let i=0;i<6;i++){const px=449+i*18;r(px,197,10,8,'#d8b4d8')}
@@ -2486,7 +2488,7 @@ $('delete-save').onclick=()=>{
 };
 $('scuba-button').addEventListener('click',beginScubaDive);
 $('surface-button').addEventListener('click',()=>surfaceFromDive());
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
