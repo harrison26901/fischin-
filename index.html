@@ -109,6 +109,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #fishingPanel .bite-alert{color:#fff1ac;animation:bite-pulse .35s ease-in-out infinite alternate}
 @keyframes bite-pulse{to{color:#fff;transform:scale(1.03)}}
 #save-controls{position:absolute;z-index:8;top:110px;right:12px;display:flex;flex-direction:column;gap:5px;align-items:stretch;width:146px}
+#save-controls #delete-save{background:#683b37ea;border-color:#e6a999}
 #save-controls button{font-size:12px;padding:8px 9px;color:#fff9dc;background:#244a43df;border:1px solid #a1c9ad;border-radius:8px}
 #save-status{text-align:center;color:#ffefc8;background:#163b37e0;padding:4px;border-radius:6px;font-size:10px}
 @media(max-width:900px){#save-controls{top:82px;right:7px;width:119px}#save-controls button{font-size:10px;padding:6px}#save-status{font-size:9px}}
@@ -135,7 +136,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 </div>
 
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
-<div id="save-controls"><button id="save-game" type="button">💾 Save Game</button><button id="load-game" type="button">📂 Load Game</button><small id="save-status" role="status" aria-live="polite">Autosave enabled</small></div>
+<div id="save-controls"><button id="save-game" type="button">💾 Save Game</button><button id="load-game" type="button">📂 Load Game</button><button id="delete-save" type="button">🗑️ Delete Save</button><small id="save-status" role="status" aria-live="polite">Autosave enabled</small></div>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
 <button id="collection-open" type="button" title="Open your collection book (C)">📖 Collection Book</button>
@@ -1195,8 +1196,16 @@ function loadGame(manual=false){
  showSaveStatus('Loaded '+new Date(data.savedAt||Date.now()).toLocaleTimeString());
  return true;
 }
-$('save-game').onclick=()=>saveGame(false);
+$('save-game').onclick=()=>{saveReady=true;saveGame(false)};
 $('load-game').onclick=()=>loadGame(true);
+$('delete-save').onclick=()=>{
+ if(!confirm('Delete your saved game? This cannot be undone. Your current play session will stay open.'))return;
+ try{
+  localStorage.removeItem(SAVE_KEY);
+  saveReady=false;
+  showSaveStatus('Save deleted. Press Save to save again.');
+ }catch(error){showSaveStatus('Could not delete saved game')}
+};
 function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
