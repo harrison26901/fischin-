@@ -444,9 +444,48 @@ if(room==='fishshop')t('TODAY\'S CATCH',320,195,14,'#25464d');
 character(320,149,true);
 r(275,350,91,50,theme.trim);
 }
+
+function pawnFirstPerson(){
+ // A first-person pixel-art shop, with depth toward the back counter.
+ r(0,0,640,400,'#493c3d');
+ g.fillStyle='#625248';g.beginPath();g.moveTo(0,0);g.lineTo(155,100);g.lineTo(155,260);g.lineTo(0,400);g.fill();
+ g.fillStyle='#5b4a41';g.beginPath();g.moveTo(640,0);g.lineTo(485,100);g.lineTo(485,260);g.lineTo(640,400);g.fill();
+ r(155,99,330,161,'#806b59');
+ g.fillStyle='#a58b69';g.beginPath();g.moveTo(155,260);g.lineTo(485,260);g.lineTo(640,400);g.lineTo(0,400);g.fill();
+ // Perspective floorboards and rugs.
+ for(let i=0;i<=8;i++){g.strokeStyle='#755a49';g.lineWidth=2;g.beginPath();g.moveTo(320,260);g.lineTo(i*80,400);g.stroke()}
+ r(184,290,271,73,'#814b56');r(193,299,253,55,'#ab6d70');r(209,306,221,4,'#e2b47b');
+ // Ceiling, beams and lantern.
+ r(0,0,640,45,'#342e33');r(0,44,640,12,'#9d764e');r(309,37,20,38,'#9d764e');
+ r(292,76,55,14,'#e7c26f');r(302,88,35,18,'#ffdf89');
+ // Left antique shelves taper into the distance.
+ r(10,91,133,222,'#4c382d');r(25,104,108,185,'#77563d');
+ for(let j=0;j<3;j++)r(24,145+j*61,115,9,'#b18758');
+ r(41,119,38,32,'#c7ad79');r(51,128,17,17,'#e9ddac');r(57,130,5,13,'#634b3a');
+ r(84,186,31,21,'#73a9a1');r(45,249,61,26,'#d8ac69');
+ // Right side display: gems and antique treasures.
+ r(500,93,133,220,'#473830');r(509,104,113,187,'#765b44');
+ for(let j=0;j<3;j++)r(506,147+j*59,122,9,'#b18758');
+ r(543,120,39,32,'#c9a76b');r(553,125,20,22,'#fff0ab');
+ r(527,177,43,30,'#6caccd');r(579,180,27,23,'#e899b8');
+ r(545,244,50,27,'#e2ae63');r(558,251,24,13,'#eacb91');
+ // Back wall sign, shopkeeper, counter.
+ r(211,112,218,52,'#48372e');r(218,119,204,38,'#dfbe83');
+ t(pawnOwned?'YOUR PAWN SHOP':'PAWN SHOP',320,145,19,'#382d27');
+ r(295,176,49,37,'#e4af7b');r(300,165,39,16,'#503a2e');r(288,211,64,38,'#647563');
+ r(231,234,178,17,'#503929');r(208,250,224,52,'#956943');r(219,263,201,21,'#bf9261');
+ t('BUY  •  SELL  •  TRADE',320,278,13,'#fff2cc');
+ // Small aiming crosshair and player hands at screen edge.
+ r(315,187,10,2,'#fff9dc');r(319,183,2,10,'#fff9dc');
+ r(0,350,67,50,'#d5a07c');r(573,350,67,50,'#d5a07c');
+ // Move camera a little when the player walks, without showing the avatar.
+ const sway=Math.round((x-319)*.13);
+ if(sway!==0){r(Math.max(0,320+sway-3),392,6,4,'#e4bd83')}
+}
 function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
-if(room){interior();character(x,y)}
+if(room==='pawn'){pawnFirstPerson()}
+else if(room){interior();character(x,y)}
 else if(area==='lake'){lake();character(x,y)}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
@@ -474,7 +513,7 @@ function panel(a,b,options=[]){$('heading').textContent=a;$('message').textConte
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
 function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
+function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;hud();draw();visit()}
 function leave(){room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
@@ -627,7 +666,8 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(room){
+function interact(){if(room==='pawn'){if(!shopping){shopping=true;visit()}else menuSelect();return}
+if(room){
  if(shopping){menuSelect();return}
  if(y>337){leave();return}
  if(y<=305&&y>=253&&x>=185&&x<=455){shopping=true;visit();return}
