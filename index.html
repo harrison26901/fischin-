@@ -107,7 +107,7 @@ function character(x,y){r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');r
 function grass(){r(0,0,640,400,'#8fbd75');for(let i=0;i<95;i++)r((i*79+12)%640,(i*61+13)%400,6,3,'#74aa64')}
 function building(p){let x=p.x,y=p.y,w=p.id==='auction'?167:145,h=115;
 r(x,y+21,w,h-21,'#ab7c4d');for(let i=0;i<6;i++)r(x+5,y+35+i*13,w-10,3,'#80522f');r(x-5,y+12,w+10,20,p.col);r(x+9,y+4,w-18,15,p.col);
-r(x+7,y+44,w-14,31,'#433325');r(x+11,y+48,w-22,23,'#ffe7b0');t(p.name,x+w/2,y+65,p.name.length>11?11:13,'#38291e');
+r(x+7,y+44,w-14,31,'#513621');r(x+11,y+48,w-22,23,'#8ac4d0');r(x+Math.floor(w/2)-2,y+48,4,23,'#513621');
 r(x+13,y+84,33,23,'#513621');r(x+17,y+87,25,18,'#85c4d1');
 r(x+w-43,y+71,31,44,'#533520');r(x+w-39,y+75,23,40,'#82512e');r(x+w-24,y+96,4,4,'#f7d875')}
 function lake(){grass();r(0,0,408,270,'#328db0');for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
@@ -118,21 +118,21 @@ r(208,152,277,83,'#60402a');for(let i=0;i<15;i++){r(214+i*18,158,16,72,i%2?'#b88
 r(60,188,102,22,'#6d4930');r(71,205,80,12,'#523824');r(73,194,76,10,'#b9854f');tree(572,284);
 r(425,39,202,238,'#b98452');for(let y=60;y<270;y+=17)r(431,y,190,3,'#81532e');
 r(417,32,216,23,'#a55e46');for(let i=0;i<11;i++)r(421+i*19,35,17,16,i%2?'#bd735b':'#98513d');
-r(441,66,170,43,'#453223');r(446,71,160,33,shopColor);t(shopName.toUpperCase(),526,93,shopName.length>16?11:14);
+
 for(let i=0;i<9;i++)r(431+i*21,123,11,22,'#f2e4bf');r(446,166,51,58,'#573b28');r(451,171,41,48,'#88cbd4');r(560,166,48,58,'#573b28');r(565,171,38,48,'#8bced2');
 r(506,165,43,110,'#563823');r(510,170,35,105,'#88542e');r(514,177,27,43,'#91c7ce');r(535,228,4,4,'#f4d179');
-t('SUNSHINE LAKE',138,33,19);r(514,348,122,32,'#f4dfb5');t('VILLAGE  →',576,368,15,'#513521');
+
 if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156);g.stroke();r(154,152,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
 }
 function village(){grass();r(283,121,72,167,'#d4b98e');r(159,193,328,44,'#d3b586');r(227,151,195,122,'#e5d0b0');
 r(275,164,94,95,'#85aeb5');r(284,171,76,80,'#6fb6c6');r(294,225,55,19,'#8d9993');r(304,191,34,33,'#92a49a');r(312,169,19,22,'#9eb4a6');r(304,162,35,8,'#738c80');r(298,198,14,10,'#eabc52');r(342,143,3,68,'#776043');
-tree(170,38);tree(582,43);tree(170,318);tree(395,327);r(0,139,215,20,'#d4b88a');r(0,144,215,8,'#e9d0a2');places.forEach(building);if(pawnOwned){r(39,242,103,18,'#e6c883');t('SOLD!',90,256,13,'#49321e')}r(1,192,80,31,'#f2ddad');t('← LAKE',41,212,14,'#49301e')}
+tree(170,38);tree(582,43);tree(170,318);tree(395,327);r(0,139,215,20,'#d4b88a');r(0,144,215,8,'#e9d0a2');places.forEach(building);r(1,192,80,31,'#f2ddad')}
 function interior(){r(0,0,640,400,'#b58a56');for(let yy=0;yy<400;yy+=24)r(0,yy,640,3,'#805a36');r(0,0,640,105,'#785133');for(let xx=0;xx<640;xx+=30)r(xx,0,4,105,'#5b3a25');
 let p=places.find(b=>b.id===room);let name=room==='fishshop'?shopName:p?p.name:'SHOP';
-r(114,22,410,73,'#473324');r(123,31,392,55,'#ffe1a6');t(name.toUpperCase(),319,63,name.length>17?17:22,'#39291b');
+r(114,22,410,73,'#705037');r(128,33,383,48,'#92694a');
 for(let xx of [52,462]){r(xx,145,128,154,'#604029');for(let yy of [180,220,262])r(xx+9,yy,109,6,'#c18e57')}
 r(193,168,255,86,'#573a28');r(199,175,243,70,'#c08952');character(320,149);
-r(275,350,91,50,'#62432a');t('EXIT',320,381,16)}
+r(275,350,91,50,'#62432a')}
 function draw(){if(room)interior();else if(area==='lake')lake();else village();character(x,y)}
 function hud(){$('coins').textContent=coins;$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
