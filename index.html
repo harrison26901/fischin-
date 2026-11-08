@@ -107,6 +107,34 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #captain-panel button{font-size:12px;padding:7px}
 #captain-panel input{width:75%;min-width:0;border:0;border-radius:6px;background:#fff4d6;color:#1f3025;padding:8px;margin:8px 0}
 #captain-panel small{display:block;font-size:11px}
+#collection-open{position:absolute;z-index:7;top:53px;right:12px;background:#f0d99d;color:#3f3024;border:2px solid #7a5734;padding:8px 10px;font-weight:900}
+#collection-modal[hidden]{display:none}
+#collection-modal{position:absolute;inset:0;z-index:50;background:#0b1819d8;display:flex;align-items:center;justify-content:center;padding:10px}
+.collection-book{display:flex;flex-direction:column;gap:10px;background:#e5c99a;color:#3f2d22;border:6px double #785232;border-radius:16px;width:min(850px,97vw);max-height:96%;padding:clamp(9px,2vw,20px);box-shadow:0 12px 0 #402e25,0 18px 50px #000b;overflow:hidden}
+.collection-header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid #9b754b;padding-bottom:8px}
+.collection-header strong{display:block;font-size:clamp(18px,3vw,27px)}
+.collection-header small{color:#6a5039;display:block;font-size:12px}
+.collection-header button{padding:6px 11px}
+.collection-tabs{display:flex;gap:8px}
+.collection-tabs button{flex:1;background:#aa865c;color:#2c221e;padding:9px 6px;font-size:clamp(12px,2vw,15px)}
+.collection-tabs button.active{background:#4f715d;color:#fff8d5}
+.collection-search{display:flex;align-items:center;gap:9px;justify-content:space-between;font-size:12px;flex-wrap:wrap}
+.collection-search input[type=search]{min-width:120px;flex:1;background:#fff7e5;border:2px solid #a27a4f;border-radius:8px;color:#2f2a24;padding:9px}
+.collection-search label{white-space:nowrap}
+.collection-cards{min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:4px}
+.collection-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:5px;min-height:153px;padding:10px 5px;color:#fff8eb;background:linear-gradient(150deg,#54798a,#274655);border:3px solid #d5b47c;border-radius:12px;box-shadow:inset 0 0 0 2px #ffffff24,0 3px 5px #65452f45}
+.collection-card.mythic{background:linear-gradient(135deg,#482568,#8347a0 60%,#4e2c73);border-color:#ffdd82}
+.collection-card.legendary{background:linear-gradient(135deg,#215a86,#397fa3);border-color:#90e2ff}
+.collection-card.rare{background:linear-gradient(135deg,#647f3b,#85a05b);border-color:#b6f0a2}
+.collection-card.locked{filter:saturate(.2);background:linear-gradient(140deg,#727078,#4d5055);border-color:#a09d98}
+.collection-card .art{font-size:clamp(28px,5vw,48px);line-height:1.2}
+.collection-card strong{font-size:clamp(11px,1.6vw,15px);overflow-wrap:anywhere}
+.collection-card .tier{font-size:10px;font-weight:800;letter-spacing:.05em}
+.collection-card .price{font-size:12px;color:#ffea9c}
+.collection-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:2px solid #a9855a;padding-top:8px}
+.collection-footer button{padding:8px 11px}
+.collection-footer button:disabled{opacity:.4;cursor:default}
+@media(max-width:650px){.collection-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-card{min-height:130px}.collection-book{max-height:95%}#collection-open{top:8px;right:56px;font-size:11px;padding:6px}#captain-tools{top:84px}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -142,6 +170,16 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
+<button id="collection-open" type="button" title="Open your collection book (C)">📖 Collection Book</button>
+<div id="collection-modal" hidden role="dialog" aria-modal="true" aria-labelledby="collection-heading">
+ <section class="collection-book">
+  <header class="collection-header"><div><strong id="collection-heading">📖 The Collector’s Book</strong><small id="collection-progress">Discover fish and treasures!</small></div><button id="collection-close" type="button" aria-label="Close collection book">✕</button></header>
+  <div class="collection-tabs"><button type="button" data-collection="fish" class="active">🐟 Fish</button><button type="button" data-collection="jewellery">💎 Jewellery & Treasures</button></div>
+  <div class="collection-search"><input id="collection-query" type="search" placeholder="Search cards..." aria-label="Search collection cards"/><label><input id="collection-found-only" type="checkbox"/> Discovered only</label></div>
+  <div id="collection-cards" class="collection-cards"></div>
+  <footer class="collection-footer"><button type="button" id="collection-prev">◀ Previous</button><span id="collection-page">Page 1</span><button type="button" id="collection-next">Next ▶</button></footer>
+ </section>
+</div>
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
@@ -206,6 +244,74 @@ const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3
 const adminMode=new URLSearchParams(location.search).get('captain')==='1';
 let infiniteLuck=adminMode,infiniteBag=adminMode;
 let area='lake',room='',x=430,y=307,coins=adminMode?Infinity:100,bait=8,rod=0,bag=adminMode?[['Big Bertha',200000]]:[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+const discoveredFish=new Set(adminMode?['Big Bertha']:[]);
+const discoveredTreasures=new Set();
+const treasureCards=[
+ ['pearl','Giant Pearl',325,'🦪','Rare'],
+ ['compass','Pearl Compass',120,'🧭','Rare'],
+ ['anchor','Golden Anchor',2000,'⚓','Legendary'],
+ ['clock','Antique Clock',350,'🕰️','Uncommon'],
+ ['chest','Mystery Chest',800,'📦','Rare'],
+ ['trophy','Captain Finn Trophy',600,'🏆','Rare'],
+ ['reel','Silver Reel',225,'⚙️','Uncommon'],
+ ['hat','Bucket Hat',75,'👒','Common'],
+ ['aquarium','Aquarium',250,'🐠','Uncommon'],
+ ['baitbox','Bait Box',180,'🧰','Common']
+];
+let collectionType='fish',collectionPage=0;
+const cardsPerPage=12;
+function cardRarity(name,value){
+ if(name==='Big Bertha'||mythicFish.some(item=>item[0]===name))return 'Mythic';
+ if(name==='Legendary Shark')return 'Legendary';
+ if(name==='Golden Koi')return 'Rare';
+ if(value>=50)return 'Uncommon';
+ return 'Common';
+}
+function cardEmoji(name,rarity){
+ if(name==='Big Bertha')return '🐋';
+ if(/Shark|Kraken|Leviathan/.test(name))return '🦈';
+ if(/Eel/.test(name))return '🐍';
+ if(/Seahorse/.test(name))return '🐉';
+ if(rarity==='Mythic')return '🐟✨';
+ return '🐟';
+}
+function renderCollection(){
+ const all=collectionType==='fish'?[...fish,...mythicFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
+ treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)||(id==='compass'&&bid)}));
+ const filter=$('collection-query').value.trim().toLowerCase(),only=$('collection-found-only').checked;
+ const filtered=all.filter(v=>(!filter||v.name.toLowerCase().includes(filter))&&(!only||v.found));
+ const pages=Math.max(1,Math.ceil(filtered.length/cardsPerPage));
+ collectionPage=Math.min(collectionPage,pages-1);
+ const wrap=$('collection-cards');wrap.replaceChildren();
+ for(const item of filtered.slice(collectionPage*cardsPerPage,(collectionPage+1)*cardsPerPage)){
+  const card=document.createElement('article');card.className='collection-card '+(item.found?item.rarity.toLowerCase():'locked');
+  const art=document.createElement('div');art.className='art';art.textContent=item.found?item.emoji:'❔';
+  const tier=document.createElement('div');tier.className='tier';tier.textContent=item.found?item.rarity.toUpperCase():'UNDISCOVERED';
+  const name=document.createElement('strong');name.textContent=item.found?item.name:'???';
+  const price=document.createElement('div');price.className='price';price.textContent=item.found?'🪙 '+item.value.toLocaleString('en-GB'):'Catch or collect to unlock';
+  card.append(art,tier,name,price);wrap.appendChild(card);
+ }
+ if(!filtered.length){const msg=document.createElement('p');msg.textContent='No cards match your search.';wrap.appendChild(msg)}
+ $('collection-progress').textContent=all.filter(v=>v.found).length+' / '+all.length+' cards discovered';
+ $('collection-page').textContent='Page '+(collectionPage+1)+' / '+pages;
+ $('collection-prev').disabled=collectionPage===0;$('collection-next').disabled=collectionPage===pages-1;
+}
+function toggleCollection(open){
+ $('collection-modal').hidden=!open;
+ if(open){collectionPage=0;renderCollection();$('collection-close').focus()}
+ else $('collection-open').focus();
+}
+$('collection-open').onclick=()=>toggleCollection(true);
+$('collection-close').onclick=()=>toggleCollection(false);
+document.querySelectorAll('[data-collection]').forEach(b=>b.onclick=()=>{
+ collectionType=b.dataset.collection;collectionPage=0;
+ document.querySelectorAll('[data-collection]').forEach(el=>el.classList.toggle('active',el===b));
+ renderCollection();
+});
+$('collection-query').oninput=()=>{collectionPage=0;renderCollection()};
+$('collection-found-only').onchange=()=>{collectionPage=0;renderCollection()};
+$('collection-prev').onclick=()=>{collectionPage--;renderCollection()};
+$('collection-next').onclick=()=>{collectionPage++;renderCollection()};
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
@@ -558,7 +664,7 @@ function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',
 function buyItem(id,label,cost,after){
 if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
 if(coins<cost)return need(cost);
-coins-=cost;collectibles.add(id);
+coins-=cost;collectibles.add(id);discoveredTreasures.add(id);
 if(after)after();
 hud();draw();visit();
 }
@@ -615,7 +721,7 @@ if(room==='rod'){
 }
 if(room==='auction'){
  panel('🔨 Bidding House','Bid on the Pearl Compass or buy something special!',[
-  [bid?'💎 Pearl Compass — owned':'💎 Bid for Pearl Compass — 120',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;hud();visit()}],
+  [bid?'💎 Pearl Compass — owned':'💎 Bid for Pearl Compass — 120',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;discoveredTreasures.add('compass');hud();visit()}],
   [collectibles.has('pearl')?'🦪 Giant Pearl — owned':'🦪 Giant Pearl — 325',()=>buyItem('pearl','Giant Pearl',325)],
   [collectibles.has('trophy')?'🏆 Captain Finn Trophy — owned':'🏆 Captain Finn Trophy — 600',()=>buyItem('trophy','Captain Finn Trophy',600)],
   ['🚪 Exit',leave]
@@ -651,7 +757,7 @@ function celebrateFish(f){
 }
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
-if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!','Worth '+pending[1].toLocaleString('en-GB')+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
+if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);discoveredFish.add(pending[0]);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!','Worth '+pending[1].toLocaleString('en-GB')+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
 
 if(!infiniteBag&&bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
 if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
@@ -745,7 +851,7 @@ document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
-window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
 let prior=0;function frame(time){checkRobbery(time);if(room==='pawn'&&(robberActive||time<defenceFlash))draw();let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
@@ -762,7 +868,7 @@ function adminCommand(raw){
   const count=Math.max(1,Math.min(100,Number(parts[parts.length-1])||1));
   const term=parts.slice(1,parts[parts.length-1]&&/^\d+$/.test(parts[parts.length-1])? -1:undefined).join(' ');
   const matches=[...fish,...mythicFish].filter(v=>v[0].toLowerCase().includes(term||'bertha'));
-  if(matches.length){for(let i=0;i<count;i++)bag.push(matches[0]);reply='Added '+count+' '+matches[0][0]+'!'}
+  if(matches.length){for(let i=0;i<count;i++)bag.push(matches[0]);discoveredFish.add(matches[0][0]);reply='Added '+count+' '+matches[0][0]+'!'}
   else reply='Fish not found. Try give bertha 1.';
  }else reply='Try: money, luck, bag, bait 50, rod max, give bertha 1, help';
  $('captain-feedback').textContent=reply;hud();draw();
