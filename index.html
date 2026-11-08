@@ -421,6 +421,28 @@ function skyScene(){
   r(cx,cy,105,19,'#ffffffaa');r(cx+21,cy-13,56,19,'#ffffffbb');r(cx+12,cy+16,77,10,'#eaf7ff99');
  }
  for(let i=0;i<4;i++){const ix=55+i*172,iy=98+i%2*34;r(ix,iy,95,15,'#b3d9e2');r(ix+16,iy+15,66,23,'#8ea7c7');r(ix+31,iy+37,35,13,'#7793b5')}
+ // Layered distant floating islands with little forests, waterfalls and soft atmospheric haze.
+ for(let i=0;i<5;i++){
+  const ix=24+i*143+(Math.sin(sec*.25+i)*3),iy=95+(i%3)*32;
+  g.save();g.globalAlpha=.52+i%2*.12;
+  r(ix,iy,90,9,'#9ed8bd');r(ix+8,iy+9,74,14,'#839bb8');r(ix+24,iy+23,40,17,'#6d83a6');
+  for(let j=0;j<4;j++){
+   const tx=ix+13+j*19,ty=iy-4-(j%2)*4;
+   r(tx,ty-17,4,17,'#647f79');r(tx-9,ty-25,22,15,'#559b90');r(tx-5,ty-32,14,12,'#70b6a3');
+  }
+  if(i%2===0){r(ix+62,iy+6,9,38,'#c4f6ff');r(ix+64,iy+12,3,31,'#ffffff')}
+  g.restore();
+ }
+ // Tall whimsical trees on the main island, positioned around existing activity spots.
+ function skyTree(tx,ty,scale=1){
+  g.save();g.translate(tx,ty);g.scale(scale,scale);
+  r(-6,-39,12,42,'#775c71');r(-3,-34,5,33,'#aa8290');
+  r(-27,-64,54,30,'#428e83');r(-22,-79,44,24,'#61b79d');r(-15,-89,30,22,'#8bd2ae');
+  r(-17,-69,11,7,'#a9e5bc');r(8,-78,9,6,'#a9e5bc');
+  for(let j=0;j<4;j++){const fx=-16+j*11,fy=-55-(j%2)*17;r(fx,fy,5,5,j%2?'#f6b4d7':'#fff2a3')}
+  g.restore();
+ }
+ skyTree(49,239,.8);skyTree(335,232,.9);skyTree(393,242,.7);skyTree(581,239,.85);
  // A giant floating island with an overhanging mossy rim and a rocky underside.
  g.fillStyle='#6586a2';g.beginPath();g.moveTo(18,257);g.lineTo(620,257);g.lineTo(557,318);g.lineTo(448,346);g.lineTo(334,380);g.lineTo(215,348);g.lineTo(97,314);g.closePath();g.fill();
  for(let i=0;i<20;i++){const px=44+i*28,py=282+Math.sin(i*.6)*25;r(px,py,24,13,i%3?'#8099b5':'#9fb5c9')}
