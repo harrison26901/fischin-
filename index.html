@@ -73,17 +73,17 @@ canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;backg
   let ready=false;
   function loadFrame(now){
     const elapsed=now-start;
-    const progress=Math.min(100,Math.round(elapsed/2500*100));
+    const progress=Math.min(100,Math.round(elapsed/7000*100));
     fill.style.width=progress+'%';
     status.textContent=progress<100?'Getting the boat ready...':'Ready to cast!';
-    if(progress>=100&&ready){screen.hidden=true;return}
+    if(progress>=100&&ready){clearInterval(jokesTimer);screen.hidden=true;return}
     requestAnimationFrame(loadFrame);
   }
   const jokesTimer=setInterval(function(){
     index=(index+1)%jokes.length;
     joke.textContent=jokes[index];
-  },900);
-  function finish(){ready=true;setTimeout(function(){clearInterval(jokesTimer)},2600)}
+  },3000);
+  function finish(){ready=true}
   if(document.readyState==='complete')finish();
   else window.addEventListener('load',finish,{once:true});
   requestAnimationFrame(loadFrame);
