@@ -476,7 +476,8 @@ const treasureCards=[
  ['reel','Silver Reel',225,'⚙️','Uncommon'],
  ['hat','Bucket Hat',75,'👒','Common'],
  ['aquarium','Aquarium',250,'🐠','Uncommon'],
- ['baitbox','Bait Box',180,'🧰','Common']
+ ['baitbox','Bait Box',180,'🧰','Common'],
+ ['kirstyflower',"Kirsty's Lucky Flower",0,'🌷','Rare']
 ];
 let collectionType='fish',collectionPage=0;
 const cardsPerPage=12;
@@ -776,6 +777,35 @@ function pebbledPath(px,py,w,h){
   }
   g.restore();
 }
+function drawKirstysGarden(){
+ // A peaceful little garden dedicated to Kirsty, near the eastern village path.
+ const gx=782,gy=455;
+ r(gx,gy,130,105,'#547f57');
+ r(gx+6,gy+6,118,93,'#acd08e');
+ for(let j=0;j<28;j++){
+  const fx=gx+13+(j*37)%108,fy=gy+15+(j*31)%78;
+  flower(fx,fy,['#f4afcd','#f6d781','#e8b0ee','#fff3ee'][j%4]);
+ }
+ // A heart-shaped flower bed around a wooden dedication sign.
+ r(gx+49,gy+31,32,26,'#f09cb9');
+ r(gx+43,gy+26,21,20,'#f09cb9');r(gx+66,gy+26,21,20,'#f09cb9');
+ r(gx+57,gy+51,18,14,'#f09cb9');
+ r(gx+59,gy+60,6,25,'#7d573b');
+ r(gx+22,gy+6,86,25,'#77553e');
+ r(gx+26,gy+10,78,17,'#f6e2b7');
+ t("KIRSTY'S",gx+65,gy+23,12,'#6d3756');
+ t('MUM’S GARDEN',gx+65,gy+97,11,'#fff4e1');
+ if(collectibles.has('kirstyflower'))t('♥',gx+113,gy+31,19,'#ffe3ed');
+}
+function visitKirstysGarden(){
+ if(!collectibles.has('kirstyflower')){
+  collectibles.add('kirstyflower');discoveredTreasures.add('kirstyflower');
+  panel('💖 Kirsty’s Garden','This special place is dedicated to Kirsty — a wonderful mum who makes every adventure brighter! You found Kirsty’s Lucky Flower 🌷. It’s yours to keep forever.',[['💐 Thank you, Mum!',()=>panel('🌸 Kirsty’s Garden','A little place full of love. Come back whenever you like!')]]);
+ }else{
+  panel('💖 Kirsty’s Garden','Dedicated to Kirsty, a wonderful mum. The flowers are always blooming here, and your lucky flower is safe in your collection! 🌷',[['💐 Love you, Mum!',()=>panel('🌸 Kirsty’s Garden','Every adventure is better with you in it.')]]);
+ }
+ draw();
+}
 function village(){
   // Warm grass, little clover patches and wildflowers.
   r(0,0,VILLAGE_W,VILLAGE_H,'#8abb83');
@@ -811,6 +841,7 @@ function village(){
   for(const xy of [[20,35],[275,42],[533,45],[790,44],[1030,48],[1375,35],[24,590],[285,705],[535,715],[795,710],[1023,700],[1393,702],[20,1022],[290,1032],[535,1030],[805,1030],[1090,1041],[1393,1035]])tree(xy[0],xy[1]);
   // Crisp shop fronts and colourful cottage roofs remain on top of landscaping.
   places.forEach(building);
+  drawKirstysGarden();
   drawVillagers();
 }
 function interior(){
@@ -935,7 +966,7 @@ if(room==='rod'){
 }
 }
 function backpack(){
-const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Olive Bucket Hat',cap:'Navy Fishing Cap',beanie:'Cosy Red Beanie',crown:'Mythic Crown',raincoat:'Yellow Raincoat',hoodie:'Purple Hoodie',vest:'Explorer Vest',mythiccoat:'Mythic Star Coat',boots:'Brown Boots',goldboots:'Golden Boots',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
+const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Olive Bucket Hat',cap:'Navy Fishing Cap',beanie:'Cosy Red Beanie',crown:'Mythic Crown',raincoat:'Yellow Raincoat',hoodie:'Purple Hoodie',vest:'Explorer Vest',mythiccoat:'Mythic Star Coat',boots:'Brown Boots',goldboots:'Golden Boots',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium',kirstyflower:"Kirsty's Lucky Flower 🌷"})[id]||id);
 panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 let celebrationTimer=null;
 function celebrateFish(f){
@@ -1010,6 +1041,7 @@ function near(){
     if(x>=201&&x<=495&&y>=136&&y<=260)return 'fish';
     return '';
   }
+  if(x>=766&&x<=941&&y>=443&&y<=577)return 'kirstygarden';
   const v=nearbyVillager();if(v)return 'villager:'+v.id;
  if(x>490&&x<610&&y>297&&y<420)return 'statue';
   // Stand beside a building or outside its doorway and press A.
@@ -1060,7 +1092,7 @@ function interact(){if(!room&&area==='sea'){
  if(y<=305&&y>=253&&x>=185&&x<=455){shopping=true;visit();return}
  panel('🛍️ Explore the shop','Move towards the counter at the top and press A to browse. Press B to exit.');
  return
-}let n=near();if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
+}let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
  if(k==='x')fishAction()
  else if(k==='a')interact();
@@ -1157,7 +1189,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium']);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower']);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
