@@ -728,11 +728,28 @@ function leaveNightFestival(){
  panel('🌙 Festival memories','Your fish, prizes and festival progress have been saved!');
 }
 function festivalInteract(){
+ if(Math.hypot(x-255,y-363)<49)return festivalDrinks();
  if(Math.hypot(x-160,y-170)<75)return festivalFishing();
  if(Math.hypot(x-480,y-140)<75)return festivalWheel();
  if(Math.hypot(x-155,y-315)<72)return festivalMarket();
  if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
- panel('🎆 Nighttime Festival','Explore the lantern lake (top-left), prize wheel (top-right), market (bottom-left) and fireworks stage (bottom-right).');
+ panel('🎆 Nighttime Festival','Explore the lantern lake, prize wheel, night market, fireworks stage and drinks stall beside the campfire!');
+}
+function festivalDrinks(){
+ panel('🍹 FESTIVAL DRINKS','Welcome to the cosy campfire drinks stall! Choose a festival treat:',[
+  ['🍋 Sparkling lemonade · 30 coins',()=>festivalBuyDrink('Sparkling lemonade',30,0)],
+  ['☕ Hot chocolate · 50 coins',()=>festivalBuyDrink('Hot chocolate',50,1)],
+  ['🍺 Ginger beer · 70 coins',()=>festivalBuyDrink('Ginger beer',70,2)],
+  ['🔥 Back to the festival',()=>panel('🔥 Campfire','Enjoy the warm fire and glowing lanterns!')]
+ ]);
+}
+function festivalBuyDrink(name,price,bonus){
+ if(coins<price)return panel('🪙 Not enough coins','You need '+price+' coins for '+name+'.',[['🍹 See drinks',festivalDrinks]]);
+ coins-=price;
+ if(bonus===1)bait+=2;
+ if(bonus===2)bait+=4;
+ hud();draw();saveGame(true);
+ panel('🥤 Cheers!','You enjoyed a '+name+' by the campfire! '+(bonus===1?'You also got 2 bonus bait!':bonus===2?'You also got 4 bonus bait!':'A refreshing festival treat!'),[['🍹 Order another',festivalDrinks],['🔥 Enjoy the festival',()=>panel('🔥 Campfire','The fire is warm and the festival is glowing!')]]);
 }
 function festivalFishing(){
  if(Math.hypot(x-160,y-170)>=75)return panel('🌙 Lantern Lake','Walk to the glowing lake in the top-left to fish.');
