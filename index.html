@@ -821,6 +821,27 @@ function festivalScene(){
  r(433,291,105,52,'#725286');r(440,279,92,15,'#cf93c4');
  for(let i=0;i<5;i++)r(446+i*18,305,11,23,i%2?'#f8ca9a':'#a8d5d9');
  t('🎆 FIREWORKS',482,378,12,'#fff0b3');
+ // Cosy campfire hangout with benches and a tiny festival beer stall.
+ // Kept away from the four festival interaction hotspots.
+ r(233,313,52,8,'#6c463b');r(239,320,6,15,'#805443');r(273,320,6,15,'#805443');
+ r(363,313,48,8,'#6c463b');r(368,320,6,15,'#805443');r(401,320,6,15,'#805443');
+ // Stone fire ring, glowing coals and crossed logs.
+ g.fillStyle='#5c4a4b';g.beginPath();g.ellipse(323,339,30,13,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#c0a28c';g.beginPath();g.ellipse(323,337,24,9,0,0,Math.PI*2);g.fill();
+ r(307,333,33,7,'#764538');r(310,334,27,3,'#bd7951');
+ r(316,331,18,9,'#603c36');r(318,334,12,4,'#d27e49');
+ const flicker=Math.sin(sec*7)*4;
+ g.fillStyle='#ff9d36';g.beginPath();g.moveTo(309,334);g.lineTo(319,309+flicker);g.lineTo(323,320);g.lineTo(329,301-flicker);g.lineTo(339,334);g.closePath();g.fill();
+ g.fillStyle='#ffe47c';g.beginPath();g.moveTo(317,333);g.lineTo(323,315+flicker*.4);g.lineTo(331,333);g.closePath();g.fill();
+ islandGlow(323,326,'#ff9d4c',18);
+ for(let i=0;i<6;i++){const px=308+i*6,py=299-(i%3)*8-Math.sin(sec*2+i)*5;r(px,py,3,4,'#ffca7c')}
+ // Mini refreshment counter with wooden posts and foamy mugs.
+ r(221,357,72,20,'#7b5144');r(226,352,62,8,'#b87b5a');
+ r(222,337,7,17,'#8d6051');r(284,337,7,17,'#8d6051');
+ r(215,330,83,9,'#e6b17c');
+ for(let i=0;i<5;i++)r(218+i*16,330,13,8,i%2?'#f5d89d':'#c5787d');
+ for(let i=0;i<3;i++){const px=238+i*17;r(px,344,9,11,'#d9a34e');r(px+9,347,4,6,'#f5e5cb');r(px,342,9,4,'#fff7e6')}
+ t('🍺 DRINKS',255,390,11,'#fff0b3');
  // Lantern strings swoop across the sky and connect to wooden poles.
  for(let i=0;i<3;i++){const px=48+i*280;r(px,65,7,205,'#594451');r(px-5,65,17,9,'#aa7c69')}
  g.save();g.strokeStyle='#c9a78b';g.lineWidth=2;g.beginPath();g.moveTo(51,68);g.quadraticCurveTo(190,136,331,68);g.quadraticCurveTo(471,133,614,68);g.stroke();g.restore();
