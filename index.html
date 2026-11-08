@@ -739,9 +739,15 @@ function festivalDrinks(){
  panel('🍹 FESTIVAL DRINKS','Welcome to the cosy campfire drinks stall! Choose a festival treat:',[
   ['🍋 Sparkling lemonade · 30 coins',()=>festivalBuyDrink('Sparkling lemonade',30,0)],
   ['☕ Hot chocolate · 50 coins',()=>festivalBuyDrink('Hot chocolate',50,1)],
-  ['🍺 Ginger beer · 70 coins',()=>festivalBuyDrink('Ginger beer',70,2)],
+  ['🍺 Beer · 70 coins',()=>festivalBuyDrink('Beer',70,0)],
+  ['🚬 Cigarettes · 40 coins',()=>festivalBuyCigarettes()],
   ['🔥 Back to the festival',()=>panel('🔥 Campfire','Enjoy the warm fire and glowing lanterns!')]
  ]);
+}
+function festivalBuyCigarettes(){
+ if(coins<40)return panel('🪙 Not enough coins','Cigarettes cost 40 coins.',[['🍹 See stall',festivalDrinks]]);
+ coins-=40;hud();draw();saveGame(true);
+ panel('🚬 Cigarettes','You bought a packet of cigarettes. No gameplay bonus.',[['🍹 Back to stall',festivalDrinks],['🔥 Leave stall',()=>panel('🔥 Campfire','Enjoy the festival!')]]);
 }
 function festivalBuyDrink(name,price,bonus){
  if(coins<price)return panel('🪙 Not enough coins','You need '+price+' coins for '+name+'.',[['🍹 See drinks',festivalDrinks]]);
@@ -749,7 +755,7 @@ function festivalBuyDrink(name,price,bonus){
  if(bonus===1)bait+=2;
  if(bonus===2)bait+=4;
  hud();draw();saveGame(true);
- panel('🥤 Cheers!','You enjoyed a '+name+' by the campfire! '+(bonus===1?'You also got 2 bonus bait!':bonus===2?'You also got 4 bonus bait!':'A refreshing festival treat!'),[['🍹 Order another',festivalDrinks],['🔥 Enjoy the festival',()=>panel('🔥 Campfire','The fire is warm and the festival is glowing!')]]);
+ panel('🥤 Festival stall','You bought '+name+' at the campfire stall. '+(bonus===1?'You also got 2 bonus bait!':bonus===2?'You also got 4 bonus bait!':'No gameplay bonus.'),[['🍹 Order another',festivalDrinks],['🔥 Enjoy the festival',()=>panel('🔥 Campfire','The fire is warm and the festival is glowing!')]]);
 }
 function festivalFishing(){
  if(Math.hypot(x-160,y-170)>=75)return panel('🌙 Lantern Lake','Walk to the glowing lake in the top-left to fish.');
