@@ -155,6 +155,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
  </section>
 </div>
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
+<div id="scuba-controls" style="display:none;text-align:center;margin:8px"><button id="scuba-button" type="button" style="padding:12px 20px;background:#277e94;color:white;border-radius:10px">🤿 SCUBA DIVE</button> <button id="surface-button" type="button" style="display:none;padding:12px 20px;background:#ead6a4;color:#382b24;border-radius:10px">🚤 SURFACE</button></div>
 
 <div class="card" id="fishingPanel"><div id="tournament-status" style="font-weight:800;color:#ffe187;margin:0 0 5px"></div><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
@@ -291,6 +292,57 @@ const underwaterChests=[
  {id:'ruins',name:'Lost Temple Chest',x:314,y:177,reward:950,item:'Ancient Trident',emoji:'🔱',rarity:'Legendary'}
 ];
 let openedUnderwaterChests=new Set();
+
+const diveSites=[
+ {id:'reef',name:'Coral Reef',x:110,y:90,item:'Rainbow Shell',reward:220},
+ {id:'cave',name:'Glowing Cave',x:500,y:105,item:'Moonstone',reward:450},
+ {id:'wreck',name:'Sunken Pirate Ship',x:300,y:280,item:'Pirate Spyglass',reward:850},
+ {id:'trench',name:'Deep Trench',x:535,y:305,item:'Abyssal Pearl',reward:1200}
+];
+let diveDiscoveries=new Set(),diveReturn={x:64,y:339},diveOxygen=100;
+function beginScubaDive(){
+ if(area!=='sea'||room||pirateBattle)return;
+ diveReturn={x,y};area='dive';x=320;y=180;diveOxygen=100;token++;phase='ready';pending=null;keys.clear();hud();draw();
+ panel('🤿 SCUBA DIVING!','Swim with arrow keys or WASD. Find four glowing discoveries in the reef, cave, pirate wreck and trench. Press A to collect treasure. Press B to surface before oxygen runs out.');
+}
+function surfaceFromDive(message='You returned safely to your boat.'){
+ if(area!=='dive')return;
+ area='sea';x=diveReturn.x;y=diveReturn.y;diveOxygen=100;keys.clear();hud();draw();
+ panel('🚤 Back on your boat',message,[['🤿 Dive again',beginScubaDive]]);saveGame(true);
+}
+function exploreDiveSite(){
+ const site=diveSites.find(s=>Math.hypot(x-s.x,y-s.y)<45);
+ if(!site)return panel('🤿 Keep exploring','Swim close to a glowing discovery and press A. Press B to surface.');
+ if(diveDiscoveries.has(site.id))return panel('✅ Already explored',site.name+' has already been discovered!');
+ diveDiscoveries.add(site.id);coins+=site.reward;
+ collectibles.add('scuba-'+site.id);discoveredTreasures.add('scuba-'+site.id);
+ hud();draw();saveGame(true);
+ panel('🏆 '+site.item+' FOUND!','You discovered '+site.name+' and earned '+site.reward+' coins! Your treasure is saved in the Collector’s Book.');
+}
+function scubaScene(){
+ const sec=performance.now()/1000;r(0,0,640,400,'#15517a');r(0,365,640,35,'#b09a7c');
+ for(let j=0;j<30;j++){const px=(j*71)%630,py=(j*53+sec*12)%370;r(px,py,3,3,'#9adfe8')}
+ for(let j=0;j<22;j++){const px=j*30;r(px,345-j%3*8,6,34,'#4f9b87')}
+ for(const s of diveSites){
+  const found=diveDiscoveries.has(s.id),px=s.x,py=s.y;
+  if(s.id==='reef'){for(let j=0;j<9;j++)r(px-35+j*9,py-17+j%3*6,7,39,j%2?'#ef9e84':'#d882b3')}
+  if(s.id==='cave'){r(px-43,py-23,86,68,'#304064');r(px-26,py-7,52,50,'#132e52');r(px-35,py-21,13,23,'#7bd6dc')}
+  if(s.id==='wreck'){r(px-55,py+11,110,23,'#694733');r(px-45,py+3,90,15,'#aa8354');r(px-2,py-47,5,52,'#d1b68c');r(px+3,py-40,32,30,'#e5d2ad')}
+  if(s.id==='trench'){r(px-39,py-12,78,55,'#0b294d');r(px-19,py-8,38,51,'#153a62')}
+  if(!found){r(px-4,py-33,8,21,'#fff3a3');r(px-11,py-26,22,7,'#ffe18a')}
+  t((found?'✓ ':'★ ')+s.name,px,py+54,11,found?'#afd6d5':'#fff3c2');
+ }
+ r(x-10,y-18,20,10,'#8bd9e7');r(x-8,y-16,16,6,'#1e4b6a');r(x-9,y-8,18,15,'#eebd83');
+ r(x-10,y+7,20,18,'#e9ad4d');r(x+10,y+5,8,18,'#b8d3de');r(x-14,y+24,13,6,'#324858');r(x+4,y+24,14,6,'#324858');
+ r(10,9,160,28,'#143952');r(18,17,Math.max(0,diveOxygen)*1.44,12,diveOxygen>30?'#83e0aa':'#ee956d');
+ t('OXYGEN '+Math.ceil(diveOxygen)+'%',90,29,12,'#fff5df');
+}
+function scubaTick(dt){
+ if(area!=='dive')return;
+ diveOxygen=Math.max(0,diveOxygen-dt*.0075);
+ if(diveOxygen===0)surfaceFromDive('Your oxygen ran out, so you surfaced safely. You kept all your treasure!');
+ else draw();
+}
 function nearbyUnderwaterChest(){
  if(area!=='sea')return -1;
  return underwaterChests.findIndex(c=>Math.hypot(x-c.x,y-c.y)<40);
@@ -603,6 +655,7 @@ const treasureCards=[
  ['tournament-silver','Silver Fin Cup Trophy',650,'🥈','Rare'],
  ['tournament-gold','Golden Hook Championship Trophy',3000,'🥇','Legendary'],
  ...pirateShips.map(p=>[p.trophy,p.name+' Trophy',p.reward,'🏴‍☠️','Legendary']),
+ ...diveSites.map(s=>['scuba-'+s.id,s.item,s.reward,'🤿','Rare']),
  ...underwaterChests.map(c=>['underwater-'+c.id,c.item,c.reward,c.emoji,c.rarity])
 ];
 let collectionType='fish',collectionPage=0;
@@ -1219,6 +1272,7 @@ g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
 if(room){if(aquariumViewing&&room==='fishshop')aquariumScene();else {interior();character(x,y)}}
 else if(area==='lake'){lake();character(x,y)}
 else if(area==='sea'){seaScene()}
+else if(area==='dive'){scubaScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1226,7 +1280,7 @@ else{
 }
 g.restore();drawWeather();drawBossOverlay();
 }
-function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=ownerAccess&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins.toLocaleString('en-GB'):'∞';$('bag').textContent=bag.length+'/'+backpackCapacity();$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
+function hud(){if($('scuba-controls')){$('scuba-controls').style.display=area==='sea'||area==='dive'?'block':'none';$('scuba-button').style.display=area==='sea'?'inline-block':'none';$('surface-button').style.display=area==='dive'?'inline-block':'none'}$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=ownerAccess&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins.toLocaleString('en-GB'):'∞';$('bag').textContent=bag.length+'/'+backpackCapacity();$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
 $('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=(phase==='reeling'||phase==='boss')?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',boss:'⚔️ GIANT FISH BOSS BATTLE!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X to damage the boss! Press B to dodge the red danger warning.',boss:'X attacks. B dodges giant splashes. Defeat the boss to earn a trophy!',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -1411,7 +1465,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea')return false;
+  if(area==='sea'||area==='dive')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1435,7 +1489,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1450,6 +1504,7 @@ function interact(){if(pirateBattle){pirateTurn('fire');return}if(!room&&area===
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='dive'){if(k==='b')surfaceFromDive();else if(k==='a'||k==='x')exploreDiveSite();else if(k==='y')panel('🤿 Dive progress',diveDiscoveries.size+'/4 treasures found. Oxygen '+Math.ceil(diveOxygen)+'%. Press B to surface.');return}
  if(pirateBattle){if(k==='a'||k==='x')pirateTurn('fire');else if(k==='b')pirateTurn('brace');else if(k==='y')pirateMenu();return}
  if(phase==='boss'&&(k==='x'||k==='b')){bossInput(k);return}
  if(k==='x')fishAction()
@@ -1470,7 +1525,7 @@ function press(k){
 function move(dir){
   if(phase==='boss'||pirateBattle)return;
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
-  const step=area==='sea'?boats[boatTier][2]:7;
+  const step=area==='sea'?boats[boatTier][2]:area==='dive'?5:7;
   const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
   if(!d)return;
   const nx=Math.max(10,Math.min(room||area!=='village'?632:VILLAGE_W-10,x+d[0]));
@@ -1578,7 +1633,7 @@ function saveGame(automatic=false){
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
-   openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],
+   openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],diveDiscoveries:[...diveDiscoveries],
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1606,7 +1661,9 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':'lake';
+ diveDiscoveries=new Set((Array.isArray(data.diveDiscoveries)?data.diveDiscoveries:[]).filter(id=>diveSites.some(s=>s.id===id)));
+ for(const site of diveSites)if(data.collectibles.includes('scuba-'+site.id))diveDiscoveries.add(site.id);
  bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
  pirateBattle=null;pirateWins=new Set((Array.isArray(data.pirateWins)?data.pirateWins:[]).filter(id=>pirateShips.some(p=>p.id===id)));
  for(const p of pirateShips)if(data.collectibles.includes(p.trophy))pirateWins.add(p.id);
@@ -1643,7 +1700,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id),...tournamentTiers.map(c=>c.trophy),...pirateShips.map(p=>p.trophy)]);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id),...tournamentTiers.map(c=>c.trophy),...pirateShips.map(p=>p.trophy),...diveSites.map(s=>'scuba-'+s.id)]);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
@@ -1671,7 +1728,9 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+$('scuba-button').addEventListener('click',beginScubaDive);
+$('surface-button').addEventListener('click',()=>surfaceFromDive());
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
