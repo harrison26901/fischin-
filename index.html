@@ -426,6 +426,108 @@ function skyScene(){
  r(283,343,73,16,'#8b694c');r(301,328,37,15,'#c8a36a');r(317,303,5,26,'#f8e9c5');
  drawPet();character(x,y);
 }
+
+const volcanoDungeonRooms=[
+ {name:'Ember Hall',traps:[[210,220],[340,160],[460,280]],chest:[505,105],exit:[560,330]},
+ {name:'Magma Maze',traps:[[150,140],[270,250],[390,170],[480,290]],chest:[110,295],exit:[560,330]},
+ {name:'Golem Chamber',traps:[[200,240],[370,250],[475,160]],chest:[505,105],exit:[560,330]}
+];
+let dungeonRoom=0,dungeonHealth=100,dungeonChests=new Set(),fireGolemDefeated=false,fireGolemBattle=null,dungeonLastTrap='';
+function enterVolcanoDungeon(){
+ if(!boatTier)return panel('🚤 Boat needed','Buy a boat at the Harbourmaster before travelling to Volcano Dungeon.');
+ token++;phase='ready';pending=null;room='';area='dungeon';dungeonRoom=0;dungeonHealth=100;fireGolemBattle=null;dungeonLastTrap='';x=75;y=330;petX=x-23;petY=y+17;keys.clear();hud();draw();saveGame(true);
+ panel('🌋 VOLCANO DUNGEON','Three lava chambers await! Avoid glowing lava traps, open treasure chests and defeat the Fire Golem. WASD to move, A to interact, B to leave.');
+}
+function leaveVolcanoDungeon(){
+ if(fireGolemBattle)return panel('🔥 Fire Golem','Finish the battle or retreat first.');
+ area='lake';room='';x=142;y=309;keys.clear();hud();draw();saveGame(true);
+ panel('🚤 Safe at the harbour','Your dungeon treasure and boss victory are saved.');
+}
+function dungeonNearby(point,dist=52){return Math.hypot(x-point[0],y-point[1])<dist}
+function dungeonInteract(){
+ if(fireGolemBattle)return fireGolemTurn('attack');
+ const d=volcanoDungeonRooms[dungeonRoom];
+ if(dungeonNearby(d.chest))return dungeonTreasure();
+ if(dungeonNearby(d.exit)){
+  if(dungeonRoom<2){dungeonRoom++;x=75;y=330;dungeonLastTrap='';draw();saveGame(true);return panel('🌋 '+volcanoDungeonRooms[dungeonRoom].name,'You entered chamber '+(dungeonRoom+1)+' of 3. Health: '+dungeonHealth+'/100. Watch for lava!')}
+  if(!fireGolemDefeated)return startFireGolem();
+  return panel('🏆 Dungeon conquered!','You have defeated the Fire Golem! Return to the harbour or explore for missing chests.',[['🚤 Return home',leaveVolcanoDungeon]]);
+ }
+ if(dungeonRoom===2&&dungeonNearby([435,185],70))return startFireGolem();
+ panel('🌋 '+d.name,'Health: '+dungeonHealth+'/100. Move near the gold chest or the glowing doorway on the right, then press A. Press B to leave.');
+}
+function dungeonTreasure(){
+ const id='volcano-dungeon-'+dungeonRoom;
+ if(dungeonChests.has(id))return panel('📦 Empty chest','You already claimed this chamber\'s treasure.');
+ dungeonChests.add(id);
+ const reward=[450,900,1800][dungeonRoom];
+ coins+=reward;collectibles.add(id);discoveredTreasures.add(id);hud();draw();saveGame(true);
+ panel('💎 LAVA TREASURE!','You found '+reward.toLocaleString('en-GB')+' coins and a dungeon relic in '+volcanoDungeonRooms[dungeonRoom].name+'!');
+}
+function dungeonTrapCheck(){
+ if(area!=='dungeon'||fireGolemBattle)return;
+ const d=volcanoDungeonRooms[dungeonRoom];
+ const index=d.traps.findIndex(p=>dungeonNearby(p,22));
+ const trap=index<0?'':dungeonRoom+'-'+index;
+ if(!trap){dungeonLastTrap='';return}
+ if(trap===dungeonLastTrap)return;
+ dungeonLastTrap=trap;dungeonHealth=Math.max(0,dungeonHealth-18);
+ if(dungeonHealth===0){
+  dungeonHealth=100;x=75;y=330;dungeonLastTrap='';draw();
+  return panel('💦 Lava knocked you back!','You respawned at the chamber entrance with full health. No coins or treasure lost.');
+ }
+ panel('🔥 LAVA TRAP!','Ouch! You lost 18 health. '+dungeonHealth+'/100 health remains. Walk around the glowing lava.');
+}
+function startFireGolem(){
+ if(fireGolemDefeated)return panel('🏆 Fire Golem defeated','You already defeated the Fire Golem and collected its trophy!');
+ fireGolemBattle={hp:260,playerHP:Math.max(100,dungeonHealth+60),message:'The Fire Golem rises from the lava!'};
+ fireGolemMenu();
+}
+function fireGolemMenu(){
+ if(!fireGolemBattle)return;
+ const b=fireGolemBattle;
+ panel('🔥 FIRE GOLEM — '+b.hp+' HP','Your HP: '+b.playerHP+'. '+b.message+' A/X attacks, B blocks, or retreat.',[
+ ['⚔️ Strike (A / X)',()=>fireGolemTurn('attack')],
+ ['🛡️ Lava Shield (B)',()=>fireGolemTurn('block')],
+ ['🏃 Retreat',()=>{fireGolemBattle=null;panel('🌋 Safe retreat','The Fire Golem waits for your next challenge.')}]
+ ]);
+}
+function fireGolemTurn(move){
+ if(!fireGolemBattle)return;
+ const b=fireGolemBattle;
+ if(move==='attack'){const damage=30+(ownerAccess?35:0);b.hp=Math.max(0,b.hp-damage);b.message='You struck for '+damage+' damage!'}
+ else b.message='Your shield absorbed most of the fire!';
+ if(!b.hp){
+  fireGolemBattle=null;fireGolemDefeated=true;coins+=6000;
+  collectibles.add('fire-golem-trophy');discoveredTreasures.add('fire-golem-trophy');
+  hud();draw();saveGame(true);
+  return panel('🏆 FIRE GOLEM DEFEATED!','You conquered Volcano Dungeon and won 6,000 coins plus the Fire Golem Trophy!');
+ }
+ const hit=move==='block'?4:16;
+ b.playerHP=Math.max(0,b.playerHP-hit);b.message+=' The Golem hit you for '+hit+' damage.';
+ if(!b.playerHP){fireGolemBattle=null;dungeonHealth=100;return panel('💦 The Fire Golem won','You escaped safely! Try again; your treasure and coins are safe.')}
+ fireGolemMenu();
+}
+function volcanoDungeonScene(){
+ const sec=performance.now()/1000,d=volcanoDungeonRooms[dungeonRoom];
+ r(0,0,640,400,'#392b32');
+ for(let i=0;i<14;i++){r(i*49,30,42,30,'#5c3b39');r(i*49,358,42,35,'#5c3b39')}
+ for(let i=0;i<9;i++){r(0,i*48,30,42,'#63413a');r(610,i*48,30,42,'#63413a')}
+ for(let i=0;i<44;i++)r((i*83)%600+20,(i*67)%300+50,12,7,i%3===0?'#725044':'#4b3738');
+ for(const [tx,ty] of d.traps){r(tx-24,ty-17,48,36,'#b34b25');r(tx-18,ty-11,36,24,Math.sin(sec*5+tx)>0?'#ff9c35':'#ee6327');r(tx-7,ty-7,14,12,'#ffe08a')}
+ const [cx,cy]=d.chest;
+ r(cx-17,cy-11,34,25,dungeonChests.has('volcano-dungeon-'+dungeonRoom)?'#62584d':'#b88740');
+ r(cx-17,cy-16,34,10,dungeonChests.has('volcano-dungeon-'+dungeonRoom)?'#867969':'#f1c96d');
+ r(cx-4,cy-9,8,12,'#fff0a8');
+ const [ex,ey]=d.exit;r(ex-29,ey-45,58,75,'#a95730');r(ex-21,ey-37,42,65,'#f5a047');r(ex-13,ey-30,26,58,'#583746');
+ t(dungeonRoom===2?'GOLEM GATE':'NEXT CHAMBER',ex,ey-55,12,'#ffe1a0');
+ if(dungeonRoom===2){
+  r(413,156,49,54,'#b84c36');r(420,140,35,26,'#dc6b3b');r(416,135,11,13,'#e5a056');r(449,135,11,13,'#e5a056');
+  r(427,155,8,7,'#ffe387');r(443,155,8,7,'#ffe387');r(408,205,15,17,'#e9783a');r(452,205,15,17,'#e9783a');
+ }
+ r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');t('❤️ '+dungeonHealth+'/100   🌋 '+d.name,185,34,13,'#ffe8c4');
+ drawPet();character(x,y);
+}
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
@@ -602,6 +704,7 @@ function boatShop(){
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
   ['❄️ Travel to Frozen Island',travelToFrozenIsland],
+  ['🌋 Explore Volcano Dungeon',enterVolcanoDungeon],
   ['☁️ Sky Island Airship',skyAirshipMenu],
   ['🐾 Adopt a Pet',petShop],
   ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
@@ -1501,6 +1604,7 @@ else if(area==='sea'){seaScene()}
 else if(area==='dive'){scubaScene()}
 else if(area==='frozen'){frozenScene()}
 else if(area==='sky'){skyScene()}
+else if(area==='dungeon'){volcanoDungeonScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1694,7 +1798,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky')return false;
+  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1718,7 +1822,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='dungeon'){dungeonInteract();return}if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1733,6 +1837,7 @@ function interact(){if(area==='sky'){skyInteract();return}if(area==='frozen'){fr
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='dungeon'){if(fireGolemBattle){if(k==='a'||k==='x')fireGolemTurn('attack');else if(k==='b')fireGolemTurn('block');else if(k==='y')fireGolemMenu();return}if(k==='a'||k==='x')dungeonInteract();else if(k==='b')leaveVolcanoDungeon();else if(k==='y')backpack();return}
  if(area==='sky'){if(k==='a'||k==='x')skyInteract();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
  if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a'||k==='x')frozenInteract();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
  if(area==='dive'){if(k==='b')surfaceFromDive();else if(k==='a'||k==='x')exploreDiveSite();else if(k==='y')panel('🤿 Dive progress',diveDiscoveries.size+'/4 treasures found. Oxygen '+Math.ceil(diveOxygen)+'%. Press B to surface.');return}
@@ -1754,7 +1859,7 @@ function press(k){
  }
 }
 function move(dir){
-  if(phase==='boss'||pirateBattle||frostDragonBattle)return;
+  if(phase==='boss'||pirateBattle||frostDragonBattle||fireGolemBattle)return;
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
   const step=area==='sea'?boats[boatTier][2]:area==='dive'?5:7;
   const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
@@ -1768,6 +1873,7 @@ function move(dir){
     if(!blocked(nx,y))x=nx;
     if(!blocked(x,ny))y=ny;
   }
+  if(area==='dungeon')dungeonTrapCheck();
   if(!room&&area==='sea'){
    const pirate=nearbyPirateShip();if(pirate>=0)panel('🏴‍☠️ Pirate ship spotted!','Press A to battle '+pirateShips[pirate].name+'! Use A or X to fire and B to brace.');
    const chest=nearbyUnderwaterChest();
@@ -1868,6 +1974,7 @@ function saveGame(automatic=false){
    adoptedPets:[...adoptedPets],activePet,
    frozenFishCaught:[...frozenFishCaught],frostDragonDefeated,frozenChestOpened,
    airshipOwned,skyFishCaught:[...skyFishCaught],skyChestOpened,skyPhoenixUnlocked,
+   dungeonRoom,dungeonHealth,dungeonChests:[...dungeonChests],fireGolemDefeated,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1895,7 +2002,12 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':'lake';
+ dungeonRoom=Number.isInteger(data.dungeonRoom)?Math.max(0,Math.min(2,data.dungeonRoom)):0;
+ dungeonHealth=Number.isFinite(data.dungeonHealth)?Math.max(1,Math.min(100,data.dungeonHealth)):100;
+ dungeonChests=new Set((Array.isArray(data.dungeonChests)?data.dungeonChests:[]).filter(id=>volcanoDungeonRooms.some((_,i)=>id==='volcano-dungeon-'+i)));
+ for(let i=0;i<3;i++)if(data.collectibles.includes('volcano-dungeon-'+i))dungeonChests.add('volcano-dungeon-'+i);
+ fireGolemDefeated=data.fireGolemDefeated===true||data.collectibles.includes('fire-golem-trophy');fireGolemBattle=null;dungeonLastTrap='';
  airshipOwned=data.airshipOwned===true;skyFishCaught=new Set((Array.isArray(data.skyFishCaught)?data.skyFishCaught:[]).filter(id=>skyFish.some(f=>f[0]===id)));
  skyChestOpened=data.skyChestOpened===true||data.collectibles.includes('sky-stardust-crown');skyPhoenixUnlocked=data.skyPhoenixUnlocked===true||data.collectibles.includes('sky-phoenix-feather');
  frozenFishCaught=new Set((Array.isArray(data.frozenFishCaught)?data.frozenFishCaught:[]).filter(id=>frozenFish.some(f=>f[0]===id)));
