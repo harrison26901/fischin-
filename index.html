@@ -281,7 +281,7 @@ function cardEmoji(name,rarity){
 }
 function renderCollection(){
  const all=collectionType==='fish'?[...fish,...mythicFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
- treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)||(id==='compass'&&bid)}));
+ treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)}));
  const filter=$('collection-query').value.trim().toLowerCase(),only=$('collection-found-only').checked;
  const filtered=all.filter(v=>(!filter||v.name.toLowerCase().includes(filter))&&(!only||v.found));
  const pages=Math.max(1,Math.ceil(filtered.length/cardsPerPage));
@@ -348,6 +348,17 @@ function loseFish(reason){
 
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
+// Core pixel-art drawing helpers, restored after the shop cleanup.
+function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
+function t(s,x,y,n=13,c='#fff3cf'){
+ g.fillStyle='#493222';g.font='bold '+n+'px monospace';g.textAlign='center';
+ g.fillText(s,x+1,y+2);g.fillStyle=c;g.fillText(s,x,y)
+}
+function tree(x,y){
+ r(x+16,y+26,13,32,'#75502f');
+ r(x+3,y+11,42,35,'#477c47');
+ r(x+9,y,30,27,'#6aa35a')
+}
 function character(x,y,npc=false){
  r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
  r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
