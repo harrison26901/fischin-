@@ -80,7 +80,7 @@ function redrawMenu(){let wrap=$('actions');wrap.replaceChildren();menu.forEach(
 function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?55:596;y=area==='lake'?309:294;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village.':'Walk to the LEFT edge to reach the lake. Press A at shop doors to enter.')}
+function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:36;y=area==='lake'?309:309;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village.':'Walk to the LEFT edge to reach the lake. Press A at shop doors to enter.')}
 function enter(id){token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
 function leave(){room='';x=area==='lake'?530:405;y=308;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
@@ -107,7 +107,7 @@ let d={up:[0,-7],down:[0,7],left:[-7,0],right:[7,0]}[dir];if(!d)return;
 let nx=Math.max(10,Math.min(632,x+d[0])),ny=Math.max(30,Math.min(367,y+d[1]));
 if(!room&&area==='lake'&&nx<407&&ny<280&&!(nx>=208&&nx<=487&&ny>=154&&ny<=230))return;
 x=nx;y=ny;
-if(!room&&area==='lake'&&x>=628){tab('village');return}
+if(!room&&area==='lake'&&x>=628){tab('village');panel('🏡 Welcome to the village!','You walked right from the lake. Explore the shops, homes and Captain Finn statue!');return}
 if(!room&&area==='village'&&x<=12){tab('lake');return}
 draw()
 }
