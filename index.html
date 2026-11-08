@@ -324,16 +324,80 @@ function nearbyIsland(){
  }
  return -1;
 }
+
+const pirateShips=[
+ {id:'skull',name:'Skullfin Raider',x:431,y:74,hp:75,reward:450,trophy:'pirate-skull',colour:'#543e4c'},
+ {id:'storm',name:'Stormbeard Brig',x:475,y:292,hp:130,reward:1100,trophy:'pirate-storm',colour:'#554a70'},
+ {id:'queen',name:'The Black Pearl Queen',x:209,y:100,hp:200,reward:3000,trophy:'pirate-queen',colour:'#303a4d'}
+];
+let pirateWins=new Set(),pirateBattle=null;
+function nearbyPirateShip(){
+ if(area!=='sea'||room||pirateBattle)return -1;
+ return pirateShips.findIndex((ship,i)=>!pirateWins.has(ship.id)&&Math.hypot(x-ship.x,y-ship.y)<43);
+}
+function pirateMenu(){
+ if(!pirateBattle)return;
+ const ship=pirateShips[pirateBattle.index];
+ panel('🏴‍☠️ '+ship.name+' — '+Math.max(0,pirateBattle.enemyHP)+' HP',
+  'Your ship: '+Math.max(0,pirateBattle.playerHP)+' HP. '+(pirateBattle.message||'Choose your move!')+' Fire cannons, brace against attacks, or retreat. Your boat upgrades make you stronger.',[
+   ['💥 FIRE CANNONS (A)',()=>pirateTurn('fire')],
+   ['🛡️ BRACE FOR ATTACK (B)',()=>pirateTurn('brace')],
+   ['🚤 Retreat safely',()=>{pirateBattle=null;hud();draw();panel('🚤 Escaped the pirates','You sailed away safely. Return when you are ready.')}]
+  ]);
+}
+function startPirateBattle(i){
+ if(area!=='sea'||room||pirateBattle||pirateWins.has(pirateShips[i]?.id))return;
+ const ship=pirateShips[i];
+ token++;phase='ready';pending=null;
+ pirateBattle={index:i,enemyHP:ship.hp,playerHP:85+boatTier*35,braced:false,message:'Pirates are approaching!'};
+ hud();draw();pirateMenu();
+}
+function pirateTurn(move){
+ if(!pirateBattle)return;
+ const b=pirateBattle,ship=pirateShips[b.index];
+ if(move==='fire'){
+  const damage=18+boatTier*12+(ownerAccess?28:0);
+  b.enemyHP=Math.max(0,b.enemyHP-damage);
+  b.message='Direct hit! You dealt '+damage+' damage.';
+ }else{b.message='You braced for the cannonballs!'}
+ if(b.enemyHP<=0){
+  pirateWins.add(ship.id);coins+=ship.reward;
+  collectibles.add(ship.trophy);discoveredTreasures.add(ship.trophy);
+  pirateBattle=null;hud();draw();saveGame(true);
+  return panel('🏆 PIRATE SHIP DEFEATED!','You sank '+ship.name+' and won '+ship.reward.toLocaleString('en-GB')+' coins plus a pirate trophy for your Collector’s Book!',[['⛵ Keep sailing',()=>panel('🌊 Open Sea','Find the other pirate ships and treasure chests!')]]);
+ }
+ const hit=14+b.index*7;
+ b.playerHP=Math.max(0,b.playerHP-(move==='brace'?Math.max(2,Math.floor(hit/4)):hit));
+ b.message+=' Pirates fired back for '+(move==='brace'?Math.max(2,Math.floor(hit/4)):hit)+' damage.';
+ if(b.playerHP<=0){
+  pirateBattle=null;hud();draw();
+  return panel('💦 PIRATES WON THIS ROUND','Your boat escaped with its cargo and coins safe. Try again after upgrading your boat!',[['⛵ Back to sailing',()=>panel('🌊 Open Sea','The pirate is still waiting out there.')]]);
+ }
+ hud();draw();pirateMenu();
+}
+function drawPirateShips(sec){
+ for(let i=0;i<pirateShips.length;i++){
+  const ship=pirateShips[i],beaten=pirateWins.has(ship.id),bob=Math.sin(sec*2+i)*2;
+  if(beaten)continue;
+  r(ship.x-25,ship.y+10+bob,50,11,'#3b2b2d');
+  r(ship.x-20,ship.y+3+bob,40,13,ship.colour);
+  r(ship.x-2,ship.y-26+bob,4,31,'#e4c88e');
+  r(ship.x+2,ship.y-24+bob,19,23,'#242b3a');
+  r(ship.x-19,ship.y-20+bob,17,19,'#b5a8a0');
+  r(ship.x-1,ship.y-12+bob,4,4,'#fff7d4');
+  t('☠ PIRATES',ship.x,ship.y+35,11,'#ffe2a4');
+ }
+}
 function returnToHarbour(){
- token++;phase='ready';pending=null;area='lake';room='';x=142;y=309;
+ token++;phase='ready';pending=null;pirateBattle=null;area='lake';room='';x=142;y=309;
  keys.clear();lastIslandNearby=-1;hud();draw();
  panel('⚓ Sunshine Harbour','Back safely! Sell your island fish at the Fish Shop, or set sail again.');
 }
 function sailAway(){
  if(!boatTier)return boatShop();
- token++;phase='ready';pending=null;room='';area='sea';x=64;y=339;
+ token++;phase='ready';pending=null;pirateBattle=null;room='';area='sea';x=64;y=339;
  keys.clear();lastIslandNearby=-1;hud();draw();
- panel('⛵ The Open Sea','Steer with WASD or arrow keys. Look for glowing 🤿 CHEST markers! Press A or X beside a chest to dive and recover treasure. Islands still have rare fish; A at the south-west harbour returns home.');
+ panel('⛵ The Open Sea','Steer with WASD or arrow keys. Look for glowing 🤿 CHEST markers and ☠ PIRATES ships! Press A near a pirate ship to battle it. Press A or X beside a chest to dive. Islands still have rare fish; A at the south-west harbour returns home.');
 }
 function boatShop(){
  const next=boats[boatTier+1];
@@ -361,6 +425,7 @@ function seaScene(){
   t(discoveredIslands.has(n)?s.name:'??? Secret Island',s.x,s.y+s.ry+22,12,'#fff6d8');
  }
  // Underwater treasure spots: bubbles, sea-floor ruins and unopened glowing chests.
+ drawPirateShips(sec);
  for(const chest of underwaterChests){
   const opened=openedUnderwaterChests.has(chest.id),shine=Math.sin(sec*4+chest.x)*3;
   r(chest.x-17,chest.y+11,34,7,'#175b75');
@@ -537,6 +602,7 @@ const treasureCards=[
  ['tournament-minnow','Minnow Cup Trophy',150,'🥉','Uncommon'],
  ['tournament-silver','Silver Fin Cup Trophy',650,'🥈','Rare'],
  ['tournament-gold','Golden Hook Championship Trophy',3000,'🥇','Legendary'],
+ ...pirateShips.map(p=>[p.trophy,p.name+' Trophy',p.reward,'🏴‍☠️','Legendary']),
  ...underwaterChests.map(c=>['underwater-'+c.id,c.item,c.reward,c.emoji,c.rarity])
 ];
 let collectionType='fish',collectionPage=0;
@@ -1369,7 +1435,8 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(!room&&area==='sea'){
+function interact(){if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+ const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
  else if(x<115&&y>290)returnToHarbour();
@@ -1383,6 +1450,7 @@ function interact(){if(!room&&area==='sea'){
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(pirateBattle){if(k==='a'||k==='x')pirateTurn('fire');else if(k==='b')pirateTurn('brace');else if(k==='y')pirateMenu();return}
  if(phase==='boss'&&(k==='x'||k==='b')){bossInput(k);return}
  if(k==='x')fishAction()
  else if(k==='a')interact();
@@ -1400,7 +1468,7 @@ function press(k){
  }
 }
 function move(dir){
-  if(phase==='boss')return;
+  if(phase==='boss'||pirateBattle)return;
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
   const step=area==='sea'?boats[boatTier][2]:7;
   const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
@@ -1415,6 +1483,7 @@ function move(dir){
     if(!blocked(x,ny))y=ny;
   }
   if(!room&&area==='sea'){
+   const pirate=nearbyPirateShip();if(pirate>=0)panel('🏴‍☠️ Pirate ship spotted!','Press A to battle '+pirateShips[pirate].name+'! Use A or X to fire and B to brace.');
    const chest=nearbyUnderwaterChest();
    if(chest>=0&&!openedUnderwaterChests.has(underwaterChests[chest].id))panel('🤿 Underwater treasure!','A glowing chest is below your boat! Press A or X to dive and open it.');
    const near=nearbyIsland();if(near!==lastIslandNearby){lastIslandNearby=near;if(near>=0)panel('🏝️ '+islands[near].name,'Press A to discover this island, X to fish for rare island catches, or head to the harbour flag to return.');}
@@ -1509,7 +1578,7 @@ function saveGame(automatic=false){
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
-   openedUnderwaterChests:[...openedUnderwaterChests],
+   openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1539,6 +1608,8 @@ function loadGame(manual=false){
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
  bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
+ pirateBattle=null;pirateWins=new Set((Array.isArray(data.pirateWins)?data.pirateWins:[]).filter(id=>pirateShips.some(p=>p.id===id)));
+ for(const p of pirateShips)if(data.collectibles.includes(p.trophy))pirateWins.add(p.id);
  tournamentWins=new Set((Array.isArray(data.tournamentWins)?data.tournamentWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<tournamentTiers.length));
  tournamentBest=tournamentTiers.map((_,i)=>Math.max(0,Math.floor(Number(Array.isArray(data.tournamentBest)?data.tournamentBest[i]:0)||0)));
  const savedRound=data.activeTournament;
@@ -1572,7 +1643,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id),...tournamentTiers.map(c=>c.trophy)]);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id),...tournamentTiers.map(c=>c.trophy),...pirateShips.map(p=>p.trophy)]);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
@@ -1601,7 +1672,7 @@ $('delete-save').onclick=()=>{
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
 function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(((!room&&(area==='lake'||area==='sea'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
-if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
+if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
