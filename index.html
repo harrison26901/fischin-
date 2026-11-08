@@ -849,26 +849,74 @@ function mermaidCharacter(px,py,queen=false){
 }
 function mermaidScene(){
  const sec=performance.now()/1000;
- r(0,0,640,400,'#155d8b');r(0,295,640,105,'#2b7b9a');
- for(let i=0;i<45;i++){const px=(i*83)%630,py=(i*67+sec*18)%390;r(px,py,3+i%3,3+i%3,'#a9e9f3')}
- for(let i=0;i<24;i++){const px=(i*79)%630,py=300+(i*37)%90;r(px,py,8,7,i%3===0?'#ecb5cc':'#8bd6bf')}
- r(72,116,184,124,'#257e9d');r(89,134,147,88,'#3aa7b7');
- for(let i=0;i<12;i++){const px=92+i*12,py=190+i%3*8;r(px,py-28,8,36,i%2?'#ef9ca8':'#f7c17c');r(px-3,py-33,13,8,'#ffb9cf')}
- t('🐠 ROYAL REEF',164,263,13,'#f8e7c2');
- r(410,89,151,119,'#6f8ab7');r(422,70,127,32,'#c4c7ec');r(433,56,18,28,'#d5dcf2');r(485,45,20,40,'#d5dcf2');r(532,56,16,28,'#d5dcf2');
- r(453,140,63,68,'#4b679a');r(464,149,42,59,'#a9c1d8');
- mermaidCharacter(485,161,true);t('👑 QUEEN MARINA',485,237,12,'#fff0bf');
- r(447,290,87,68,'#7197b7');r(459,276,63,23,'#a7bde0');
- r(478,313,24,25,mermaidPearlClaimed?'#a0bed1':'#fff0d4');r(484,310,12,9,'#fff8e9');
- t(mermaidPearlClaimed?'✓ PEARL FOUND':'🫧 PEARL SHRINE',490,375,12,'#fff0bf');
+ // Deep ocean fades into a turquoise, pearl-lit seafloor.
+ const sea=g.createLinearGradient(0,0,0,400);
+ sea.addColorStop(0,'#07395f');sea.addColorStop(.55,'#126f91');sea.addColorStop(1,'#4db5ad');
+ g.fillStyle=sea;g.fillRect(0,0,640,400);
+ // Sunbeams filter down through the water.
+ g.save();g.globalAlpha=.12;g.fillStyle='#b7ffff';
+ for(let i=0;i<7;i++){const px=i*112-70;g.beginPath();g.moveTo(px,0);g.lineTo(px+30,0);g.lineTo(px+140,310);g.lineTo(px+84,310);g.closePath();g.fill()}
+ g.restore();
+ // Continuous sand connects reef, palace and shrine.
+ r(0,289,640,111,'#78c5bb');r(0,306,640,94,'#a6d8b9');
+ for(let i=0;i<22;i++){const px=(i*53)%640,py=315+(i*31)%79;r(px,py,26,4,i%2?'#c5e6c6':'#83bcb0')}
+ // Curving pearl pathway through the whole kingdom.
+ g.save();g.strokeStyle='#e9f0d9';g.lineWidth=27;g.beginPath();g.moveTo(320,400);g.bezierCurveTo(338,322,408,286,484,218);g.stroke();
+ g.strokeStyle='#c6dccc';g.lineWidth=3;g.stroke();g.restore();
+ for(let i=0;i<10;i++){const px=330+i*15,py=369-i*13;r(px,py,5,4,'#fff8e5')}
+ // Royal Reef: coral grows from a real seabed mound at the original fishing hotspot.
+ g.fillStyle='#338e9b';g.beginPath();g.ellipse(162,225,123,61,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#53b2b2';g.beginPath();g.ellipse(162,227,107,45,0,0,Math.PI*2);g.fill();
+ for(let i=0;i<14;i++){
+  const px=78+i*13,base=235+(i%3)*4,h=32+(i%4)*13;
+  r(px-5,base-h,11,h,i%2?'#f3a4b9':'#ffc18e');
+  r(px-13,base-h+8,12,8,i%2?'#f3a4b9':'#ffc18e');
+  r(px+5,base-h+15,12,7,i%2?'#f3a4b9':'#ffc18e');
+  r(px-7,base-h-4,14,7,'#ffe2c8');
+ }
+ for(let i=0;i<7;i++){const px=100+i*22,py=174+(i%3)*13;r(px,py,12,6,i%2?'#ffd77d':'#8ce6ed');r(px-5,py+2,6,4,'#f7bd9b');r(px+8,py+1,2,2,'#263a58')}
+ t('🐠 ROYAL REEF',164,269,13,'#fff2d2');
+ // Palace terrace and its foundations meet the sandy floor.
+ r(397,215,179,19,'#396d92');r(405,231,162,10,'#79b8bd');
+ r(415,95,148,123,'#7c9cc9');r(428,85,122,128,'#a2b9e3');
+ for(const [px,top] of [[421,68],[471,40],[529,65]]){
+  r(px,top,28,148-top+69,'#b5c8e9');r(px-5,top+12,38,9,'#e6d8f3');
+  r(px+8,top-19,12,24,'#e2d9fa');r(px+10,top-25,8,9,'#fff2d4');
+  r(px+9,top+37,9,20,'#4b85aa');r(px+11,top+40,5,14,'#8cebf2');
+ }
+ r(446,113,77,101,'#c2d1ed');r(457,127,55,87,'#6c8dbb');
+ r(468,146,33,68,'#315d91');r(475,151,20,63,'#68c4d6');
+ for(let i=0;i<7;i++){const px=425+i*21;r(px,104,11,10,'#fff0d2');r(px+3,108,5,5,'#91edec')}
+ // Palace stairs lead to the pearl road.
+ r(456,216,69,9,'#e7d6e5');r(461,225,59,8,'#c2b6d6');r(466,233,49,7,'#e9dced');
+ mermaidCharacter(485,161,true);
+ t('👑 QUEEN MARINA',485,260,12,'#fff2c9');
+ // Moon Pearl shrine, anchored into a raised coral platform.
+ g.fillStyle='#4e9cae';g.beginPath();g.ellipse(492,353,72,18,0,0,Math.PI*2);g.fill();
+ r(447,307,87,51,'#709ec3');r(454,301,73,12,'#c4cbe9');
+ r(460,287,62,18,'#a6bfe2');r(470,279,43,10,'#e2d9f4');
+ r(478,316,24,25,mermaidPearlClaimed?'#9bb6c9':'#fff0d4');
+ r(484,312,12,10,'#fff8e9');
+ islandGlow(490,321,'#e8ffff',14);
+ t(mermaidPearlClaimed?'✓ PEARL FOUND':'🫧 PEARL SHRINE',490,378,12,'#fff2d1');
+ // Kelp gardens and shells, rooted in the sand.
+ for(let i=0;i<15;i++){
+  const px=22+i*43,base=369+(i%3)*7;
+  r(px-7,base+3,19,5,'#67aa9c');
+  r(px,base-25,5,29,i%2?'#3b9e88':'#57bda3');
+  r(px-6,base-22,8,5,'#78d3ae');r(px+4,base-15,9,5,'#8fe6bb');
+  if(i%3===0){r(px+14,base-3,13,5,'#f4c5bc');r(px+19,base-8,4,7,'#fff0da')}
+ }
+ // Free-swimming mermaid and bubbles.
  mermaidCharacter(348,230,false);
- for(let i=0;i<8;i++){const px=45+i*78,py=40+i%3*65;r(px,py,4,4,'#d7f6fb');r(px+8,py+9,3,3,'#e4fcff')}
- // Pearl mosaics, swaying kelp and bioluminescent palace details.
- for(let i=0;i<14;i++){const px=30+i*43,py=352+(i%3)*9;r(px,py-17,5,24,i%2?'#6acbb0':'#92e6ca');r(px+3,py-21,7,5,'#b4f8db')}
- for(let i=0;i<11;i++){const px=413+i*13,py=112+(i%3)*12;islandGlow(px,py,'#d7faff',2)}
- for(let i=0;i<7;i++){const px=55+i*80,py=40+(i%3)*25;r(px,py,5,5,'#fff5dd');r(px-4,py+3,3,3,'#b5f8f4')}
+ for(let i=0;i<48;i++){
+  const px=(i*83)%632,py=(i*67-sec*(9+i%4*3)+8000)%390;
+  r(px,py,2+i%3,2+i%3,'#b8f7f1');
+ }
+ for(let i=0;i<12;i++){const px=34+i*52,py=56+(i%3)*39;islandGlow(px,py,'#c9faff',2)}
  drawPet();character(x,y);
 }
+
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
