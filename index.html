@@ -261,7 +261,7 @@ function clothingMenu(){
  ['🎣 Back to Rod Shop',visit]
  ]);
 }
-let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=1000,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 
 const boats=[['No boat',0,0],['Rowboat',300,5],['Sailboat',1500,7],['Speedboat',8000,10]];
 const islands=[
@@ -1251,7 +1251,7 @@ window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
 let prior=0,lastWaterDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
 const SAVE_KEY='little-fishing-village-save-v1';
-let saveReady=false;
+let saveReady=false,oneGrandGiftClaimed=true;
 function showSaveStatus(message){$('save-status').textContent=message}
 function saveGame(automatic=false){
  if(!saveReady)return false;
@@ -1259,7 +1259,7 @@ function saveGame(automatic=false){
   const snapshot={
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
-   coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
+   coins,bait,rod,oneGrandGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1297,6 +1297,9 @@ function loadGame(manual=false){
  x=Math.max(12,Math.min(area==='village'?VILLAGE_W-12:625,Number(data.x)||430));
  y=Math.max(30,Math.min(area==='village'?VILLAGE_H-30:365,Number(data.y)||307));
  coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
+ // One-time 1,000-coin gift for existing saves; never overwrites larger balances.
+ oneGrandGiftClaimed=!!data.oneGrandGiftClaimed;
+ if(!oneGrandGiftClaimed){coins=Math.max(coins,1000);oneGrandGiftClaimed=true;}
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
  rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
  const knownFish=new Map([...fish,...mythicFish,...allIslandFish].map(([name,value])=>[name,value]));
