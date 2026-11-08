@@ -778,31 +778,37 @@ function pebbledPath(px,py,w,h){
   g.restore();
 }
 function drawKirstysGarden(){
- // A peaceful little garden dedicated to Kirsty, near the eastern village path.
+ // Kirsty's lovingly chaotic garden: effort 10/10, green fingers 0/10.
  const gx=782,gy=455;
- r(gx,gy,130,105,'#547f57');
- r(gx+6,gy+6,118,93,'#acd08e');
- for(let j=0;j<28;j++){
-  const fx=gx+13+(j*37)%108,fy=gy+15+(j*31)%78;
-  flower(fx,fy,['#f4afcd','#f6d781','#e8b0ee','#fff3ee'][j%4]);
+ r(gx,gy,130,105,'#7b8253');
+ r(gx+6,gy+6,118,93,'#b1ac76');
+ // Patchy soil, a few weeds and some very unfortunate plants.
+ for(let j=0;j<24;j++){
+  const fx=gx+12+(j*37)%107,fy=gy+35+(j*31)%60;
+  r(fx,fy,7,4,j%3?'#997954':'#778b51');
+  r(fx+2,fy-4,2,7,'#766f3b');
+  if(j%5===0){r(fx-3,fy-4,5,3,'#ab8970');r(fx+3,fy+1,5,3,'#99765c')}
  }
- // A heart-shaped flower bed around a wooden dedication sign.
- r(gx+49,gy+31,32,26,'#f09cb9');
- r(gx+43,gy+26,21,20,'#f09cb9');r(gx+66,gy+26,21,20,'#f09cb9');
- r(gx+57,gy+51,18,14,'#f09cb9');
- r(gx+59,gy+60,6,25,'#7d573b');
- r(gx+22,gy+6,86,25,'#77553e');
- r(gx+26,gy+10,78,17,'#f6e2b7');
- t("KIRSTY'S",gx+65,gy+23,12,'#6d3756');
- t('MUM’S GARDEN',gx+65,gy+97,11,'#fff4e1');
- if(collectibles.has('kirstyflower'))t('♥',gx+113,gy+31,19,'#ffe3ed');
+ // One heroic pink flower that somehow survived.
+ flower(gx+103,gy+57,'#f4a9c7');
+ // Crooked watering can with a puddle beneath it.
+ r(gx+17,gy+65,27,15,'#7a9ba4');r(gx+19,gy+59,19,7,'#93b5bd');
+ r(gx+41,gy+66,14,4,'#7a9ba4');r(gx+48,gy+64,4,5,'#7a9ba4');
+ r(gx+7,gy+81,45,4,'#85b9c0');
+ // A slightly tilted wooden plaque.
+ r(gx+62,gy+31,6,49,'#805b40');
+ r(gx+16,gy+7,102,28,'#76523b');
+ r(gx+19,gy+10,96,22,'#f2d9ac');
+ t("KIRSTY'S",gx+67,gy+24,13,'#6d3756');
+ t('QUESTIONABLE GARDEN',gx+65,gy+97,10,'#fff3d9');
+ if(collectibles.has('kirstyflower'))t('♥',gx+115,gy+54,18,'#ffe3ed');
 }
 function visitKirstysGarden(){
  if(!collectibles.has('kirstyflower')){
   collectibles.add('kirstyflower');discoveredTreasures.add('kirstyflower');
-  panel('💖 Kirsty’s Garden','This special place is dedicated to Kirsty — a wonderful mum who makes every adventure brighter! You found Kirsty’s Lucky Flower 🌷. It’s yours to keep forever.',[['💐 Thank you, Mum!',()=>panel('🌸 Kirsty’s Garden','A little place full of love. Come back whenever you like!')]]);
+  panel('😂 Kirsty’s Very Questionable Garden','Dedicated to Mum: absolutely brilliant at being a mum, absolutely terrible at gardening. Most plants did not survive. One lucky flower did — and it’s yours to keep forever! 🌷',[['💖 Love you, Mum!',()=>panel('🌱 Gardening Report','Plant survival rate: 1%. Mum appreciation rate: 100%.')]]);
  }else{
-  panel('💖 Kirsty’s Garden','Dedicated to Kirsty, a wonderful mum. The flowers are always blooming here, and your lucky flower is safe in your collection! 🌷',[['💐 Love you, Mum!',()=>panel('🌸 Kirsty’s Garden','Every adventure is better with you in it.')]]);
+  panel('😂 Kirsty’s Very Questionable Garden','The weeds are thriving, the flowers are struggling, and Kirsty is still a brilliant mum. Your Lucky Flower is safe in your collection! 🌷',[['💖 Love you, Mum!',()=>panel('🌱 Gardening Report','Plant survival rate: 1%. Mum appreciation rate: 100%.')]]);
  }
  draw();
 }
