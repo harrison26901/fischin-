@@ -10,7 +10,30 @@ canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;backg
 .controls{justify-content:space-between;align-items:center}.pad{display:grid;grid-template-columns:repeat(3,45px);gap:4px}.pad button{padding:9px;background:#54695e;color:white}.face{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);align-items:center;justify-items:center}.face button{border-radius:50%;width:43px;height:43px;background:#192d2b;color:white;border:2px solid #819489;padding:0}
 .meter{height:32px;background:#b76f62;border:3px solid #d0ae84;border-radius:7px;position:relative;overflow:hidden}.target{position:absolute;top:0;bottom:0;background:#7acd72}.needle{position:absolute;top:0;bottom:0;width:6px;background:#fff}
 #timing,#reeling{display:none}#primary{width:100%;background:#91d28b}#name{width:100%;padding:9px;border-radius:7px;background:#fff8e5;border:0;color:#342514}
-</style></head><body><main>
+
+/* Full-screen welcome splash shown while the village starts */
+#fish-loader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,#183c48 0%,#22677c 48%,#194c5b 100%);color:#fff5d8;text-align:center}
+#fish-loader .loader-card{width:min(480px,100%);padding:30px 22px;border:3px solid #b9d8bd;border-radius:18px;background:#153e44;box-shadow:0 16px 55px #071f2799}
+#fish-loader h2{font-size:clamp(22px,5vw,32px);margin:8px 0}
+#fish-loader .loader-fish{font-size:74px;display:block;animation:fish-bob .8s ease-in-out infinite alternate}
+#fish-loader .loader-joke{font-size:clamp(15px,3.5vw,19px);min-height:60px;margin:20px 0 12px;line-height:1.5}
+#fish-loader .loader-track{height:18px;border-radius:12px;background:#072e39;border:2px solid #9bc6b8;overflow:hidden}
+#fish-loader .loader-fill{width:0;height:100%;border-radius:8px;background:linear-gradient(90deg,#8cce9c,#f4ce72);transition:width .12s linear}
+#fish-loader .loader-status{display:block;margin-top:12px;font-size:12px;color:#cae6d3}
+#fish-loader[hidden]{display:none}
+@keyframes fish-bob{from{transform:translateY(7px) rotate(-8deg)}to{transform:translateY(-7px) rotate(8deg)}}
+@media(prefers-reduced-motion:reduce){#fish-loader .loader-fish{animation:none}}
+</style></head><body>
+<div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
+  <div class="loader-card">
+    <span class="loader-fish" aria-hidden="true">🐟</span>
+    <h2>Little Fishing Village</h2>
+    <div class="loader-joke" id="loader-joke">Why are fish so clever? Because they live in schools!</div>
+    <div class="loader-track" aria-hidden="true"><div id="loader-fill" class="loader-fill"></div></div>
+    <span class="loader-status" id="loader-status">Getting the boat ready...</span>
+  </div>
+</div>
+<main>
 <h1>🎣 Little Fishing Village</h1><small>Explore, fish, visit every shop and collect four houses. No overall timer!</small>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
@@ -26,6 +49,47 @@ canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;backg
 
 <small>Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Use A to enter buildings; ▲/▼ to choose shop options; A to buy or sell; B to leave. X fishes, Y opens backpack. Keyboard: WASD / arrows, E, Space, Tab, Escape. Steam Deck physical buttons may need Steam Input mapping.</small>
 </main>
+
+<script>
+(function(){
+  const screen=document.getElementById('fish-loader');
+  if(!screen)return;
+  const joke=document.getElementById('loader-joke');
+  const fill=document.getElementById('loader-fill');
+  const status=document.getElementById('loader-status');
+  const jokes=[
+    'Why are fish so clever? Because they live in schools!',
+    'What did the fish say when it swam into a wall? Dam!',
+    'Why do fish never share? Because they are shellfish!',
+    'What do you call a fish with no eyes? Fsh!',
+    'What is a fish\'s favourite instrument? The bass guitar!',
+    'Why was the fish embarrassed? It saw the ocean\'s bottom!',
+    'How do fish get to school? By octo-bus!',
+    'What do you call a fish wearing a bow tie? Sofishticated!'
+  ];
+  let index=Math.floor(Math.random()*jokes.length);
+  joke.textContent=jokes[index];
+  const start=performance.now();
+  let ready=false;
+  function loadFrame(now){
+    const elapsed=now-start;
+    const progress=Math.min(100,Math.round(elapsed/2500*100));
+    fill.style.width=progress+'%';
+    status.textContent=progress<100?'Getting the boat ready...':'Ready to cast!';
+    if(progress>=100&&ready){screen.hidden=true;return}
+    requestAnimationFrame(loadFrame);
+  }
+  const jokesTimer=setInterval(function(){
+    index=(index+1)%jokes.length;
+    joke.textContent=jokes[index];
+  },900);
+  function finish(){ready=true;setTimeout(function(){clearInterval(jokesTimer)},2600)}
+  if(document.readyState==='complete')finish();
+  else window.addEventListener('load',finish,{once:true});
+  requestAnimationFrame(loadFrame);
+})();
+</script>
+
 <script>
 (()=>{
 const $=id=>document.getElementById(id),g=$('world').getContext('2d');g.imageSmoothingEnabled=false;
