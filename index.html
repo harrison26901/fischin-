@@ -735,6 +735,7 @@ function festivalInteract(){
  if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
  panel('🎆 Nighttime Festival','Explore the lantern lake, prize wheel, night market, fireworks stage and drinks stall beside the campfire!');
 }
+let festivalEffect='',festivalEffectUntil=0;
 function festivalDrinks(){
  panel('🍹 FESTIVAL DRINKS','Welcome to the cosy campfire drinks stall! Choose a festival treat:',[
   ['🍋 Sparkling lemonade · 30 coins',()=>festivalBuyDrink('Sparkling lemonade',30,0)],
@@ -746,12 +747,13 @@ function festivalDrinks(){
 }
 function festivalBuyCigarettes(){
  if(coins<40)return panel('🪙 Not enough coins','Cigarettes cost 40 coins.',[['🍹 See stall',festivalDrinks]]);
- coins-=40;hud();draw();saveGame(true);
+ coins-=40;festivalEffect='smoke';festivalEffectUntil=performance.now()+4200;hud();draw();saveGame(true);
  panel('🚬 Cigarettes','You bought a packet of cigarettes. No gameplay bonus.',[['🍹 Back to stall',festivalDrinks],['🔥 Leave stall',()=>panel('🔥 Campfire','Enjoy the festival!')]]);
 }
 function festivalBuyDrink(name,price,bonus){
  if(coins<price)return panel('🪙 Not enough coins','You need '+price+' coins for '+name+'.',[['🍹 See drinks',festivalDrinks]]);
  coins-=price;
+ festivalEffect=name;festivalEffectUntil=performance.now()+3600;
  if(bonus===1)bait+=2;
  if(bonus===2)bait+=4;
  hud();draw();saveGame(true);
@@ -871,6 +873,28 @@ function festivalScene(){
  for(let i=0;i<23;i++){const px=54+i*25,py=68+Math.sin(i/22*Math.PI*2)*32;r(px-4,py,10,13,['#ffd583','#ff9fc3','#9ee9ed'][i%3]);r(px-2,py+3,6,6,'#fff4c2');islandGlow(px,py+7,'#ffdb9d',3)}
  // Firework bursts in the upper sky, with twinkling sparks.
  for(let i=0;i<3;i++){const cx=100+i*218,cy=51+(i%2)*29;for(let j=0;j<12;j++){const angle=j*Math.PI/6+sec*.25,rad=18+Math.sin(sec*2+i)*4;r(cx+Math.cos(angle)*rad,cy+Math.sin(angle)*rad,4,4,['#ffdc87','#f6a5d3','#9adff2'][i%3])}islandGlow(cx,cy,'#fff1c6',5)}
+ // Brief player animations after buying a drink or cigarettes.
+ const remaining=festivalEffectUntil-performance.now();
+ if(remaining>0){
+  const p=Math.max(0,1-remaining/(festivalEffect==='smoke'?4200:3600));
+  const px=x+13,py=y-24;
+  if(festivalEffect==='smoke'){
+   // Cigarette near the character and curling, fading smoke.
+   r(px-2,py+15,12,3,'#f7ede1');r(px+9,py+15,3,3,'#ff9257');
+   g.save();g.globalAlpha=Math.max(.08,.75-p*.55);
+   for(let i=0;i<5;i++){const sx=px+9+Math.sin(sec*3+i)*6,sy=py+7-i*9-p*12;g.strokeStyle='#d8e2e8';g.lineWidth=2;g.beginPath();g.arc(sx,sy,4+i*.6,0,Math.PI*1.35);g.stroke()}
+   g.restore();
+  }else{
+   // A little cup or beer mug lifts to the character's face.
+   const lift=Math.sin(Math.min(1,p*2)*Math.PI)*8;
+   const beer=festivalEffect==='Beer';
+   r(px-1,py+12-lift,14,17,beer?'#dba34e':festivalEffect==='Hot chocolate'?'#8a574c':'#d6e6ed');
+   r(px+13,py+15-lift,5,9,'#f4e4c8');
+   r(px,py+9-lift,12,5,beer?'#fff0c7':'#f7f7ec');
+   if(beer)for(let i=0;i<3;i++)r(px+2+i*4,py+6-lift-(i%2)*3,3,4,'#fff4d8');
+   if(festivalEffect==='Hot chocolate')for(let i=0;i<2;i++)r(px+3+i*6,py-2-lift+Math.sin(sec*3+i)*3,2,7,'#d8d0ce');
+  }
+ }
  // Ground lanterns line the walkable path.
  for(let i=0;i<10;i++){const px=(i%2===0?32:606),py=276+Math.floor(i/2)*25;r(px-3,py,8,13,'#b9764f');r(px-1,py-5,4,7,'#ffe9a0');islandGlow(px,py,'#ffdb8b',3)}
  drawPet();character(x,y);
@@ -2753,7 +2777,7 @@ $('delete-save').onclick=()=>{
 };
 $('scuba-button').addEventListener('click',beginScubaDive);
 $('surface-button').addEventListener('click',()=>surfaceFromDive());
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||area==='frozen'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||area==='frozen'||area==='festival'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
