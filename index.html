@@ -316,7 +316,7 @@ function exploreDiveSite(){
  if(diveDiscoveries.has(site.id))return panel('✅ Already explored',site.name+' has already been discovered!');
  diveDiscoveries.add(site.id);coins+=site.reward;
  collectibles.add('scuba-'+site.id);discoveredTreasures.add('scuba-'+site.id);
- hud();draw();saveGame(true);
+ hud();draw();saveGame(true);unlockLegendaryPets(true);
  panel('🏆 '+site.item+' FOUND!','You discovered '+site.name+' and earned '+site.reward+' coins! Your treasure is saved in the Collector’s Book.');
 }
 function scubaScene(){
@@ -415,7 +415,7 @@ function pirateTurn(move){
  if(b.enemyHP<=0){
   pirateWins.add(ship.id);coins+=ship.reward;
   collectibles.add(ship.trophy);discoveredTreasures.add(ship.trophy);
-  pirateBattle=null;hud();draw();saveGame(true);
+  pirateBattle=null;hud();draw();saveGame(true);unlockLegendaryPets(true);
   return panel('🏆 PIRATE SHIP DEFEATED!','You sank '+ship.name+' and won '+ship.reward.toLocaleString('en-GB')+' coins plus a pirate trophy for your Collector’s Book!',[['⛵ Keep sailing',()=>panel('🌊 Open Sea','Find the other pirate ships and treasure chests!')]]);
  }
  const hit=14+b.index*7;
@@ -874,7 +874,7 @@ function finishTournament(reason){
   coins+=cup.reward;tournamentWins.add(round.tier);
   collectibles.add(cup.trophy);discoveredTreasures.add(cup.trophy);
  }
- hud();saveGame(true);
+ hud();saveGame(true);if(won)unlockLegendaryPets(true);
  panel(won?'🏆 YOU WON THE '+cup.name.toUpperCase()+'!':'🎣 '+cup.rival+' won this round',
   (reason==='time'?'Time is up! ':'')+'You caught '+round.caught+' fish and scored '+round.score+' points. '+cup.rival+' scored '+cup.target+'. '+(won?'Prize: '+cup.reward.toLocaleString('en-GB')+' coins and a trophy!':'Try again to beat their score. Your catches remain in your backpack.'),[
   ['🔁 More tournaments',tournamentMenu],['🎣 Keep fishing',()=>panel('🌊 Sunshine Lake','Press X to fish from the dock.')]
@@ -1274,15 +1274,39 @@ const petTypes=[
  {id:'margo',name:'Margo the Dog',price:200,color:'#d9b891',emoji:'🐕'},
  {id:'cat',name:'Mochi the Cat',price:250,color:'#c7a1c9',emoji:'🐱'},
  {id:'penguin',name:'Pip the Penguin',price:600,color:'#344959',emoji:'🐧'},
- {id:'dragon',name:'Ember the Dragon',price:1800,color:'#73b782',emoji:'🐉'}
+ {id:'dragon',name:'Ember the Dragon',price:1800,color:'#73b782',emoji:'🐉'},
+ {id:'golden-dragon',name:'Aurelia the Golden Dragon',price:0,color:'#f5d76c',emoji:'🐲',legendary:true,requirement:'Defeat all 3 pirate ships'},
+ {id:'ghost-fox',name:'Luna the Ghost Fox',price:0,color:'#b9e8f6',emoji:'🦊',legendary:true,requirement:'Find all 4 scuba treasures'},
+ {id:'star-unicorn',name:'Nova the Star Unicorn',price:0,color:'#e6baf6',emoji:'🦄',legendary:true,requirement:'Win all 3 fishing tournaments'}
 ];
 let adoptedPets=new Set(),activePet=null,petX=0,petY=0;
+function unlockLegendaryPets(announce=false){
+ const unlocks=[
+  ['golden-dragon',pirateShips.every(p=>pirateWins.has(p.id))],
+  ['ghost-fox',diveSites.every(s=>diveDiscoveries.has(s.id))],
+  ['star-unicorn',tournamentTiers.every((_,i)=>tournamentWins.has(i))]
+ ];
+ const newPets=[];
+ for(const [id,earned] of unlocks){
+  if(earned&&!adoptedPets.has(id)){adoptedPets.add(id);newPets.push(petTypes.find(p=>p.id===id).name)}
+ }
+ if(newPets.length){saveGame(true);if(announce)panel('🌟 LEGENDARY PET UNLOCKED!',newPets.join(' and ')+' joined your pets! Visit the Pet Adoption Centre to equip your new companion.')}
+ return newPets;
+}
+function legendaryPetProgress(id){
+ if(id==='golden-dragon')return pirateShips.filter(p=>pirateWins.has(p.id)).length+'/3 pirate ships defeated';
+ if(id==='ghost-fox')return diveSites.filter(s=>diveDiscoveries.has(s.id)).length+'/4 scuba treasures discovered';
+ if(id==='star-unicorn')return tournamentTiers.filter((_,i)=>tournamentWins.has(i)).length+'/3 tournament trophies earned';
+ return '';
+}
 function petShop(){
- panel('🐾 Pet Adoption Centre','Adopt a companion to follow you around Sunshine Lake, the village and inside houses! You can switch pets whenever you like.',[
+ unlockLegendaryPets(false);
+ panel('🐾 Pet Adoption Centre','Adopt a companion to follow you around Sunshine Lake, the village and inside houses! Secret legendary pets unlock through adventures — they cannot be bought!',[
   ...petTypes.map(p=>[
-   (activePet===p.id?'💚 ':adoptedPets.has(p.id)?'✓ ':p.emoji+' ')+p.name+(adoptedPets.has(p.id)?' — adopted':' — '+p.price+' coins'),
+   (activePet===p.id?'💚 ':adoptedPets.has(p.id)?'✓ ':p.emoji+' ')+p.name+(adoptedPets.has(p.id)?' — adopted':p.legendary?' 🔒 SECRET':' — '+p.price+' coins'),
    ()=>{
     if(!adoptedPets.has(p.id)){
+     if(p.legendary)return panel('🔒 Legendary pet locked',p.requirement+' to unlock '+p.name+'. Progress: '+legendaryPetProgress(p.id)+'.',[['🐾 Back to pets',petShop]]);
      if(coins<p.price)return need(p.price);
      coins-=p.price;adoptedPets.add(p.id);
     }
@@ -1304,7 +1328,10 @@ function drawPet(){
  r(px-5,py-8,3,3,'#25313a');r(px+3,py-8,3,3,'#25313a');
  r(px-3,py-2,6,4,p.id==='penguin'?'#e6aa65':'#f2d9ba');
  r(px-8,py+8,5,6,'#483e3c');r(px+4,py+8,5,6,'#483e3c');
- if(p.id==='dragon'){r(px+10,py-2,13,7,'#b8e28a');r(px-4,py-20,8,9,'#d9f2ac')}
+ if(p.id==='dragon'||p.id==='golden-dragon'){r(px+10,py-2,13,7,p.legendary?'#ffe8a4':'#b8e28a');r(px-4,py-20,8,9,p.legendary?'#fff0ba':'#d9f2ac')}
+ if(p.id==='ghost-fox'){r(px-14,py-19,8,13,'#e9faff');r(px+7,py-19,8,13,'#e9faff');r(px+9,py+1,16,7,'#b9e8f6')}
+ if(p.id==='star-unicorn'){r(px-2,py-25,5,13,'#fff3a4');r(px+10,py+1,13,5,'#f4d2fc')}
+ if(p.legendary){const sparkle=Math.sin(performance.now()/240);r(px-17,py-22+sparkle*2,4,4,'#fff6bf');r(px+15,py-19-sparkle*2,4,4,'#ffffff')}
  if(p.id==='penguin')r(px-6,py-2,12,11,'#e9f0e5');
  if(p.id==='dog')r(px+9,py+1,11,4,'#b48a5d');
  if(p.id==='cat')r(px+9,py+1,13,4,'#b99bbd');
