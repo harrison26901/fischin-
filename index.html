@@ -148,7 +148,15 @@ const keys=new Set();
 function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
 function t(s,x,y,n=13,c='#fff3cf'){g.fillStyle='#493222';g.font='bold '+n+'px monospace';g.textAlign='center';g.fillText(s,x+1,y+2);g.fillStyle=c;g.fillText(s,x,y)}
 function tree(x,y){r(x+16,y+26,13,32,'#75502f');r(x+3,y+11,42,35,'#477c47');r(x+9,y,30,27,'#6aa35a')}
-function character(x,y){r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389')}
+function character(x,y,npc=false){
+ r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
+ r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
+ if(!npc&&collectibles.has('hat')){
+  // Olive-green bucket hat with a wide downward brim.
+  r(x-9,y-29,18,4,'#638b5a');r(x-11,y-25,22,8,'#729b66');
+  r(x-15,y-20,30,5,'#567f52');r(x-12,y-19,24,2,'#9dbe89');
+ }
+}
 function grass(){r(0,0,640,400,'#8fbd75');for(let i=0;i<95;i++)r((i*79+12)%640,(i*61+13)%400,6,3,'#74aa64')}
 function building(p){
   const x=p.x,y=p.y,w=p.id==='auction'?167:145;
@@ -368,7 +376,7 @@ if(room==='rod')t('RODS & REELS',320,195,14,'#293d45');
 if(room==='auction')t('PLACE YOUR BID',320,195,14,'#493147');
 if(room==='pawn')t('BUY • SELL • TRADE',320,195,14,'#443723');
 if(room==='fishshop')t('TODAY\'S CATCH',320,195,14,'#25464d');
-character(320,149);
+character(320,149,true);
 r(275,350,91,50,theme.trim);
 }
 function draw(){
@@ -458,7 +466,7 @@ if(room==='rod'){
  panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider!',[
   [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
   [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
-  [collectibles.has('hat')?'🧢 Fishing Hat — owned':'🧢 Fishing Hat — 75',()=>buyItem('hat','Fishing Hat',75)],
+  [collectibles.has('hat')?'👒 Bucket Hat — owned':'👒 Bucket Hat — 75',()=>buyItem('hat','Bucket Hat',75)],
   ['🚪 Exit',leave]
  ]);return;
 }
@@ -472,7 +480,7 @@ if(room==='auction'){
 }
 }
 function backpack(){
-const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Fishing Hat',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
+const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Bucket Hat',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
 if(bid)items.push('Pearl Compass');
 panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
