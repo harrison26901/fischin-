@@ -508,7 +508,7 @@ function cardEmoji(name,rarity){
  return '🐟';
 }
 function renderCollection(){
- const all=collectionType==='fish'?[...fish,...mythicFish,...allIslandFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
+ const all=collectionType==='fish'?[...fish,...mythicFish,...allIslandFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)||(ownerAccess&&(name==='Big Bertha'||mythicFish.some(f=>f[0]===name)))})):
  treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)}));
  const filter=$('collection-query').value.trim().toLowerCase(),only=$('collection-found-only').checked;
  const filtered=all.filter(v=>(!filter||v.name.toLowerCase().includes(filter))&&(!only||v.found));
@@ -1103,9 +1103,22 @@ if(room==='rod'){
  ]);return;
 }
 }
+// The owner's mythic vault is virtual: it never uses bag slots or changes public saves.
+function ownerMythicVault(page=0){
+ if(!ownerAccess)return panel('🔒 Owner only','The Mythic Vault is exclusive to Owner Mode.');
+ const vault=[fish[5],...mythicFish];
+ const perPage=10, pages=Math.ceil(vault.length/perPage),p=Math.max(0,Math.min(pages-1,page));
+ const section=vault.slice(p*perPage,(p+1)*perPage);
+ panel('👑 MYTHIC VAULT '+(p+1)+'/'+pages,
+  'You own all '+vault.length+' mythic fish! These are displayed in your Collector’s Book too and do not fill your backpack.\n'+section.map(f=>'🌟 '+f[0]).join(' · '),[
+   ...(p>0?[['◀ Previous page',()=>ownerMythicVault(p-1)]]:[]),
+   ...(p<pages-1?[['Next page ▶',()=>ownerMythicVault(p+1)]]:[]),
+   ['🎒 Back to backpack',backpack]
+  ]);
+}
 function backpack(){
 const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Olive Bucket Hat',cap:'Navy Fishing Cap',beanie:'Cosy Red Beanie',crown:'Mythic Crown',raincoat:'Yellow Raincoat',hoodie:'Purple Hoodie',vest:'Explorer Vest',mythiccoat:'Mythic Star Coat',boots:'Brown Boots',goldboots:'Golden Boots',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium',kirstyflower:"Kirsty's Lucky Flower 🌷"})[id]||id);
-panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
+panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):'')+(ownerAccess?' | 👑 Owner Mythic Vault: ALL '+(mythicFish.length+1)+' mythic fish':'') , [...(ownerAccess?[[ '👑 View ALL mythic fish',()=>ownerMythicVault(0)]]:[]),['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 let celebrationTimer=null;
 function celebrateFish(f){
  if(!f||f[1]<200)return;
@@ -1342,7 +1355,7 @@ async function redeemOwnerLink(){
   // Remove the token from the URL after redeeming, so it is not copied accidentally.
   try{window.history?.replaceState(null,'',window.location.pathname+window.location.search)}catch(e){}
   hud();draw();saveGame(false);
-  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod is equipped! Only this browser has your owner unlock. You also have your special coin balance. The glowing green-and-gold rod makes fishing easier and boss battles quicker.');
+  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod, private coin gift and ALL '+(mythicFish.length+1)+' mythic fish are ready! Press Y for Backpack, then open your Owner Mythic Vault. You can also see every mythic in the Collector’s Book.',[['🌟 Open Mythic Vault',()=>ownerMythicVault(0)]]);
  }catch(e){panel('🔒 Owner unlock','Could not verify the private unlock link in this browser.')}
 }
 
