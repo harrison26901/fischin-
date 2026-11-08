@@ -834,6 +834,7 @@ function move(dir){
 document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset.key));
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
+const keys=new Set();
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
