@@ -585,11 +585,11 @@ function volcanoDungeonScene(){
  const sec=performance.now()/1000,d=volcanoDungeonRooms[dungeonRoom];
  // Solid stone floor across the entire chamber: no disconnected platforms.
  r(0,0,640,400,'#30282d');
- r(27,42,586,335,'#514044');
+ r(27,42,586,335,'#a33c30');
  for(let row=0;row<9;row++)for(let col=0;col<14;col++){
   const bx=30+col*42+(row%2)*12,by=45+row*38;
-  r(bx,by,39,35,(row+col)%3===0?'#594449':(row+col)%3===1?'#4e3d43':'#554147');
-  r(bx,by+32,37,2,'#3c3037');
+  r(bx,by,39,35,(row+col)%3===0?'#b64a35':(row+col)%3===1?'#9c382e':'#a94131');
+  r(bx,by+32,37,2,'#792a29');
  }
  // Rock walls have dark contact edges where they meet the floor.
  r(0,0,640,43,'#6a4140');r(0,35,640,9,'#281f28');
