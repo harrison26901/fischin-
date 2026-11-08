@@ -581,6 +581,87 @@ function secretMythicCast(){
  hud();draw();saveGame(true);
  panel('🌟 SECRET MYTHIC! '+f.name.toUpperCase(),'You caught '+f.name+' worth '+f.value.toLocaleString('en-GB')+' coins! '+secretMythicCaught.size+'/20 discovered.'+(secretMythicCaught.size===20?' 🏆 MYTHIC MASTER! You earned the secret trophy and 25,000 coins!':''),[['🎣 Cast again',secretMythicCast],['📖 Mythic Journal',secretMythicJournal]]);
 }
+
+const festivalFish=[['Lantern Koi',340],['Midnight Minnow',210],['Moonbeam Eel',870],['Firework Ray',1550],['Starlit Shark',4200]];
+let festivalFishCaught=new Set(),festivalPrizes=new Set(),festivalGamesPlayed=0,festivalFireworksWatched=0,festivalLanterns=0;
+function enterNightFestival(){
+ token++;phase='ready';pending=null;room='';area='festival';x=315;y=328;petX=x-23;petY=y+17;keys.clear();hud();draw();saveGame(true);
+ panel('🎆 NIGHTTIME FESTIVAL!','Welcome to the moonlit village! Explore the lantern lake, prize wheel, night market and fireworks stage. WASD to walk, A to interact, B to return home.');
+}
+function leaveNightFestival(){
+ area='lake';room='';x=142;y=309;keys.clear();hud();draw();saveGame(true);
+ panel('🌙 Festival memories','Your fish, prizes and festival progress have been saved!');
+}
+function festivalInteract(){
+ if(Math.hypot(x-160,y-170)<75)return festivalFishing();
+ if(Math.hypot(x-480,y-140)<75)return festivalWheel();
+ if(Math.hypot(x-155,y-315)<72)return festivalMarket();
+ if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
+ panel('🎆 Nighttime Festival','Explore the lantern lake (top-left), prize wheel (top-right), market (bottom-left) and fireworks stage (bottom-right).');
+}
+function festivalFishing(){
+ if(Math.hypot(x-160,y-170)>=75)return panel('🌙 Lantern Lake','Walk to the glowing lake in the top-left to fish.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Bag full','Sell fish at Sunshine Lake to make room.');
+ if(bait<=0)return panel('🪱 Out of bait','Buy more bait at the village.');
+ const f=festivalFish[Math.floor(Math.random()*festivalFish.length)];
+ bait--;bag.push([...f]);discoveredFish.add(f[0]);festivalFishCaught.add(f[0]);hud();draw();saveGame(true);
+ panel('🌙 '+f[0]+' CAUGHT!','You caught a nighttime-only '+f[0]+' worth '+f[1]+' coins! '+festivalFishCaught.size+'/5 festival fish discovered.',[['🎣 Fish again',festivalFishing],['🎆 Festival',()=>panel('🎆 Nighttime Festival','Explore the other stalls!')]]);
+}
+function festivalWheel(){
+ if(Math.hypot(x-480,y-140)>=75)return panel('🎡 Prize Wheel','Walk to the wheel at the top-right of the festival.');
+ if(coins<100)return panel('🪙 Not enough coins','Each wheel spin costs 100 coins.');
+ coins-=100;festivalGamesPlayed++;
+ const prizes=[['🪙 Coin jackpot',600],['🪙 Lucky coins',250],['🪙 Small prize',50],['🎟️ Festival ticket',0]];
+ const p=prizes[Math.floor(Math.random()*prizes.length)];coins+=p[1];
+ if(p[1]===0){festivalPrizes.add('festival-ticket');collectibles.add('festival-ticket');discoveredTreasures.add('festival-ticket')}
+ if(festivalGamesPlayed>=10&&!festivalPrizes.has('festival-wheel-master')){festivalPrizes.add('festival-wheel-master');collectibles.add('festival-wheel-master');discoveredTreasures.add('festival-wheel-master')}
+ hud();draw();saveGame(true);
+ panel('🎡 '+p[0]+'!','You won '+(p[1]?p[1]+' coins!':'a collectible Festival Ticket!')+' Total spins: '+festivalGamesPlayed+'. Spin 10 times for a Wheel Master badge.',[['🎡 Spin again (100 coins)',festivalWheel],['🌙 Keep exploring',()=>panel('🎆 Festival','Visit the night market or fireworks stage!')]]);
+}
+function festivalMarket(){
+ panel('🏮 Night Market','Lanterns, sweets and rare festival souvenirs! You have '+coins.toLocaleString('en-GB')+' coins.',[
+ ['🏮 Buy Lucky Lantern — 300 coins',()=>{
+  if(coins<300)return panel('🪙 More coins needed','You need 300 coins.');
+  coins-=300;festivalLanterns++;festivalPrizes.add('festival-lantern');collectibles.add('festival-lantern');discoveredTreasures.add('festival-lantern');hud();saveGame(true);festivalMarket();
+ }],
+ ['🎇 Buy Firework Crown — 1,200 coins',()=>{
+  if(festivalPrizes.has('festival-crown'))return panel('👑 Already owned','You already own the Firework Crown!');
+  if(coins<1200)return panel('🪙 More coins needed','You need 1,200 coins.');
+  coins-=1200;festivalPrizes.add('festival-crown');collectibles.add('festival-crown');discoveredTreasures.add('festival-crown');hud();saveGame(true);festivalMarket();
+ }],
+ ['🌙 Back to festival',()=>panel('🎆 Night Market','Enjoy the festival!')]
+ ]);
+}
+function festivalFireworks(){
+ festivalFireworksWatched++;
+ if(!festivalPrizes.has('festival-fireworks')){
+  festivalPrizes.add('festival-fireworks');collectibles.add('festival-fireworks');discoveredTreasures.add('festival-fireworks');coins+=400;
+ }
+ hud();draw();saveGame(true);
+ panel('🎆 FIREWORKS SHOW!','The sky erupts in beautiful colours! You earned the Fireworks Keepsake and 400 coins on your first show. Shows watched: '+festivalFireworksWatched+'.');
+}
+function festivalJournal(){
+ panel('🌙 FESTIVAL COLLECTION','Nighttime fish: '+festivalFishCaught.size+'/5 · Wheel spins: '+festivalGamesPlayed+' · Lanterns: '+festivalLanterns+' · Firework shows: '+festivalFireworksWatched+'.\n'+festivalFish.map(f=>(festivalFishCaught.has(f[0])?'✨ '+f[0]:'🔒 ???')).join(' · '),[['🎆 Visit festival',enterNightFestival],['🚤 Harbourmaster',boatShop]]);
+}
+function festivalScene(){
+ const sec=performance.now()/1000;
+ r(0,0,640,400,'#171b42');r(0,270,640,130,'#335b4d');
+ for(let i=0;i<65;i++)r((i*113)%640,(i*59)%270,2+(i%3),2,'#e9e2b6');
+ r(83,118,155,112,'#366c9c');r(99,132,122,82,'#428ca9');
+ for(let i=0;i<7;i++){r(105+i*17,150+i%2*21,10,6,'#e8bf6d');r(109+i*17,155+i%2*21,3,4,'#fff5bb')}
+ t('🌙 NIGHT FISHING',162,250,12,'#fff0b3');
+ r(430,98,105,90,'#b05b80');r(442,84,82,20,'#edc98b');
+ for(let i=0;i<8;i++){const a=sec*.7+i*Math.PI/4;r(480+Math.cos(a)*33,137+Math.sin(a)*32,11,11,i%2?'#f9d66d':'#8bdbe2')}
+ r(475,132,13,13,'#f5e5ac');t('🎡 PRIZE WHEEL',480,222,12,'#ffe9b5');
+ r(95,286,120,63,'#a96c55');r(89,276,132,17,'#f4b36c');
+ for(let i=0;i<4;i++)r(105+i*26,294,15,21,i%2?'#f8d98b':'#a8dfd7');
+ t('🏮 NIGHT MARKET',155,375,12,'#fff0b3');
+ r(430,290,110,62,'#694e86');r(443,281,84,14,'#c68bc9');
+ for(let i=0;i<9;i++){const px=452+(i*37)%80,py=249-(i*23)%65;r(px,py,4+i%3*3,4+i%3*3,['#f6c77b','#a9edff','#f2a0d2'][i%3])}
+ t('🎆 FIREWORKS',483,375,12,'#fff0b3');
+ for(let i=0;i<12;i++){const px=(i*57+sec*6)%640,py=270+(i*31)%110;r(px,py,8,10,'#f4c26f');r(px+2,py-6,4,7,'#ffeb9c')}
+ drawPet();character(x,y);
+}
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
@@ -757,6 +838,7 @@ function boatShop(){
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
   ['🌟 Secret Mythic Fish Hunt',secretMythicJournal],
+  ['🎆 Nighttime Festival',festivalJournal],
   ['❄️ Travel to Frozen Island',travelToFrozenIsland],
   ['🌋 Explore Volcano Dungeon',enterVolcanoDungeon],
   ['☁️ Sky Island Airship',skyAirshipMenu],
@@ -1659,6 +1741,7 @@ else if(area==='dive'){scubaScene()}
 else if(area==='frozen'){frozenScene()}
 else if(area==='sky'){skyScene()}
 else if(area==='dungeon'){volcanoDungeonScene()}
+else if(area==='festival'){festivalScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1852,7 +1935,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon')return false;
+  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon'||area==='festival')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1876,7 +1959,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(area==='dungeon'){dungeonInteract();return}if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='festival'){festivalInteract();return}if(area==='dungeon'){dungeonInteract();return}if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1891,6 +1974,7 @@ function interact(){if(area==='dungeon'){dungeonInteract();return}if(area==='sky
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='festival'){if(k==='a'||k==='x')festivalInteract();else if(k==='b')leaveNightFestival();else if(k==='y')backpack();return}
  if(area==='dungeon'){if(fireGolemBattle){if(k==='a'||k==='x')fireGolemTurn('attack');else if(k==='b')fireGolemTurn('block');else if(k==='y')fireGolemMenu();return}if(k==='a'||k==='x')dungeonInteract();else if(k==='b')leaveVolcanoDungeon();else if(k==='y')backpack();return}
  if(area==='sky'){if(k==='a')skyInteract();else if(k==='x')secretMythicCast();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
  if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a')frozenInteract();else if(k==='x')secretMythicCast();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
@@ -2030,6 +2114,7 @@ function saveGame(automatic=false){
    airshipOwned,skyFishCaught:[...skyFishCaught],skyChestOpened,skyPhoenixUnlocked,
    dungeonRoom,dungeonHealth,dungeonChests:[...dungeonChests],fireGolemDefeated,
    secretMythicCaught:[...secretMythicCaught],secretMythicCasts,
+   festivalFishCaught:[...festivalFishCaught],festivalPrizes:[...festivalPrizes],festivalGamesPlayed,festivalFireworksWatched,festivalLanterns,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -2057,7 +2142,14 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':data.area==='festival'?'festival':'lake';
+ festivalFishCaught=new Set((Array.isArray(data.festivalFishCaught)?data.festivalFishCaught:[]).filter(name=>festivalFish.some(f=>f[0]===name)));
+ for(const f of festivalFish)if(data.discoveredFish&&data.discoveredFish.includes(f[0]))festivalFishCaught.add(f[0]);
+ festivalPrizes=new Set((Array.isArray(data.festivalPrizes)?data.festivalPrizes:[]).filter(id=>['festival-ticket','festival-wheel-master','festival-lantern','festival-crown','festival-fireworks'].includes(id)));
+ for(const id of ['festival-ticket','festival-wheel-master','festival-lantern','festival-crown','festival-fireworks'])if(data.collectibles.includes(id))festivalPrizes.add(id);
+ festivalGamesPlayed=Number.isInteger(data.festivalGamesPlayed)?Math.max(0,data.festivalGamesPlayed):0;
+ festivalFireworksWatched=Number.isInteger(data.festivalFireworksWatched)?Math.max(0,data.festivalFireworksWatched):0;
+ festivalLanterns=Number.isInteger(data.festivalLanterns)?Math.max(0,data.festivalLanterns):0;
  secretMythicCaught=new Set((Array.isArray(data.secretMythicCaught)?data.secretMythicCaught:[]).filter(name=>secretMythicFish.some(f=>f.name===name)));
  for(const f of secretMythicFish)if(data.discoveredFish&&data.discoveredFish.includes(f.name))secretMythicCaught.add(f.name);
  secretMythicCasts=Number.isInteger(data.secretMythicCasts)?Math.max(0,data.secretMythicCasts):0;
