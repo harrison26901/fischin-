@@ -156,7 +156,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 </div>
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
 
-<div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
+<div class="card" id="fishingPanel"><div id="tournament-status" style="font-weight:800;color:#ffe187;margin:0 0 5px"></div><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
 <div id="reeling">
  <p id="reelstatus">Fish distance: 0%</p>
@@ -339,6 +339,7 @@ function boatShop(){
  const next=boats[boatTier+1];
  panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
+  ['🏆 Fishing Tournaments',tournamentMenu],
   ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
   ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
     if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['Back',boatShop]]);
@@ -533,6 +534,9 @@ const treasureCards=[
  ['boss-coral','Coral Colossus Trophy',1800,'🏆','Legendary'],
  ['boss-crystal','Crystal Serpent Trophy',4000,'🏆','Legendary'],
  ['boss-lava','Lava Leviathan Trophy',8500,'🏆','Mythic'],
+ ['tournament-minnow','Minnow Cup Trophy',150,'🥉','Uncommon'],
+ ['tournament-silver','Silver Fin Cup Trophy',650,'🥈','Rare'],
+ ['tournament-gold','Golden Hook Championship Trophy',3000,'🥇','Legendary'],
  ...underwaterChests.map(c=>['underwater-'+c.id,c.item,c.reward,c.emoji,c.rarity])
 ];
 let collectionType='fish',collectionPage=0;
@@ -701,10 +705,78 @@ function fishingDifficulty(f){
  if(f[0]==='Golden Koi')return 1.4;
  return f[1]>=65?1.15:1;
 }
+
+const tournamentTiers=[
+ {name:'Minnow Cup',rival:'Bea',target:45,reward:150,trophy:'tournament-minnow',emoji:'🥉'},
+ {name:'Silver Fin Cup',rival:'Marin',target:200,reward:650,trophy:'tournament-silver',emoji:'🥈'},
+ {name:'Golden Hook Championship',rival:'Captain Finn',target:900,reward:3000,trophy:'tournament-gold',emoji:'🥇'}
+];
+let activeTournament=null,tournamentWins=new Set(),tournamentBest=[0,0,0];
+const TOURNAMENT_SECONDS=120,TOURNAMENT_CATCHES=3;
+function tournamentStatus(){
+ if(!activeTournament)return '';
+ const cup=tournamentTiers[activeTournament.tier];
+ return '🏆 '+cup.name+' · '+activeTournament.caught+'/'+TOURNAMENT_CATCHES+' catches · '+activeTournament.score+' points · '+Math.max(0,Math.ceil((activeTournament.endsAt-Date.now())/1000))+'s';
+}
+function tournamentMenu(){
+ if(activeTournament){
+  const cup=tournamentTiers[activeTournament.tier];
+  return panel('🏆 '+cup.name+' in progress',
+   tournamentStatus()+'. Beat '+cup.rival+' ('+cup.target+' points) with three NEW fish from Sunshine Lake. Fish already in your bag do not count.',[
+   ['🎣 Return to fishing dock',()=>{area='lake';room='';x=320;y=242;hud();draw();panel('🎣 Tournament fishing',tournamentStatus()+' — Press X to cast!')}],
+   ['❌ Forfeit round',()=>{activeTournament=null;hud();saveGame(true);tournamentMenu()}]
+  ]);
+ }
+ panel('🏆 Fishing Tournaments','Enter a 2-minute competition against village anglers! Catch three NEW fish at Sunshine Lake to beat their scores and win prizes. Your own mythic fish and other backpack items are safe.',[
+  ...tournamentTiers.map((cup,i)=>[
+   cup.emoji+' '+cup.name+' — '+cup.target+' pts'+(tournamentWins.has(i)?' ✅':''),
+   ()=>startTournament(i)
+  ]),
+  ['📊 My tournament records',()=>panel('🏅 Tournament records',tournamentTiers.map((cup,i)=>cup.name+': '+tournamentBest[i]+' points'+(tournamentWins.has(i)?' 🏆':'')).join(' · '),[['Back',tournamentMenu]])],
+  ['🌊 Back to harbour',boatShop]
+ ]);
+}
+function startTournament(tier){
+ if(activeTournament)return tournamentMenu();
+ const cup=tournamentTiers[tier];if(!cup)return;
+ token++;pending=null;phase='ready';room='';area='lake';x=320;y=242;
+ activeTournament={tier,score:0,caught:0,endsAt:Date.now()+TOURNAMENT_SECONDS*1000};
+ hud();draw();saveGame(true);
+ panel('🏆 '+cup.name+' STARTED!','You have 2 minutes! Catch 3 NEW fish and score more than '+cup.rival+'\'s '+cup.target+' points. Press X to fish from this dock.',[['📊 Competition status',tournamentMenu]]);
+}
+function finishTournament(reason){
+ if(!activeTournament)return;
+ const round=activeTournament;activeTournament=null;
+ const cup=tournamentTiers[round.tier];
+ tournamentBest[round.tier]=Math.max(tournamentBest[round.tier],round.score);
+ const won=round.caught>=TOURNAMENT_CATCHES&&round.score>cup.target;
+ if(won){
+  coins+=cup.reward;tournamentWins.add(round.tier);
+  collectibles.add(cup.trophy);discoveredTreasures.add(cup.trophy);
+ }
+ hud();saveGame(true);
+ panel(won?'🏆 YOU WON THE '+cup.name.toUpperCase()+'!':'🎣 '+cup.rival+' won this round',
+  (reason==='time'?'Time is up! ':'')+'You caught '+round.caught+' fish and scored '+round.score+' points. '+cup.rival+' scored '+cup.target+'. '+(won?'Prize: '+cup.reward.toLocaleString('en-GB')+' coins and a trophy!':'Try again to beat their score. Your catches remain in your backpack.'),[
+  ['🔁 More tournaments',tournamentMenu],['🎣 Keep fishing',()=>panel('🌊 Sunshine Lake','Press X to fish from the dock.')]
+ ]);
+}
+function tournamentCatch(f){
+ if(!activeTournament)return false;
+ if(Date.now()>=activeTournament.endsAt){finishTournament('time');return true}
+ const round=activeTournament;
+ round.score+=f[1];round.caught++;
+ if(round.caught>=TOURNAMENT_CATCHES){finishTournament('caught');return true}
+ saveGame(true);return false;
+}
+function tournamentTick(){
+ if(activeTournament&&Date.now()>=activeTournament.endsAt)finishTournament('time');
+ if($('tournament-status'))$('tournament-status').textContent=tournamentStatus();
+}
 function landFish(){
  bag.push(pending);discoveredFish.add(pending[0]);onQuestFishCaught(pending[0]);phase='caught';celebrateFish(pending);
+ const roundFinished=tournamentCatch(pending);if(roundFinished){hud();return;}
  panel(pending[0]==='Big Bertha'||mythicFish.some(v=>v[0]===pending[0])?'🌟 MYTHIC! '+pending[0].toUpperCase()+'! 🌟':'🎉 '+pending[0]+' caught!',
- 'Worth '+pending[1].toLocaleString('en-GB')+' coins. Great catch!',[['Fish again',fishAction],['Visit Fish Shop',()=>enter('fishshop')]]);
+ 'Worth '+pending[1].toLocaleString('en-GB')+' coins. Great catch!'+(activeTournament?' '+tournamentStatus():''),[['Fish again',fishAction],['Visit Fish Shop',()=>enter('fishshop')]]);
  hud();
 }
 function loseFish(reason){
@@ -841,6 +913,12 @@ function building(p){
     r(x+11,y+109,40,5,'#80543e');
     r(x+15,y+104,6,6,'#69a668');r(x+27,y+103,6,6,'#e5a0b0');r(x+39,y+104,6,6,'#f0ca69');
     for(let i=0;i<8;i++)r(x+5+i*18,y+19,12,3,i%2?'#f2c78c':'#71473f');
+  }
+  if(p.cost){
+    // Prices are visible outside every purchasable home; owned homes are marked clearly.
+    r(x+56,y+115,84,24,'#76513a');r(x+59,y+118,78,18,owned.has(p.id)?'#a5d7ab':'#fff1b3');
+    t(owned.has(p.id)?'OWNED':'FOR SALE',x+98,y+125,10,'#433323');
+    t(owned.has(p.id)?'✓':p.cost.toLocaleString('en-GB')+'c',x+98,y+135,9,'#433323');
   }
   if(isShop){
     // Distinctive shop-coloured signs, all clearly labelled.
@@ -1432,6 +1510,7 @@ function saveGame(automatic=false){
    coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    openedUnderwaterChests:[...openedUnderwaterChests],
+   tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
    equipped:{...equipped},shopName,shopColor,
@@ -1460,6 +1539,10 @@ function loadGame(manual=false){
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
  bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
+ tournamentWins=new Set((Array.isArray(data.tournamentWins)?data.tournamentWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<tournamentTiers.length));
+ tournamentBest=tournamentTiers.map((_,i)=>Math.max(0,Math.floor(Number(Array.isArray(data.tournamentBest)?data.tournamentBest[i]:0)||0)));
+ const savedRound=data.activeTournament;
+ activeTournament=savedRound&&Number.isInteger(savedRound.tier)&&savedRound.tier>=0&&savedRound.tier<tournamentTiers.length&&Number.isFinite(savedRound.endsAt)&&Number.isFinite(savedRound.score)&&Number.isFinite(savedRound.caught)&&savedRound.caught>=0&&savedRound.caught<TOURNAMENT_CATCHES&&savedRound.endsAt>Date.now()?{tier:savedRound.tier,score:Math.max(0,savedRound.score),caught:savedRound.caught,endsAt:savedRound.endsAt}:null;
  openedUnderwaterChests=new Set((Array.isArray(data.openedUnderwaterChests)?data.openedUnderwaterChests:[]).filter(id=>underwaterChests.some(c=>c.id===id)));
  // Older saves may already contain the collectible, so never pay out twice.
  for(const chest of underwaterChests)if(Array.isArray(data.collectibles)&&data.collectibles.includes('underwater-'+chest.id))openedUnderwaterChests.add(chest.id);
@@ -1489,7 +1572,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id)]);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id),...tournamentTiers.map(c=>c.trophy)]);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
@@ -1526,6 +1609,7 @@ if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherInd
  if(time-lastBiteAt>4500)loseFish('You took too long to hook it!');
 }
 if(phase==='boss')bossTick(time,dt);
+ tournamentTick();
 if(phase==='reeling'){
  const rest=dt*.028;
  lineTension=Math.max(0,lineTension-rest*(1+rod*.07));
