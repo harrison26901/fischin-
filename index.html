@@ -528,6 +528,59 @@ function volcanoDungeonScene(){
  r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');t('❤️ '+dungeonHealth+'/100   🌋 '+d.name,185,34,13,'#ffe8c4');
  drawPet();character(x,y);
 }
+
+const secretMythicFish=[
+ {name:'Golden Megalodon',value:75000,zone:'sea'},
+ {name:'Rainbow Leviathan',value:88000,zone:'sky'},
+ {name:'Phantom Angler',value:32000,zone:'lake'},
+ {name:'Moonlit Axolotl',value:34000,zone:'lake'},
+ {name:'Eclipse Koi',value:38000,zone:'lake'},
+ {name:'Starlight Sturgeon',value:42000,zone:'lake'},
+ {name:'Abyssal Kraken',value:68000,zone:'sea'},
+ {name:'Ghost Manta',value:51000,zone:'sea'},
+ {name:'Pearl Serpent',value:56000,zone:'sea'},
+ {name:'Titan Seahorse',value:46000,zone:'sea'},
+ {name:'Aurora Narwhal',value:62000,zone:'frozen'},
+ {name:'Frostfire Eel',value:53000,zone:'frozen'},
+ {name:'Glacier Phoenixfish',value:58000,zone:'frozen'},
+ {name:'Snowfall Shark',value:47000,zone:'frozen'},
+ {name:'Crystal Whale',value:72000,zone:'frozen'},
+ {name:'Comet Ray',value:63000,zone:'sky'},
+ {name:'Thunderbird Fish',value:61000,zone:'sky'},
+ {name:'Nebula Jellyfish',value:55000,zone:'sky'},
+ {name:'Celestial Dragonfish',value:92000,zone:'sky'},
+ {name:'Solar Sunfish',value:69000,zone:'sky'}
+];
+let secretMythicCaught=new Set(),secretMythicCasts=0;
+function secretMythicJournal(){
+ const zones=[['lake','🌊 Sunshine Lake'],['sea','🚤 Open Sea'],['frozen','❄️ Frozen Island'],['sky','☁️ Sky Island']];
+ panel('🌟 SECRET MYTHIC FISH JOURNAL',
+ 'Discovered '+secretMythicCaught.size+'/20 secret mythics. Use the Mythic Lure at the Harbourmaster or while exploring their habitats. Each cast uses 1 bait. Mythics are rare (1 in 5 casts).\n'+
+ zones.map(([id,label])=>label+': '+secretMythicFish.filter(f=>f.zone===id&&secretMythicCaught.has(f.name)).length+'/5').join(' · ')+
+ '\n'+secretMythicFish.map(f=>(secretMythicCaught.has(f.name)?'✨ '+f.name:'🔒 ???')+' ('+f.zone+')').join(' · '),
+ [['🎣 Cast Mythic Lure',secretMythicCast],['🚤 Harbourmaster',boatShop]]);
+}
+function secretMythicCast(){
+ const zone=area==='sky'?'sky':area==='frozen'?'frozen':area==='sea'?'sea':'lake';
+ if(room||!['lake','sea','sky','frozen'].includes(area))return panel('🌟 Mythic Lure','Visit Sunshine Lake, Open Sea, Frozen Island or Sky Island to cast.');
+ if(area==='sea'&&nearbyIsland()<0)return panel('🌊 Find an island','Sail near one of the islands to cast your Mythic Lure.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Bag full','Sell some fish to make room for secret mythics.');
+ if(bait<=0)return panel('🪱 No bait','Buy bait from the village shop first.');
+ bait--;secretMythicCasts++;
+ if(Math.random()>=.20){
+  hud();saveGame(true);
+  return panel('💦 A mysterious shadow vanished!','The Mythic Lure attracted something enormous, but it escaped. Try again!',[['🎣 Cast again',secretMythicCast],['📖 Journal',secretMythicJournal]]);
+ }
+ const pool=secretMythicFish.filter(f=>f.zone===zone);
+ const missing=pool.filter(f=>!secretMythicCaught.has(f.name));
+ const f=(missing.length?missing:pool)[Math.floor(Math.random()*(missing.length?missing.length:pool.length))];
+ bag.push([f.name,f.value]);discoveredFish.add(f.name);secretMythicCaught.add(f.name);
+ if(secretMythicCaught.size===20&&!collectibles.has('secret-mythic-master')){
+  collectibles.add('secret-mythic-master');discoveredTreasures.add('secret-mythic-master');coins+=25000;
+ }
+ hud();draw();saveGame(true);
+ panel('🌟 SECRET MYTHIC! '+f.name.toUpperCase(),'You caught '+f.name+' worth '+f.value.toLocaleString('en-GB')+' coins! '+secretMythicCaught.size+'/20 discovered.'+(secretMythicCaught.size===20?' 🏆 MYTHIC MASTER! You earned the secret trophy and 25,000 coins!':''),[['🎣 Cast again',secretMythicCast],['📖 Mythic Journal',secretMythicJournal]]);
+}
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
@@ -703,6 +756,7 @@ function boatShop(){
  panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
+  ['🌟 Secret Mythic Fish Hunt',secretMythicJournal],
   ['❄️ Travel to Frozen Island',travelToFrozenIsland],
   ['🌋 Explore Volcano Dungeon',enterVolcanoDungeon],
   ['☁️ Sky Island Airship',skyAirshipMenu],
@@ -1838,8 +1892,8 @@ function interact(){if(area==='dungeon'){dungeonInteract();return}if(area==='sky
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
  if(area==='dungeon'){if(fireGolemBattle){if(k==='a'||k==='x')fireGolemTurn('attack');else if(k==='b')fireGolemTurn('block');else if(k==='y')fireGolemMenu();return}if(k==='a'||k==='x')dungeonInteract();else if(k==='b')leaveVolcanoDungeon();else if(k==='y')backpack();return}
- if(area==='sky'){if(k==='a'||k==='x')skyInteract();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
- if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a'||k==='x')frozenInteract();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
+ if(area==='sky'){if(k==='a')skyInteract();else if(k==='x')secretMythicCast();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
+ if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a')frozenInteract();else if(k==='x')secretMythicCast();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
  if(area==='dive'){if(k==='b')surfaceFromDive();else if(k==='a'||k==='x')exploreDiveSite();else if(k==='y')panel('🤿 Dive progress',diveDiscoveries.size+'/4 treasures found. Oxygen '+Math.ceil(diveOxygen)+'%. Press B to surface.');return}
  if(pirateBattle){if(k==='a'||k==='x')pirateTurn('fire');else if(k==='b')pirateTurn('brace');else if(k==='y')pirateMenu();return}
  if(phase==='boss'&&(k==='x'||k==='b')){bossInput(k);return}
@@ -1975,6 +2029,7 @@ function saveGame(automatic=false){
    frozenFishCaught:[...frozenFishCaught],frostDragonDefeated,frozenChestOpened,
    airshipOwned,skyFishCaught:[...skyFishCaught],skyChestOpened,skyPhoenixUnlocked,
    dungeonRoom,dungeonHealth,dungeonChests:[...dungeonChests],fireGolemDefeated,
+   secretMythicCaught:[...secretMythicCaught],secretMythicCasts,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -2003,6 +2058,9 @@ function loadGame(manual=false){
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':data.area==='dungeon'?'dungeon':'lake';
+ secretMythicCaught=new Set((Array.isArray(data.secretMythicCaught)?data.secretMythicCaught:[]).filter(name=>secretMythicFish.some(f=>f.name===name)));
+ for(const f of secretMythicFish)if(data.discoveredFish&&data.discoveredFish.includes(f.name))secretMythicCaught.add(f.name);
+ secretMythicCasts=Number.isInteger(data.secretMythicCasts)?Math.max(0,data.secretMythicCasts):0;
  dungeonRoom=Number.isInteger(data.dungeonRoom)?Math.max(0,Math.min(2,data.dungeonRoom)):0;
  dungeonHealth=Number.isFinite(data.dungeonHealth)?Math.max(1,Math.min(100,data.dungeonHealth)):100;
  dungeonChests=new Set((Array.isArray(data.dungeonChests)?data.dungeonChests:[]).filter(id=>volcanoDungeonRooms.some((_,i)=>id==='volcano-dungeon-'+i)));
