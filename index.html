@@ -281,6 +281,39 @@ const islandFish=[
  [['Emberfin',250],['Lava Grouper',720],['Volcanic Leviathan',3800]]
 ];
 const allIslandFish=islandFish.flat();
+
+const underwaterChests=[
+ {id:'coral',name:'Coral Reef Chest',x:316,y:44,reward:240,item:'Coral Crown',emoji:'🪸',rarity:'Rare'},
+ {id:'pirate',name:'Sunken Pirate Chest',x:591,y:223,reward:680,item:'Pirate Medallion',emoji:'🏴‍☠️',rarity:'Legendary'},
+ {id:'pearl',name:'Pearl Grotto Chest',x:156,y:266,reward:390,item:'Glowing Pearl',emoji:'🦪',rarity:'Rare'},
+ {id:'volcano',name:'Lava Trench Chest',x:525,y:351,reward:1200,item:'Volcanic Ruby',emoji:'💎',rarity:'Mythic'},
+ {id:'kelp',name:'Kelp Forest Chest',x:51,y:170,reward:180,item:'Mermaid Comb',emoji:'🧜',rarity:'Uncommon'},
+ {id:'ruins',name:'Lost Temple Chest',x:314,y:177,reward:950,item:'Ancient Trident',emoji:'🔱',rarity:'Legendary'}
+];
+let openedUnderwaterChests=new Set();
+function nearbyUnderwaterChest(){
+ if(area!=='sea')return -1;
+ return underwaterChests.findIndex(c=>Math.hypot(x-c.x,y-c.y)<40);
+}
+function underwaterChestAction(i){
+ const chest=underwaterChests[i];if(!chest)return;
+ if(openedUnderwaterChests.has(chest.id)){
+  return panel('✅ '+chest.name+' opened','You have already claimed the treasure here. Look for more glowing chests around the open sea.');
+ }
+ panel('🤿 '+chest.name,'You spotted a treasure chest on the sea floor! Dive down to unlock it and collect '+chest.item+' and '+chest.reward.toLocaleString('en-GB')+' coins.',[
+  ['🤿 Dive and open chest',()=>{
+   if(openedUnderwaterChests.has(chest.id))return underwaterChestAction(i);
+   openedUnderwaterChests.add(chest.id);
+   coins+=chest.reward;
+   const treasureId='underwater-'+chest.id;
+   collectibles.add(treasureId);discoveredTreasures.add(treasureId);
+   hud();draw();saveGame(true);
+   panel('🏆 TREASURE FOUND: '+chest.item.toUpperCase()+'!','You recovered '+chest.item+' and '+chest.reward.toLocaleString('en-GB')+' coins! The treasure is saved in your Collector’s Book.',[['🧭 Keep exploring',()=>panel('🌊 Treasure hunting','Sail towards other glowing chests to search for more treasure!')]]);
+  }],
+  ['🚤 Stay on the boat',()=>panel('🌊 Open Sea','The chest will still be here when you return.')]
+ ]);
+}
+
 const weatherTypes=[['Sunny','☀️'],['Cloudy','☁️'],['Rainy','🌧️'],['Stormy','⛈️']];
 let boatTier=0,discoveredIslands=new Set(),weatherIndex=0,lastWeatherChange=performance.now(),lastIslandNearby=-1;
 function nearbyIsland(){
@@ -300,7 +333,7 @@ function sailAway(){
  if(!boatTier)return boatShop();
  token++;phase='ready';pending=null;room='';area='sea';x=64;y=339;
  keys.clear();lastIslandNearby=-1;hud();draw();
- panel('⛵ The Open Sea','Steer with WASD or arrow keys. Press A near an island to discover it, then X to fish. Press A at the harbour flag (bottom left) to go home.');
+ panel('⛵ The Open Sea','Steer with WASD or arrow keys. Look for glowing 🤿 CHEST markers! Press A or X beside a chest to dive and recover treasure. Islands still have rare fish; A at the south-west harbour returns home.');
 }
 function boatShop(){
  const next=boats[boatTier+1];
@@ -325,6 +358,17 @@ function seaScene(){
   if(n===1)for(let j=0;j<5;j++){r(s.x-43+j*19,s.y-20+(j%2)*25,12,18,'#c9f4fa');r(s.x-40+j*19,s.y-25+(j%2)*25,6,7,'#eefcff')}
   if(n===2){r(s.x-29,s.y+2,62,31,'#714842');r(s.x-13,s.y-24,31,31,'#72473f');r(s.x-7,s.y-35,19,17,'#e87543')}
   t(discoveredIslands.has(n)?s.name:'??? Secret Island',s.x,s.y+s.ry+22,12,'#fff6d8');
+ }
+ // Underwater treasure spots: bubbles, sea-floor ruins and unopened glowing chests.
+ for(const chest of underwaterChests){
+  const opened=openedUnderwaterChests.has(chest.id),shine=Math.sin(sec*4+chest.x)*3;
+  r(chest.x-17,chest.y+11,34,7,'#175b75');
+  r(chest.x-12,chest.y-6+shine,24,16,opened?'#52758b':'#8a5935');
+  r(chest.x-12,chest.y-9+shine,24,7,opened?'#697e88':'#ce9b4c');
+  r(chest.x-3,chest.y-5+shine,6,11,opened?'#8594a0':'#ffe17a');
+  for(let j=0;j<3;j++)r(chest.x-14+j*11,chest.y-23+(sec*12+j*9)%18,3,3,'#b7eaf1');
+  if(!opened){r(chest.x-1,chest.y-19+shine,3,9,'#fff7a2');r(chest.x-4,chest.y-16+shine,9,3,'#fff7a2');}
+  t(opened?'OPENED':'🤿 CHEST',chest.x,chest.y+29,10,opened?'#b5d5d6':'#fff0a5');
  }
  // Harbour return dock in the south-west.
  r(0,306,91,71,'#c5b17e');r(14,312,68,56,'#ddc494');r(32,318,5,38,'#79533e');
@@ -488,7 +532,8 @@ const treasureCards=[
  ['boss-carp','Titan Carp Trophy',650,'🏆','Rare'],
  ['boss-coral','Coral Colossus Trophy',1800,'🏆','Legendary'],
  ['boss-crystal','Crystal Serpent Trophy',4000,'🏆','Legendary'],
- ['boss-lava','Lava Leviathan Trophy',8500,'🏆','Mythic']
+ ['boss-lava','Lava Leviathan Trophy',8500,'🏆','Mythic'],
+ ...underwaterChests.map(c=>['underwater-'+c.id,c.item,c.reward,c.emoji,c.rarity])
 ];
 let collectionType='fish',collectionPage=0;
 const cardsPerPage=12;
@@ -1156,6 +1201,7 @@ function celebrateFish(f){
 }
 function fishAction(){
  if(phase==='boss'){bossInput('x');return}
+ if(area==='sea'&&nearbyUnderwaterChest()>=0){underwaterChestAction(nearbyUnderwaterChest());return}
  if(room||(area!=='lake'&&area!=='sea'))return;
  if(area==='sea'&&nearbyIsland()<0){panel('🌊 Open water','Sail closer to an island before casting.');return}
  if(phase==='waiting')return;
@@ -1246,6 +1292,7 @@ function blocked(nx,ny){
   return false;
 }
 function interact(){if(!room&&area==='sea'){
+ const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
  else if(x<115&&y>290)returnToHarbour();
  else panel('🚤 Open Sea','Sail close to an island to explore or fish, or return to the bottom-left harbour.');
@@ -1290,6 +1337,8 @@ function move(dir){
     if(!blocked(x,ny))y=ny;
   }
   if(!room&&area==='sea'){
+   const chest=nearbyUnderwaterChest();
+   if(chest>=0&&!openedUnderwaterChests.has(underwaterChests[chest].id))panel('🤿 Underwater treasure!','A glowing chest is below your boat! Press A or X to dive and open it.');
    const near=nearbyIsland();if(near!==lastIslandNearby){lastIslandNearby=near;if(near>=0)panel('🏝️ '+islands[near].name,'Press A to discover this island, X to fish for rare island catches, or head to the harbour flag to return.');}
   }
   if(!room&&area==='lake'&&x>=628){tab('village');panel('🏡 Welcome to the village!','You walked right from the lake. Explore the shops, homes and Captain Finn statue!');return}
@@ -1382,6 +1431,7 @@ function saveGame(automatic=false){
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
+   openedUnderwaterChests:[...openedUnderwaterChests],
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
    equipped:{...equipped},shopName,shopColor,
@@ -1410,6 +1460,9 @@ function loadGame(manual=false){
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
  bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
+ openedUnderwaterChests=new Set((Array.isArray(data.openedUnderwaterChests)?data.openedUnderwaterChests:[]).filter(id=>underwaterChests.some(c=>c.id===id)));
+ // Older saves may already contain the collectible, so never pay out twice.
+ for(const chest of underwaterChests)if(Array.isArray(data.collectibles)&&data.collectibles.includes('underwater-'+chest.id))openedUnderwaterChests.add(chest.id);
  boatTier=Math.min(boats.length-1,Math.max(0,Math.floor(Number(data.boatTier)||0)));
  discoveredIslands=new Set((Array.isArray(data.discoveredIslands)?data.discoveredIslands:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<islands.length));
  weatherIndex=Math.max(0,Math.min(weatherTypes.length-1,Math.floor(Number(data.weatherIndex)||0)));
@@ -1436,7 +1489,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy)]);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy),...underwaterChests.map(c=>'underwater-'+c.id)]);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
