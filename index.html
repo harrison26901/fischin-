@@ -1455,7 +1455,10 @@ $('fullscreenToggle').onclick=e=>{
  $('world').focus({preventScroll:true});
 };
 saveReady=true;
-if(!loadGame(false)){hud();draw()}
+if(!loadGame(false)){
+ if(ownerAccess){coins=OWNER_COINS;rod=OWNER_ROD_INDEX;megaGiftClaimed=true;}
+ hud();draw();
+}
 redeemOwnerLink();
 setInterval(()=>saveGame(true),10000);
 window.addEventListener('pagehide',()=>saveGame(true));
