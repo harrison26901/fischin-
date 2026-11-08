@@ -415,11 +415,49 @@ function tree(x,y){r(x+16,y+26,13,32,'#75502f');r(x+3,y+11,42,35,'#477c47');r(x+
 function character(x,y,npc=false){
  r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
  r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
+ if(!npc)drawHeldRod(x,y);
  if(!npc&&collectibles.has('hat')){
   // Olive-green bucket hat with a wide downward brim.
   r(x-9,y-29,18,4,'#638b5a');r(x-11,y-25,22,8,'#729b66');
   r(x-15,y-20,30,5,'#567f52');r(x-12,y-19,24,2,'#9dbe89');
  }
+}
+// The equipped rod is visible in the player's hand and changes with every upgrade.
+const rodPaint=[
+ ['#8b633d','#d9b37a'],['#80a452','#d6de8a'],['#8898a5','#e7ebf4'],
+ ['#d5a441','#fff0a1'],['#62b8e3','#d6fbff'],['#29a97d','#a3ffd0'],
+ ['#d35069','#ffc1cf'],['#9ecff3','#f6faff'],['#457aaf','#c5f5fc'],
+ ['#ca6545','#fdb76c'],['#b5a2ff','#fff4c4'],['#6d53c4','#80ffed'],
+ ['#eea63d','#f9eea0']
+];
+function drawHeldRod(px,py){
+ const colour=rodPaint[Math.min(rod,rodPaint.length-1)];
+ const casting=area==='lake'&&(phase==='waiting'||phase==='timing'||phase==='reeling');
+ const handleX=px+13,handleY=py+7;
+ const tipX=px+(casting?-45:41),tipY=py-(casting?72:79);
+ // Hand gripping the cork handle.
+ r(px+8,py+3,9,8,'#efb888');
+ g.save();g.lineCap='round';
+ g.strokeStyle='#322b28';g.lineWidth=7;
+ g.beginPath();g.moveTo(handleX,handleY);g.lineTo(tipX,tipY);g.stroke();
+ g.strokeStyle=colour[0];g.lineWidth=4;
+ g.beginPath();g.moveTo(handleX,handleY);g.lineTo(tipX,tipY);g.stroke();
+ g.strokeStyle=colour[1];g.lineWidth=2;
+ g.beginPath();g.moveTo(handleX+2,handleY-7);g.lineTo(tipX,tipY);g.stroke();
+ // Windings, guides, a tiny reel, and sparkle on premium rods.
+ for(let i=1;i<=3;i++){
+  const amount=i/4;
+  const gx=handleX+(tipX-handleX)*amount,gy=handleY+(tipY-handleY)*amount;
+  r(gx-2,gy-1,5,3,colour[1]);
+ }
+ r(handleX-5,handleY-13,11,9,'#343b46');
+ r(handleX-2,handleY-11,6,5,colour[1]);
+ r(handleX-7,handleY-7,7,3,'#d8a76f');
+ if(rod>=4){r(tipX-3,tipY-4,7,7,colour[1]);r(tipX-1,tipY-7,3,13,'#fff6d0')}
+ if(rod>=9){r(tipX-7,tipY-1,15,2,colour[1]);r(tipX-1,tipY-8,2,15,colour[1])}
+ // The fishing line hangs from the rod when not casting.
+ if(!casting){g.strokeStyle='#e8f5ed';g.lineWidth=1;g.beginPath();g.moveTo(tipX,tipY);g.lineTo(tipX+5,tipY+48);g.stroke();r(tipX+3,tipY+46,5,5,'#e5c285')}
+ g.restore();
 }
 function grass(){r(0,0,640,400,'#8fbd75');for(let i=0;i<95;i++)r((i*79+12)%640,(i*61+13)%400,6,3,'#74aa64')}
 function building(p){
