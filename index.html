@@ -6,25 +6,25 @@
 button,input{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:12px;background:#dba657;color:#302315;font-weight:800}button:focus-visible{outline:3px solid #fff}
 nav,.hud,.controls,.actions,.locations{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}nav button{flex:1}nav button.active{background:#8ac1a0}.hud span{background:#355448;border-radius:8px;padding:9px;flex:1;text-align:center}
 canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;background:#80b471;border:5px solid #5a755b;border-radius:12px;touch-action:none}
-.card{background:#304940;border:1px solid #627968;padding:14px;border-radius:12px;margin:10px 0}.actions button{flex:1;min-width:110px}.locations button{flex:1;min-width:95px}
+.card{background:#304940;border:1px solid #627968;padding:14px;border-radius:12px;margin:10px 0}.actions>div{flex:1;min-width:110px}.locations button{flex:1;min-width:95px}
 .controls{justify-content:space-between;align-items:center}.pad{display:grid;grid-template-columns:repeat(3,45px);gap:4px}.pad button{padding:9px;background:#54695e;color:white}.face{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);align-items:center;justify-items:center}.face button{border-radius:50%;width:43px;height:43px;background:#192d2b;color:white;border:2px solid #819489;padding:0}
 .meter{height:32px;background:#b76f62;border:3px solid #d0ae84;border-radius:7px;position:relative;overflow:hidden}.target{position:absolute;top:0;bottom:0;background:#7acd72}.needle{position:absolute;top:0;bottom:0;width:6px;background:#fff}
 #timing,#reeling{display:none}#primary{width:100%;background:#91d28b}#name{width:100%;padding:9px;border-radius:7px;background:#fff8e5;border:0;color:#342514}
 </style></head><body><main>
 <h1>🎣 Little Fishing Village</h1><small>Explore, fish, visit every shop and collect four houses. No overall timer!</small>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
-<nav><button data-tab="lake" class="active">🎣 Fishing</button><button data-tab="village">🏡 Village</button><button data-tab="shop">🏪 Fish Shop</button></nav>
+
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
 <div id="reeling"><p id="reelstatus">Reel 0 / 3</p><progress id="progress" value="0" max="3" style="width:100%;height:20px"></progress></div>
-<button id="primary">🎣 CAST LINE — X</button></div>
+<small>Use the X control to cast, hook and reel.</small></div>
 <div class="card"><b id="heading">🌊 Sunshine Lake</b><p id="message">Fish from the dock or visit your shop!</p><div class="actions" id="actions"></div></div>
-<div class="locations"><button data-visit="bait">🪱 Bait</button><button data-visit="rod">🎣 Rods</button><button data-visit="auction">🔨 Bidding</button><button data-visit="red">🏠 Red</button><button data-visit="blue">🏠 Blue</button><button data-visit="green">🏠 Green</button><button data-visit="purple">🏠 Purple</button></div>
+
 <div class="controls"><div><div class="pad"><span></span><button data-dir="up">▲</button><span></span><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div><small>MOVE / LEFT STICK</small></div>
 <div><div class="face"><button data-key="y" style="grid-column:2;grid-row:1;color:#e5cc5d">Y</button><button data-key="x" style="grid-column:1;grid-row:2;color:#89c7ef">X</button><button data-key="a" style="grid-column:3;grid-row:2;color:#85e6a0">A</button><button data-key="b" style="grid-column:2;grid-row:3;color:#ee8f89">B</button></div><small>STEAM DECK BUTTONS</small></div></div>
-<div class="card"><b>🎲 Custom fish shop sign</b><p><input id="name" maxlength="20" value="The Lucky Minnow" aria-label="Fish shop name"></p><button id="random">🎲 Random name & colour</button></div>
-<small>Keyboard: WASD / arrows move, E interact, Space fish, Tab backpack, Escape leave. Steam Deck physical buttons depend on your browser's Steam Input mapping.</small>
+
+<small>Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Use A to enter buildings; ▲/▼ to choose shop options; A to buy or sell; B to leave. X fishes, Y opens backpack. Keyboard: WASD / arrows, E, Space, Tab, Escape. Steam Deck physical buttons may need Steam Input mapping.</small>
 </main>
 <script>
 (()=>{
@@ -33,9 +33,7 @@ const home=[{id:'red',name:'RED COTTAGE',x:19,y:20,col:'#b65a4d',cost:300},{id:'
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:246,y:19,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:242,y:282,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:455,y:151,col:'#846094'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500]];
-const randomNames=['The Lucky Minnow','Captain Cod','Golden Guppy','Fish and Giggles','The Codfather','Happy Haddock','Rainbow Reels','The Salty Sardine'];
-const colors=['#587b63','#86526a','#487094','#a17442','#79629a'];
-let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,shopName=randomNames[0],shopColor=colors[0];
+let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,shopName="The Lucky Minnow",shopColor="#587b63";
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 const keys=new Set();
 function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
@@ -59,12 +57,12 @@ r(417,32,216,23,'#a55e46');for(let i=0;i<11;i++)r(421+i*19,35,17,16,i%2?'#bd735b
 r(441,66,170,43,'#453223');r(446,71,160,33,shopColor);t(shopName.toUpperCase(),526,93,shopName.length>16?11:14);
 for(let i=0;i<9;i++)r(431+i*21,123,11,22,'#f2e4bf');r(446,166,51,58,'#573b28');r(451,171,41,48,'#88cbd4');r(560,166,48,58,'#573b28');r(565,171,38,48,'#8bced2');
 r(506,165,43,110,'#563823');r(510,170,35,105,'#88542e');r(514,177,27,43,'#91c7ce');r(535,228,4,4,'#f4d179');
-t('SUNSHINE LAKE',138,33,19);
+t('SUNSHINE LAKE',138,33,19);r(514,348,122,32,'#f4dfb5');t('VILLAGE  →',576,368,15,'#513521');
 if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156);g.stroke();r(154,152,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
 }
 function village(){grass();r(283,121,72,167,'#d4b98e');r(159,193,328,44,'#d3b586');r(227,151,195,122,'#e5d0b0');
 r(275,164,94,95,'#85aeb5');r(284,171,76,80,'#6fb6c6');r(294,225,55,19,'#8d9993');r(304,191,34,33,'#92a49a');r(312,169,19,22,'#9eb4a6');r(304,162,35,8,'#738c80');r(298,198,14,10,'#eabc52');r(342,143,3,68,'#776043');
-tree(170,38);tree(582,43);tree(170,318);tree(395,327);places.forEach(building)}
+tree(170,38);tree(582,43);tree(170,318);tree(395,327);places.forEach(building);r(1,192,80,31,'#f2ddad');t('← LAKE',41,212,14,'#49301e')}
 function interior(){r(0,0,640,400,'#b58a56');for(let yy=0;yy<400;yy+=24)r(0,yy,640,3,'#805a36');r(0,0,640,105,'#785133');for(let xx=0;xx<640;xx+=30)r(xx,0,4,105,'#5b3a25');
 let p=places.find(b=>b.id===room);let name=room==='fishshop'?shopName:p?p.name:'SHOP';
 r(114,22,410,73,'#473324');r(123,31,392,55,'#ffe1a6');t(name.toUpperCase(),319,63,name.length>17?17:22,'#39291b');
@@ -76,18 +74,21 @@ function hud(){$('coins').textContent=coins;$('bag').textContent=bag.length+'/15
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'Press X when the moving white marker is in the BIG green zone.',reeling:'Press X three times to reel your fish in.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
-$('primary').textContent={ready:'🎣 CAST — X',waiting:'⏳ WAITING...',timing:'🎯 HOOK — X',reeling:'🐟 REEL — X',caught:'🎣 FISH AGAIN — X',missed:'🔄 TRY AGAIN — X'}[phase];$('primary').disabled=phase==='waiting';$('reelstatus').textContent='Reel '+reels+' / 3';$('progress').value=reels}
-function panel(a,b,buttons=[]){$('heading').textContent=a;$('message').textContent=b;let wrap=$('actions');wrap.replaceChildren();for(let [name,fn] of buttons){let b=document.createElement('button');b.textContent=name;b.onclick=fn;wrap.appendChild(b)}}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?429:325;y=area==='lake'?309:297;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Cast your line with X and enjoy easy fishing!':'Explore four houses, three shops and the statue.');if(name==='shop')enter('fishshop')}
+$('reelstatus').textContent='Reel '+reels+' / 3';$('progress').value=reels}
+let menu=[],selection=0;
+function redrawMenu(){let wrap=$('actions');wrap.replaceChildren();menu.forEach(([name],i)=>{let item=document.createElement('div');item.textContent=(selection===i?'▶ ':'  ')+name;item.style.cssText='padding:8px;border-radius:8px;flex:1;min-width:120px;background:'+(selection===i?'#b68b50':'#426457')+';color:'+(selection===i?'#20190c':'#fff3d8')+';font-weight:700';wrap.appendChild(item)})}
+function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
+function menuSelect(){if(menu[selection])menu[selection][1]()}
+function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
+function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?55:596;y=area==='lake'?309:294;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village.':'Walk to the LEFT edge to reach the lake. Press A at shop doors to enter.')}
 function enter(id){token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
 function leave(){room='';x=area==='lake'?530:405;y=308;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function visit(){let p=places.find(v=>v.id===room);if(p&&p.cost){let mine=owned.has(room);panel('🏠 '+p.name,mine?'Welcome home!':'This house costs '+p.cost+' coins.',[[mine?'☕ Relax':'Buy for '+p.cost,()=>{if(!mine){if(coins<p.cost)return need(p.cost);coins-=p.cost;owned.add(room);hud()}visit()}],['🚪 Exit',leave]]);return}
-if(room==='fishshop'){let total=bag.reduce((sum,f)=>sum+f[1],0);panel('🐟 '+shopName,'Sell your '+bag.length+' fish for '+total+' coins.',[['🪙 Sell all — '+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],['🎲 Random sign',randomSign],['🎒 Backpack',backpack],['🚪 Exit',leave]]);return}
+if(room==='fishshop'){let total=bag.reduce((sum,f)=>sum+f[1],0);panel('🐟 '+shopName,'Sell your '+bag.length+' fish for '+total+' coins.',[['🪙 Sell all — '+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],['🎒 Backpack',backpack],['🚪 Exit',leave]]);return}
 if(room==='bait')panel('🪱 Bait Shop','Bait: '+bait,[['Buy 5 — 30 coins',()=>{if(coins<30)return need(30);coins-=30;bait+=5;hud();visit()}],['Exit',leave]]);
 if(room==='rod'){let next=rods[rod+1];panel('🎣 Rod Shop','Current rod: '+rods[rod][0],[[next?'Buy '+next[0]+' — '+next[1]:'Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],['Exit',leave]])}
 if(room==='auction')panel('🔨 Bidding House',bid?'You won the Pearl Compass!':'Bid 120 coins for the Pearl Compass.',[[bid?'🏆 Prize collected':'Bid 120 coins',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;hud();visit()}],['Exit',leave]])}
-function randomSign(){let old=shopName;do{shopName=randomNames[Math.floor(Math.random()*randomNames.length)]}while(shopName===old);shopColor=colors[Math.floor(Math.random()*colors.length)];$('name').value=shopName;draw();if(room==='fishshop')visit()}
 function backpack(){panel('🎒 Backpack',bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'Your backpack is empty.',[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
@@ -98,14 +99,23 @@ phase='waiting';needle=0;direction=1;targetWidth=Math.min(74,54+rod*4);target=10
 setTimeout(()=>{if(id!==token||phase!=='waiting')return;phase='timing';hud();panel('‼️ FISH ON!','Stop the moving marker in green.')},850)}
 function near(){if(room)return y>343?'exit':'counter';if(area==='lake'){if(x>205&&x<491&&y>141&&y<247)return'fish';if(x>422&&y<280)return'fishshop';return''}
 if(x>267&&x<381&&y>149&&y<272)return'statue';let p=places.find(b=>x>b.x-6&&x<b.x+(b.id==='auction'?169:147)&&y>b.y-4&&y<b.y+132);return p?p.id:''}
-function interact(){if(room){if(near()==='exit')leave();else visit();return}let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
-function press(k){if(k==='x')fishAction();else if(k==='a')interact();else if(k==='y')backpack();else if(k==='b'){if(room)leave();else tab(area==='lake'?'village':'lake')}}
-function move(dir){let d={up:[0,-7],down:[0,7],left:[-7,0],right:[7,0]}[dir];if(!d)return;let nx=Math.max(15,Math.min(625,x+d[0])),ny=Math.max(30,Math.min(367,y+d[1]));if(!room&&area==='lake'&&nx<407&&ny<280&&!(nx>=208&&nx<=487&&ny>=154&&ny<=230))return;x=nx;y=ny;draw()}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-document.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>{if(area!=='village')tab('village');enter(b.dataset.visit)});
+function interact(){if(room){if(menu.length)menuSelect();else if(near()==='exit')leave();else visit();return}let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
+function press(k){if(k==='x')fishAction();else if(k==='a'){if(menu.length&&room)menuSelect();else interact()}else if(k==='y')backpack();else if(k==='b'){if(room)leave();else if(menu.length)panel('🌿 Explore','Keep walking to discover the village.')}}
+function move(dir){
+if(room&&menu.length){if(dir==='up'||dir==='down')menuStep(dir);return}
+let d={up:[0,-7],down:[0,7],left:[-7,0],right:[7,0]}[dir];if(!d)return;
+let nx=Math.max(10,Math.min(632,x+d[0])),ny=Math.max(30,Math.min(367,y+d[1]));
+if(!room&&area==='lake'&&nx<407&&ny<280&&!(nx>=208&&nx<=487&&ny>=154&&ny<=230))return;
+x=nx;y=ny;
+if(!room&&area==='lake'&&x>=628){tab('village');return}
+if(!room&&area==='village'&&x<=12){tab('lake');return}
+draw()
+}
+
+
 document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset.key));
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
-$('primary').onclick=fishAction;$('random').onclick=randomSign;$('name').oninput=e=>{shopName=e.target.value||'Fish Shop';draw()};
+
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
