@@ -378,7 +378,7 @@ const villagers=[
  {id:'sage',name:'Sage',x:1241,y:1007,color:'#69a39f',fish:'Legendary Shark',count:1,reward:4500}
 ];
 const villagerQuests={};
-let aquariumFish=[];
+let aquariumFish=[],aquariumViewing=false;
 function drawVillagers(){
  for(const v of villagers){
   character(v.x,v.y,true);
@@ -415,14 +415,43 @@ function onQuestFishCaught(name){
  }
 }
 function aquariumMenu(){
+ aquariumViewing=collectibles.has('aquarium');draw();
  if(!collectibles.has('aquarium'))return panel('🐠 Aquarium','Buy an aquarium at the Fish Shop for 250 coins to keep your favourite catches.',[['Back to shop',visit]]);
  panel('🐠 Your Aquarium',
   aquariumFish.length?'Your tank holds '+aquariumFish.length+'/30 fish: '+aquariumFish.map(f=>f[0]).join(', '):'Your tank is empty. Put fish from your backpack in it to keep them forever!',
  [
   ...bag.map((f,i)=>['🐟 Keep '+f[0]+' in tank',()=>{if(aquariumFish.length>=30)return panel('🐠 Aquarium full','You can keep up to 30 fish.',[['Back',aquariumMenu]]);aquariumFish.push(bag.splice(i,1)[0]);hud();draw();aquariumMenu()}]),
   ...aquariumFish.map((f,i)=>['↩️ Take '+f[0]+' out',()=>{if(bag.length>=15)return panel('🎒 Backpack full','Sell fish before taking any out of your aquarium.',[['Back',aquariumMenu]]);bag.push(aquariumFish.splice(i,1)[0]);hud();draw();aquariumMenu()}]),
-  ['🚪 Back to fish shop',visit]
+  ['🚪 Back to fish shop',()=>{aquariumViewing=false;visit()}]
  ]);
+}
+function aquariumScene(){
+ r(0,0,640,400,'#213f53');
+ r(24,19,592,358,'#684b31');r(35,31,570,322,'#83cfdd');
+ const now=performance.now()/1000;
+ for(let i=0;i<26;i++){
+  const bx=55+(i*73)%532,by=337-((now*(8+i%4*3)+i*41)%297);
+  r(bx,by,3+(i%3),3+(i%3),'#c2f4ed');
+ }
+ r(39,324,562,27,'#d5bf86');
+ for(let i=0;i<12;i++){
+  const px=50+i*48;
+  r(px,306,5,26,'#497f65');r(px-8,300,5,25,'#5f9e79');r(px+6,295,5,30,'#4b8c6d');
+ }
+ const shades=['#f3c978','#f2a8a5','#a3d8fb','#c9a8ee','#e8f3ee'];
+ for(let i=0;i<aquariumFish.length;i++){
+  const f=aquariumFish[i],speed=10+(i%4)*4;
+  const base=40+(i*31)%260;
+  const tx=50+((i*89+now*speed)%535),ty=base+Math.sin(now*1.6+i)*7;
+  const fishSize=f[1]>=1000?22:f[1]>=200?17:12;
+  const col=shades[i%shades.length];
+  r(tx,ty,fishSize,Math.max(6,fishSize*.48),col);
+  r(tx-7,ty-3,8,Math.max(8,fishSize*.7),col);
+  r(tx+fishSize-5,ty+2,2,2,'#2c5363');
+ }
+ r(24,19,592,12,'#bb935b');r(24,352,592,25,'#a17b4b');
+ t('YOUR AQUARIUM • '+aquariumFish.length+'/30 FISH',320,58,19,'#fff8db');
+ if(!aquariumFish.length)t('Catch fish and move them here from your backpack!',320,195,16,'#fff7d3');
 }
 function drawAquarium(){
  if(room!=='fishshop'||!collectibles.has('aquarium'))return;
@@ -830,7 +859,7 @@ r(275,350,91,50,theme.trim);
 
 function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
-if(room){interior();character(x,y)}
+if(room){if(aquariumViewing&&room==='fishshop')aquariumScene();else {interior();character(x,y)}}
 else if(area==='lake'){lake();character(x,y)}
 else if(area==='sea'){seaScene()}
 else{
@@ -859,8 +888,8 @@ function panel(a,b,options=[]){$('heading').textContent=a;$('message').textConte
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
 function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
-function leave(){room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
+function enter(id){aquariumViewing=false;outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
+function leave(){aquariumViewing=false;room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
 if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
@@ -870,6 +899,7 @@ if(after)after();
 hud();draw();visit();
 }
 function visit(){
+aquariumViewing=false;draw();
 const p=places.find(v=>v.id===room);
 if(p&&p.cost){
  const mine=owned.has(room);
@@ -1097,6 +1127,7 @@ function saveGame(automatic=false){
  }
 }
 function loadGame(manual=false){
+ aquariumViewing=false;
  let data;
  try{
   const raw=localStorage.getItem(SAVE_KEY);
@@ -1154,7 +1185,7 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(!room&&(area==='lake'||area==='sea')&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(((!room&&(area==='lake'||area==='sea'))||(room==='fishshop'&&aquariumViewing))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
