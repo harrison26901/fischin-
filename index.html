@@ -137,7 +137,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
 <div id="save-controls"><button id="save-game" type="button">💾 Save Game</button><button id="load-game" type="button">📂 Load Game</button><button id="delete-save" type="button">🗑️ Delete Save</button><small id="save-status" role="status" aria-live="polite">Autosave enabled</small></div>
-<div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
+<div class="hud"><span id="weather-hud">☀️ Sunny</span><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
 <button id="collection-open" type="button" title="Open your collection book (C)">📖 Collection Book</button>
 <div id="collection-modal" hidden role="dialog" aria-modal="true" aria-labelledby="collection-heading">
@@ -215,6 +215,7 @@ const $=id=>document.getElementById(id),g=$('world').getContext('2d');g.imageSmo
 const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:'blue',name:'BLUE HOUSE',x:850,y:70,col:'#5488b3',cost:450},{id:'green',name:'GREEN CABIN',x:100,y:530,col:'#4f895e',cost:600},{id:'purple',name:'PURPLE HOUSE',x:850,y:530,col:'#956db0',cost:1200}];
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
+const allIslandFish=islandFish.flat();
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000],['Poseidon',400000],['Nebula',550000],['Inferno',750000],['Frostbite',1000000],['Voidwalker',1400000],['Galaxy',2000000],['Ocean King',2750000],['Eternal',3500000],['God of the Sea',5000000]];
 const clothes=[
@@ -248,6 +249,109 @@ function clothingMenu(){
  ]);
 }
 let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+
+const boats=[['No boat',0,0],['Rowboat',300,5],['Sailboat',1500,7],['Speedboat',8000,10]];
+const islands=[
+ {name:'Palm Paradise',x:202,y:114,rx:58,ry:41,color:'#79b777'},
+ {name:'Crystal Cove',x:462,y:118,rx:61,ry:46,color:'#82c0c4'},
+ {name:'Volcano Isle',x:367,y:300,rx:64,ry:49,color:'#b87958'}
+];
+const islandFish=[
+ [['Coconut Snapper',120],['Palm Ray',360],['Golden Parrotfish',1150]],
+ [['Crystal Guppy',170],['Sapphire Eel',480],['Moonlight Manta',1800]],
+ [['Emberfin',250],['Lava Grouper',720],['Volcanic Leviathan',3800]]
+];
+const weatherTypes=[['Sunny','☀️'],['Cloudy','☁️'],['Rainy','🌧️'],['Stormy','⛈️']];
+let boatTier=0,discoveredIslands=new Set(),weatherIndex=0,lastWeatherChange=performance.now(),lastIslandNearby=-1;
+function nearbyIsland(){
+ if(area!=='sea')return -1;
+ for(let i=0;i<islands.length;i++){
+  const s=islands[i],dx=x-s.x,dy=y-s.y;
+  if(dx*dx/(105*105)+dy*dy/(86*86)<1)return i;
+ }
+ return -1;
+}
+function returnToHarbour(){
+ token++;phase='ready';pending=null;area='lake';room='';x=142;y=309;
+ keys.clear();lastIslandNearby=-1;hud();draw();
+ panel('⚓ Sunshine Harbour','Back safely! Sell your island fish at the Fish Shop, or set sail again.');
+}
+function sailAway(){
+ if(!boatTier)return boatShop();
+ token++;phase='ready';pending=null;room='';area='sea';x=64;y=339;
+ keys.clear();lastIslandNearby=-1;hud();draw();
+ panel('⛵ The Open Sea','Steer with WASD or arrow keys. Press A near an island to discover it, then X to fish. Press A at the harbour flag (bottom left) to go home.');
+}
+function boatShop(){
+ const next=boats[boatTier+1];
+ panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
+  ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
+  ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
+    if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['Back',boatShop]]);
+    coins-=next[1];boatTier++;hud();draw();boatShop();
+  }]]:[]),
+  ['🌊 Back to lake',()=>panel('🌊 Sunshine Lake','Fish from the dock or explore the village.')]
+ ]);
+}
+function seaScene(){
+ const sec=performance.now()/1000;
+ r(0,0,640,400,'#247b9d');
+ for(let i=0;i<105;i++)r((i*113+sec*(8+i%3*2))%660-12,(i*61+17)%395,14+i%3*6,2,i%3===0?'#94d4dc':'#479fb9');
+ for(let n=0;n<islands.length;n++){
+  const s=islands[n];g.fillStyle='#e7cf96';g.beginPath();g.ellipse(s.x,s.y,s.rx+10,s.ry+8,0,0,Math.PI*2);g.fill();
+  g.fillStyle=s.color;g.beginPath();g.ellipse(s.x,s.y,s.rx,s.ry,0,0,Math.PI*2);g.fill();
+  if(n===0){tree(s.x-31,s.y-31);tree(s.x+14,s.y-27)}
+  if(n===1)for(let j=0;j<5;j++){r(s.x-43+j*19,s.y-20+(j%2)*25,12,18,'#c9f4fa');r(s.x-40+j*19,s.y-25+(j%2)*25,6,7,'#eefcff')}
+  if(n===2){r(s.x-29,s.y+2,62,31,'#714842');r(s.x-13,s.y-24,31,31,'#72473f');r(s.x-7,s.y-35,19,17,'#e87543')}
+  t(discoveredIslands.has(n)?s.name:'??? Secret Island',s.x,s.y+s.ry+22,12,'#fff6d8');
+ }
+ // Harbour return dock in the south-west.
+ r(0,306,91,71,'#c5b17e');r(14,312,68,56,'#ddc494');r(32,318,5,38,'#79533e');
+ r(37,318,24,5,'#fff3d0');t('HARBOUR',47,392,12);
+ drawBoat(x,y);
+ if(phase==='waiting'||phase==='timing'||phase==='reeling'){
+  g.strokeStyle='#f8f0d9';g.lineWidth=2;g.beginPath();g.moveTo(x+13,y-10);g.lineTo(x+34,y-27);g.stroke();
+  r(x+30,y-29,7,7,phase==='timing'?'#f9dd77':'#ed8b71');
+ }
+}
+function drawBoat(px,py){
+ const hull=boatTier===3?'#d96d55':boatTier===2?'#e6c986':'#96623f';
+ r(px-20,py-2,40,15,'#1a4b62');r(px-17,py-6,34,15,hull);
+ r(px-10,py-4,20,8,'#5d4331');r(px-3,py-12,6,12,'#ead0a7');
+ if(boatTier>=2){r(px+1,py-34,3,23,'#624832');g.fillStyle='#fff3d3';g.beginPath();g.moveTo(px+4,py-33);g.lineTo(px+19,py-15);g.lineTo(px+4,py-15);g.fill()}
+ if(boatTier===3){r(px-17,py+8,34,5,'#f7cf5f');r(px-8,py-9,18,6,'#f7ece3')}
+}
+function drawWeather(){
+ if(room)return;
+ const w=weatherIndex;
+ if(w===0)return;
+ g.save();g.setTransform(1,0,0,1,0,0);
+ if(w===1){g.fillStyle='rgba(55,75,86,.16)';g.fillRect(0,0,640,400)}
+ if(w>=2){
+  g.fillStyle=w===3?'rgba(18,31,65,.30)':'rgba(46,71,96,.18)';
+  g.fillRect(0,0,640,400);
+  const tick=performance.now()/1000;
+  g.strokeStyle=w===3?'#b4c8e3':'#a6d5e5';g.lineWidth=1.3;g.beginPath();
+  for(let i=0;i<(w===3?100:65);i++){
+   const rx=(i*91+tick*70)%690-30,ry=(i*73+tick*120)%450-25;
+   g.moveTo(rx,ry);g.lineTo(rx-6,ry+14);
+  }
+  g.stroke();
+  if(w===3&&Math.floor(tick*2)%19===0){g.fillStyle='rgba(237,244,255,.16)';g.fillRect(0,0,640,400)}
+ }
+ g.restore();
+}
+function discoverIsland(i){
+ if(i<0)return;
+ const s=islands[i],first=!discoveredIslands.has(i);
+ if(first)discoveredIslands.add(i);
+ panel(first?'🏝️ ISLAND DISCOVERED!':'🏝️ '+s.name,
+  (first?'You found '+s.name+'! ':'Welcome back to '+s.name+'. ')+
+  'Press X to fish for special island catches. Each island has its own fish!',
+  [['🎣 Fish here',fishAction],['⚓ Return to harbour',returnToHarbour]]);
+ draw();
+}
+
 const discoveredFish=new Set();
 const discoveredTreasures=new Set();
 const treasureCards=[
@@ -280,7 +384,7 @@ function cardEmoji(name,rarity){
  return '🐟';
 }
 function renderCollection(){
- const all=collectionType==='fish'?[...fish,...mythicFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
+ const all=collectionType==='fish'?[...fish,...mythicFish,...allIslandFish].map(([name,value])=>({id:name,name,value,rarity:cardRarity(name,value),emoji:cardEmoji(name,cardRarity(name,value)),found:discoveredFish.has(name)})):
  treasureCards.map(([id,name,value,emoji,rarity])=>({id,name,value,rarity,emoji,found:discoveredTreasures.has(id)||collectibles.has(id)}));
  const filter=$('collection-query').value.trim().toLowerCase(),only=$('collection-found-only').checked;
  const filtered=all.filter(v=>(!filter||v.name.toLowerCase().includes(filter))&&(!only||v.found));
@@ -642,15 +746,16 @@ function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
 if(room){interior();character(x,y)}
 else if(area==='lake'){lake();character(x,y)}
+else if(area==='sea'){seaScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
  g.translate(-cx,-cy);village();character(x,y);
 }
-g.restore();
+g.restore();drawWeather();
 }
-function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
-$('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
+function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+$('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X with a steady rhythm. Let the tension drop between pulls.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
 $('reelstatus').textContent=phase==='reeling'?'Reel the fish in!':'Get ready to reel';updateFishingDisplay()}
@@ -740,7 +845,8 @@ function celebrateFish(f){
  celebrationTimer=setTimeout(()=>{overlay.className='';overlay.querySelectorAll('.sparkle').forEach(el=>el.remove())},mythic?4800:legendary?3800:3000);
 }
 function fishAction(){
- if(room||area!=='lake')return;
+ if(room||(area!=='lake'&&area!=='sea'))return;
+ if(area==='sea'&&nearbyIsland()<0){panel('🌊 Open water','Sail closer to an island before casting.');return}
  if(phase==='waiting')return;
  if(phase==='timing'){
   const within=needle>=target-3&&needle<=target+targetWidth+3;
@@ -769,7 +875,7 @@ function fishAction(){
  targetWidth=Math.min(88,38+rod*3);
  target=8+Math.random()*(84-targetWidth);
  const roll=Math.random();
- pending=roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
+ pending=area==='sea'?islandFish[nearbyIsland()][roll<.62?0:roll<.9?1:2]:roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
  const id=++token;hud();draw();panel('🎣 Line cast!','Watch for a bite...');
  const delay=750+Math.random()*1450;
  setTimeout(()=>{
@@ -780,7 +886,9 @@ function fishAction(){
 }
 function near(){
   if(room)return y>343?'exit':'counter';
+  if(area==='sea')return nearbyIsland()>=0?'island':x<115&&y>290?'harbour':'';
   if(area==='lake'){
+    if(x<200&&y>270)return 'harbour';
     // Fish shop door is accessible from the path, not through its walls.
     if(x>=491&&x<=564&&y>=263&&y<=328)return 'fishshop';
     if(x>=201&&x<=495&&y>=136&&y<=260)return 'fish';
@@ -800,6 +908,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
+  if(area==='sea')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -823,13 +932,18 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(room){
+function interact(){if(!room&&area==='sea'){
+ const i=nearbyIsland();if(i>=0)discoverIsland(i);
+ else if(x<115&&y>290)returnToHarbour();
+ else panel('🚤 Open Sea','Sail close to an island to explore or fish, or return to the bottom-left harbour.');
+ return;
+}if(room){
  if(shopping){menuSelect();return}
  if(y>337){leave();return}
  if(y<=305&&y>=253&&x>=185&&x<=455){shopping=true;visit();return}
  panel('🛍️ Explore the shop','Move towards the counter at the top and press A to browse. Press B to exit.');
  return
-}let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
+}let n=near();if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
  if(k==='x')fishAction()
  else if(k==='a')interact();
@@ -841,16 +955,20 @@ function press(k){
 }
 function move(dir){
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
-  const d={up:[0,-7],down:[0,7],left:[-7,0],right:[7,0]}[dir];
+  const step=area==='sea'?boats[boatTier][2]:7;
+  const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
   if(!d)return;
-  const nx=Math.max(10,Math.min(room||area==='lake'?632:VILLAGE_W-10,x+d[0]));
-  const ny=Math.max(30,Math.min(room||area==='lake'?367:VILLAGE_H-30,y+d[1]));
+  const nx=Math.max(10,Math.min(room||area!=='village'?632:VILLAGE_W-10,x+d[0]));
+  const ny=Math.max(20,Math.min(room||area!=='village'?367:VILLAGE_H-30,y+d[1]));
   if(!blocked(nx,ny)){
     x=nx;y=ny;
   }else{
     // Slide along a wall instead of getting stuck at a corner.
     if(!blocked(nx,y))x=nx;
     if(!blocked(x,ny))y=ny;
+  }
+  if(!room&&area==='sea'){
+   const near=nearbyIsland();if(near!==lastIslandNearby){lastIslandNearby=near;if(near>=0)panel('🏝️ '+islands[near].name,'Press A to discover this island, X to fish for rare island catches, or head to the harbour flag to return.');}
   }
   if(!room&&area==='lake'&&x>=628){tab('village');panel('🏡 Welcome to the village!','You walked right from the lake. Explore the shops, homes and Captain Finn statue!');return}
   if(!room&&area==='village'&&x<=12){tab('lake');return}
@@ -877,7 +995,7 @@ function saveGame(automatic=false){
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
-   owned:[...owned],
+   owned:[...owned],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
    equipped:{...equipped},shopName,shopColor,
@@ -902,13 +1020,18 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':'lake';
+ area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
+ boatTier=Math.min(boats.length-1,Math.max(0,Math.floor(Number(data.boatTier)||0)));
+ discoveredIslands=new Set((Array.isArray(data.discoveredIslands)?data.discoveredIslands:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<islands.length));
+ weatherIndex=Math.max(0,Math.min(weatherTypes.length-1,Math.floor(Number(data.weatherIndex)||0)));
+ if(area==='sea'&&!boatTier)area='lake';
+ lastWeatherChange=performance.now();
  x=Math.max(12,Math.min(area==='village'?VILLAGE_W-12:625,Number(data.x)||430));
  y=Math.max(30,Math.min(area==='village'?VILLAGE_H-30:365,Number(data.y)||307));
  coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
  rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
- const knownFish=new Map([...fish,...mythicFish].map(([name,value])=>[name,value]));
+ const knownFish=new Map([...fish,...mythicFish,...allIslandFish].map(([name,value])=>[name,value]));
  bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
  const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium']);
@@ -939,7 +1062,8 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(!room&&area==='lake'&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}if(phase==='timing'){
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(!room&&(area==='lake'||area==='sea')&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
