@@ -126,14 +126,30 @@ r(506,165,43,110,'#563823');r(510,170,35,105,'#88542e');r(514,177,27,43,'#91c7ce
 
 if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edda';g.lineWidth=2;g.beginPath();g.moveTo(x-6,y-13);g.lineTo(158,156);g.stroke();r(154,152,8,9,phase==='timing'?'#f8d46d':'#ee715a')}
 }
+function cobblePath(px,py,w,h){
+  // Clipping ensures the staggered cobbles stay inside paths and plazas.
+  g.save();
+  g.beginPath();g.rect(px,py,w,h);g.clip();
+  r(px,py,w,h,'#796f66');
+  const shades=['#bcb3a5','#aca69a','#ccc2b1','#9f9a90','#b7b0a3'];
+  for(let row=0,yy=py-3;yy<py+h+13;row++,yy+=13){
+    for(let col=0,xx=px-20+(row%2)*12;xx<px+w+15;col++,xx+=25){
+      const shade=shades[(row*7+col*3+col*row+10000)%shades.length];
+      r(xx+1,yy+1,22,10,'#514e49');
+      r(xx+1,yy,20,9,shade);
+      r(xx+3,yy+1,15,2,'#e4dac9');
+    }
+  }
+  g.restore();
+}
 function village(){
 r(0,0,VILLAGE_W,VILLAGE_H,'#8fbd75');
 for(let i=0;i<300;i++)r((i*79+12)%VILLAGE_W,(i*61+13)%VILLAGE_H,6,3,'#74aa64');
-// Wide village lanes with room to walk around buildings.
-r(0,335,VILLAGE_W,65,'#d4b98e');
-r(159,190,55,420,'#d4b98e');r(414,190,55,420,'#d4b98e');
-r(670,190,55,420,'#d4b98e');r(920,190,55,420,'#d4b98e');
-r(478,305,142,120,'#e5d0b0');
+// Staggered stone cobbles on every village path.
+cobblePath(0,335,VILLAGE_W,65);
+cobblePath(159,190,55,420);cobblePath(414,190,55,420);
+cobblePath(670,190,55,420);cobblePath(920,190,55,420);
+cobblePath(478,305,142,120);
 // Captain Finn's central fountain.
 r(504,313,90,87,'#85aeb5');r(511,320,76,73,'#6fb6c6');
 r(523,372,53,16,'#8d9993');r(538,339,23,29,'#92a49a');
