@@ -150,7 +150,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
  </section>
 </div>
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
-<button id="pawn-shoot" type="button" hidden aria-label="Shoot in pawn shop">🎯 SHOOT (X)</button>
+
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
 <div id="reeling">
@@ -164,10 +164,9 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 <small>Use the X control to cast, hook and reel.</small></div>
 <div class="card messagePanel"><b id="heading">🌊 Sunshine Lake</b><p id="message">Fish from the dock or visit your shop!</p><div class="actions" id="actions"></div></div>
 
-<div class="controls"><div><div class="pad"><span></span><button data-dir="up">▲</button><span></span><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div><small>MOVE / LEFT STICK</small></div>
-<div><div class="face"><button data-key="y" style="grid-column:2;grid-row:1;color:#e5cc5d">Y</button><button data-key="x" style="grid-column:1;grid-row:2;color:#89c7ef">X</button><button data-key="a" style="grid-column:3;grid-row:2;color:#85e6a0">A</button><button data-key="b" style="grid-column:2;grid-row:3;color:#ee8f89">B</button></div><small>STEAM DECK BUTTONS</small></div></div>
+<div class="controls"><div><div class="face"><button data-key="y" style="grid-column:2;grid-row:1;color:#e5cc5d">Y</button><button data-key="x" style="grid-column:1;grid-row:2;color:#89c7ef">X</button><button data-key="a" style="grid-column:3;grid-row:2;color:#85e6a0">A</button><button data-key="b" style="grid-column:2;grid-row:3;color:#ee8f89">B</button></div><small>STEAM DECK BUTTONS</small></div></div>
 
-<small class="helpText">Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Use A to enter buildings; ▲/▼ to choose shop options; A to buy or sell; B to leave. X fishes, Y opens backpack. Keyboard: WASD / arrows, E, Space, Tab, Escape. Steam Deck physical buttons may need Steam Input mapping.</small>
+<small class="helpText">Walk to the RIGHT edge of the lake to enter the village. Walk to the LEFT edge of the village to return. Keyboard: WASD/arrows move, E/Enter interact, Space fish, Tab backpack, Escape leave. On-screen ABXY buttons remain; use Up/Down for shop menus.</small>
 </main>
 
 <script>
@@ -214,7 +213,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 (()=>{
 const $=id=>document.getElementById(id),g=$('world').getContext('2d');g.imageSmoothingEnabled=false;
 const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:'blue',name:'BLUE HOUSE',x:850,y:70,col:'#5488b3',cost:450},{id:'green',name:'GREEN CABIN',x:100,y:530,col:'#4f895e',cost:600},{id:'purple',name:'PURPLE HOUSE',x:850,y:530,col:'#956db0',cost:1200}];
-const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:595,y:70,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:350,y:530,col:'#836948'}];
+const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000],['Poseidon',400000],['Nebula',550000],['Inferno',750000],['Frostbite',1000000],['Voidwalker',1400000],['Galaxy',2000000],['Ocean King',2750000],['Eternal',3500000],['God of the Sea',5000000]];
@@ -248,7 +247,7 @@ function clothingMenu(){
  ['🎣 Back to Rod Shop',visit]
  ]);
 }
-let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 const discoveredFish=new Set();
 const discoveredTreasures=new Set();
 const treasureCards=[
@@ -349,152 +348,6 @@ function loseFish(reason){
 
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
-let robberActive=false,robberAt=0,nextRobbery=0,defenceFlash=0,robbersStopped=0;
-let aimX=461,aimY=243,lastShotAt=0,shotMissUntil=0;
-const pawnCustomers=[
- {name:'Mia',color:'#bf7085',skin:'#e1b28c',item:'Silver Necklace',emoji:'📿',value:180,type:'pawn'},
- {name:'Oliver',color:'#5587b9',skin:'#c48c64',item:'Old Pocket Watch',emoji:'⌚',value:240,type:'pawn'},
- {name:'Ava',color:'#7d65a8',skin:'#efc5a1',item:'Ruby Ring',emoji:'💍',value:550,type:'pawn'},
- {name:'Leo',color:'#539874',skin:'#b87958',item:'Antique Clock',emoji:'🕰️',value:350,type:'buy'},
- {name:'Isla',color:'#d29d4f',skin:'#df9b75',item:'Golden Bracelet',emoji:'📿',value:750,type:'pawn'},
- {name:'Noah',color:'#72919b',skin:'#c99477',item:'Mystery Chest',emoji:'📦',value:800,type:'buy'},
- {name:'Zoe',color:'#cf7888',skin:'#ecc4a2',item:'Giant Pearl',emoji:'🦪',value:325,type:'buy'}
-];
-let pawnCustomer=null,nextCustomerAt=0,customerServed=0;
-let authenticAppraisals=0,fakeDetected=0;
-const appraisalTools=[
- {id:'loupe',label:'🔍 Jeweller’s Loupe',real:'Tiny maker’s marks and fine craftsmanship.',fake:'Rough edges and a copied hallmark.'},
- {id:'magnet',label:'🧲 Magnet Tester',real:'No suspicious reaction from the tested metal.',fake:'The metal reacts strongly to the test magnet.'},
- {id:'scanner',label:'💎 Gem Scanner',real:'The scanner reports a genuine material match.',fake:'The scanner flags imitation materials.'}
-];
-function appraiseWith(toolId){
- if(!pawnCustomer||pawnCustomer.progress<1||pawnCustomer.type!=='pawn')return;
- const customer=pawnCustomer;
- if(customer.tests.includes(toolId))return visit();
- customer.tests.push(toolId);
- customer.lastTest=toolId;
- if(customer.tests.length>=2)customer.identified=true;
- visit();draw();
-}
-function appraisalDescription(customer){
- if(customer.type!=='pawn')return 'They want to buy an item from your shop.';
- const findings=customer.tests.map(id=>{
-  const tool=appraisalTools.find(v=>v.id===id);
-  return tool.label+': '+(customer.genuine?tool.real:tool.fake);
- });
- return (findings.length?findings.join('  |  '):'Use your appraisal tools to check this jewellery before paying.')+
- (customer.identified?'  VERDICT: '+(customer.genuine?'✅ GENUINE':'❌ COUNTERFEIT'):'  Tests completed: '+customer.tests.length+'/2');
-}
-
-function scheduleCustomer(){nextCustomerAt=performance.now()+3500+Math.random()*6500}
-function serveCustomer(accept){
- const customer=pawnCustomer;
- if(!customer||customer.progress<1||room!=='pawn')return;
- if(accept){
-  if(customer.type==='pawn'){
-   if(coins<customer.value)return panel('🪙 Not enough coins','You need '+customer.value+' coins to buy '+customer.item+'.',[['Back',visit]]);
-   coins-=customer.value;
-   if(customer.genuine){
-    authenticAppraisals++;discoveredTreasures.add(customer.item);
-   }
-  }else coins+=customer.value;
-  customerServed++;
- }else if(customer.type==='pawn'&&!customer.genuine)fakeDetected++;
- const outcome=accept&&customer.type==='pawn'
-  ?customer.genuine?'✅ Authentic '+customer.item+' added to your collection.':'⚠️ That '+customer.item+' was FAKE! You lost '+customer.value+' coins.'
-  :accept?'You earned '+customer.value+' coins selling '+customer.item+'.'
-  :customer.name+' leaves politely.';
- pawnCustomer=null;scheduleCustomer();hud();draw();
- panel(accept?'🧾 TRANSACTION COMPLETE':'👋 NEXT CUSTOMER',outcome+' Customers served: '+customerServed+'. Fakes refused: '+fakeDetected+'.',[['Back to shop',visit]]);
-}
-function customerOptions(){
- if(!pawnCustomer||pawnCustomer.progress<1)return null;
- const customer=pawnCustomer;
- const result=[];
- if(customer.type==='pawn'){
-  for(const tool of appraisalTools){
-   result.push([customer.tests.includes(tool.id)?'✅ '+tool.label+' — checked':tool.label+' — test item',()=>appraiseWith(tool.id)]);
-  }
- }
- result.push(['✅ '+(customer.type==='pawn'?'Buy':'Sell')+' '+customer.item+' — '+customer.value+' coins',()=>serveCustomer(true)]);
- result.push(['❌ Decline offer',()=>serveCustomer(false)]);
- result.push(['🏪 Regular shop menu',()=>{pawnCustomerMenu=false;visit()}]);
- return result;
-}
-let pawnCustomerMenu=true;
-function updateCustomers(now,dt){
- if(room!=='pawn'||!pawnOwned||robberActive)return;
- if(!nextCustomerAt)scheduleCustomer();
- if(!pawnCustomer&&now>=nextCustomerAt){
-  const data=pawnCustomers[Math.floor(Math.random()*pawnCustomers.length)];
-  pawnCustomer={...data,progress:0,lastShown:false,genuine:Math.random()<.64,tests:[],identified:false,lastTest:null};
-  pawnCustomerMenu=true;
- }
- if(!pawnCustomer)return;
- pawnCustomer.progress=Math.min(1,pawnCustomer.progress+dt/2300);
- if(pawnCustomer.progress>=1&&!pawnCustomer.lastShown){
-  pawnCustomer.lastShown=true;
-  pawnCustomerMenu=true;
-  visit();
- }
-}
-function drawPawnCustomer(){
- if(!pawnCustomer)return;
- const p=pawnCustomer.progress;
- const cx=320+Math.sin(p*Math.PI)*25,feet=242+p*55;
- const scale=.45+p*.8;
- g.save();g.translate(cx,feet);g.scale(scale,scale);
- r(-21,-82,42,46,pawnCustomer.color);r(-14,-36,12,27,'#393944');r(2,-36,12,27,'#393944');
- r(-16,-113,32,34,pawnCustomer.skin);r(-18,-120,36,13,'#3e322d');
- r(-23,-77,9,37,pawnCustomer.skin);r(14,-77,9,37,pawnCustomer.skin);
- r(-8,-98,4,4,'#302e35');r(6,-98,4,4,'#302e35');r(-3,-86,8,2,'#a16b66');
- g.restore();
- if(p>=1){t(pawnCustomer.name,320,155,15,'#fff1b0');t(pawnCustomer.emoji+' '+pawnCustomer.item,320,174,12,'#ffefa4')}
-}
-
-function firePawn(){
- if(room!=='pawn'||!pawnOwned)return;
- const now=performance.now();
- if(now-lastShotAt<250)return;
- lastShotAt=now;defenceFlash=now+230;
- if(robberActive&&aimX>=430&&aimX<=493&&aimY>=173&&aimY<=311)stopRobber();
- else{
-  shotMissUntil=now+500;
-  if(robberActive)panel('🎯 MISSED!','Move the crosshair onto the robber and shoot again. Mouse/touch to aim; X, Space or SHOOT to fire.');
-  draw();
- }
-}
-function aimFromPointer(e){
- const rect=$('world').getBoundingClientRect();
- aimX=Math.max(0,Math.min(640,(e.clientX-rect.left)/rect.width*640));
- aimY=Math.max(0,Math.min(400,(e.clientY-rect.top)/rect.height*400));
- draw();
-}
-function scheduleRobbery(){nextRobbery=performance.now()+18000+Math.random()*16000}
-function stopRobber(){
- if(room!=='pawn'||!robberActive)return;
- robberActive=false;defenceFlash=performance.now()+400;robbersStopped++;
- coins+=500;
- panel('🛡️ PAWN SHOP SAVED!','You scared the robber away! +500 coins. Robbers stopped: '+robbersStopped+'.');
- scheduleRobbery();hud();draw();
-}
-function checkRobbery(now){
- if(room!=='pawn'||!pawnOwned)return;
- if(!nextRobbery)scheduleRobbery();
- if(!robberActive&&now>=nextRobbery){
-  robberActive=true;robberAt=now;
-  panel('🚨 ROBBER IN THE PAWN SHOP!','Aim at the robber with your mouse or touch, then click, press X/Space, or tap SHOOT!');
- }
- if(robberActive&&now-robberAt>7000){
-  robberActive=false;
-  panel('💨 ROBBER ESCAPED!','The robber ran away! Press X faster next time.');
-  scheduleRobbery();
- }
-}
-const keys=new Set();
-function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
-function t(s,x,y,n=13,c='#fff3cf'){g.fillStyle='#493222';g.font='bold '+n+'px monospace';g.textAlign='center';g.fillText(s,x+1,y+2);g.fillStyle=c;g.fillText(s,x,y)}
-function tree(x,y){r(x+16,y+26,13,32,'#75502f');r(x+3,y+11,42,35,'#477c47');r(x+9,y,30,27,'#6aa35a')}
 function character(x,y,npc=false){
  r(x-9,y-20,18,7,'#61422b');r(x-9,y-13,18,13,'#efb888');
  r(x-11,y,22,18,'#df9e3f');r(x-8,y+18,7,11,'#3f6389');r(x+1,y+18,7,11,'#3f6389');
@@ -562,8 +415,8 @@ function grass(){r(0,0,640,400,'#8fbd75');for(let i=0;i<95;i++)r((i*79+12)%640,(
 function building(p){
   const x=p.x,y=p.y,w=p.id==='auction'?167:145;
   const isShop=!p.cost;
-  const walls={bait:'#f3d697',rod:'#a9794a',auction:'#75628b',pawn:'#7e756c'};
-  const trims={bait:'#e5a952',rod:'#4e7f85',auction:'#d8b56c',pawn:'#55473b'};
+  const walls={bait:'#f3d697',rod:'#a9794a',};
+  const trims={bait:'#e5a952',rod:'#4e7f85',};
   // All buildings retain their existing solid footprint and doors.
   r(x,y+21,w,94,isShop?walls[p.id]:'#ab7c4d');
   if(p.id==='bait'){
@@ -581,20 +434,6 @@ function building(p){
     for(let i=0;i<6;i++)r(x+8+i*25,y+19,3,12,'#729fa5');
     r(x+10,y+79,42,31,'#4a3224');r(x+14,y+83,34,23,'#9ac2cc');
     for(let i=0;i<4;i++){r(x+18+i*7,y+84,2,20,'#624d2b');r(x+17+i*7,y+82,4,4,'#c3e2db')}
-  }else if(p.id==='auction'){
-    // A grand purple auction house with golden trim and tall arched windows.
-    r(x,y+26,w,89,'#87749b');
-    for(let i=0;i<7;i++)r(x+7,y+34+i*11,w-14,2,'#6a5b7e');
-    r(x-6,y+9,w+12,23,'#4b3d64');r(x-1,y+11,w+2,6,'#e5bd6c');
-    r(x+8,y+76,38,34,'#4b3d64');r(x+13,y+78,28,26,'#a7cbd9');
-    r(x+49,y+87,20,3,'#e7c77b');r(x+51,y+91,16,4,'#86663b');
-  }else if(p.id==='pawn'){
-    // Dark brick pawn shop, green copper roof and an antique display.
-    r(x,y+25,w,90,'#948579');
-    for(let yy=y+33;yy<y+112;yy+=12)for(let xx=x+5;xx<x+w-5;xx+=23)r(xx+((yy-y)%24?7:0),yy,19,2,'#67594f');
-    r(x-6,y+10,w+12,24,'#315e58');r(x-3,y+11,w+6,4,'#77a598');
-    r(x+10,y+77,42,35,'#463d32');r(x+14,y+81,34,27,'#a7c5b5');
-    r(x+25,y+88,8,12,'#b99a5e');r(x+20,y+101,17,3,'#6c4e32');
   }else{
     // Houses keep their cottage styling.
     for(let i=0;i<6;i++)r(x+5,y+35+i*13,w-10,3,'#80522f');
@@ -609,20 +448,15 @@ function building(p){
   }
   if(isShop){
     // Distinctive shop-coloured signs, all clearly labelled.
-    const signBg={bait:'#7a4b2b',rod:'#273f46',auction:'#443456',pawn:'#40372c'}[p.id];
+    const signBg={bait:'#7a4b2b',rod:'#273f46',}[p.id];
     r(x+7,y+41,w-14,32,signBg);
     r(x+11,y+45,w-22,24,'#f6e4b9');
     t(p.name,x+w/2,y+62,p.name.length>12?11:13,'#3b3026');
   }
   // Keep the door in the same spot so entrances and collisions still work.
   r(x+w-43,y+71,31,44,'#49352a');
-  r(x+w-39,y+75,23,40,p.id==='auction'?'#6a4b83':p.id==='bait'?'#b57b4f':p.id==='rod'?'#426b73':p.id==='pawn'?'#4e6659':'#82512e');
+  r(x+w-39,y+75,23,40,p.id==='bait'?'#b57b4f':p.id==='rod'?'#426b73':'#82512e');
   r(x+w-24,y+96,4,4,'#f7d875');
-  if(p.id==='pawn'){
-    r(x+5,y+79,95,44,'#503925');r(x+9,y+83,87,36,pawnOwned?'#abd7a4':'#fff0be');
-    t(pawnOwned?'SOLD!':'FOR SALE',x+52,y+99,12,'#453123');
-    t(pawnOwned?'YOUR SHOP':'10,000 COINS',x+52,y+113,10,'#453123');
-  }
 }
 function lake(){grass();r(0,0,408,270,'#328db0');for(let yy=0;yy<270;yy+=17)for(let xx=0;xx<407;xx+=17)r(xx,yy,15,15,(xx+yy)%3?'#42a5c3':'#388eb0');
 for(let i=0;i<21;i++)r((i*57+12)%395,(i*43+18)%255,19,3,'#9adbe6');
@@ -702,8 +536,8 @@ function village(){
   pebbledPath(470,295,153,141);
   // Garden borders and flowers beside buildings, away from the walking lanes.
   for(const p of places){
-    flowerBed(p.x+15,p.y+127,p.id==='auction'?115:98,
-      p.id==='pawn'?'#e7c377':p.id==='bait'?'#f8c072':p.id==='rod'?'#97d7e7':'#ee98bb');
+    flowerBed(p.x+15,p.y+127,98,
+      p.id==='bait'?'#f8c072':p.id==='rod'?'#97d7e7':'#ee98bb');
   }
   for(const xy of [[266,220],[729,235],[266,468],[729,481],[34,280],[1037,442]]){
     flowerBed(xy[0],xy[1],48,'#a68ae6');
@@ -727,8 +561,6 @@ function interior(){
 const themes={
 bait:{wall:'#9a7146',floor:'#ddbc83',accent:'#79ac65',trim:'#4d6f40',label:'WORM & TACKLE'},
 rod:{wall:'#355d68',floor:'#a6794e',accent:'#84b6bf',trim:'#23444d',label:'THE ROD WORKSHOP'},
-auction:{wall:'#655278',floor:'#aa8e72',accent:'#e5c071',trim:'#41344e',label:'TREASURE AUCTION'},
-pawn:{wall:'#56534a',floor:'#8a7660',accent:'#cfaa67',trim:'#383c34',label:pawnOwned?'YOUR PAWN SHOP':'THE PAWNBROKER'},
 fishshop:{wall:'#456c70',floor:'#d8b98a',accent:'#89bec7',trim:'#274850',label:'FRESH FISH MARKET'}
 };
 const theme=themes[room]||{wall:'#75513b',floor:'#bb956c',accent:'#c9a56d',trim:'#583925',label:'COSY COTTAGE'};
@@ -737,7 +569,7 @@ for(let yy=110;yy<400;yy+=22){r(0,yy,640,2,theme.trim);for(let xx=(yy%44?0:17);x
 r(0,0,640,115,theme.wall);
 for(let xx=0;xx<640;xx+=45)r(xx,0,4,110,theme.trim);
 r(150,18,340,65,theme.trim);r(159,27,322,47,theme.accent);
-t(theme.label,320,57,room==='pawn'?17:20,'#fff2d0');
+t(theme.label,320,57,20,'#fff2d0');
 // Side shelves with room-specific goods.
 for(const sx of [48,467]){
 r(sx,145,124,155,theme.trim);
@@ -753,17 +585,6 @@ for(let i=0;i<5;i++){r(494+i*16,253,10,17,'#b7804b');r(496+i*16,261,6,4,'#f0d07d
 for(let i=0;i<6;i++){r(67+i*17,149,3,117,'#d7ba7f');r(65+i*17,153,7,5,'#8bc5d0')}
 for(let i=0;i<4;i++){const sx=484+i*23;r(sx,191,17,22,'#e4c679');r(sx+4,195,9,9,'#355d68')}
 r(210,264,225,12,'#5b3e27');
-}else if(room==='auction'){
-// Glowing display plinths and velvet carpet.
-r(210,265,220,112,'#7e4160');for(let i=0;i<12;i++)r(215+i*18,273,11,5,'#aa6883');
-r(72,169,77,11,'#e5c071');r(94,144,34,24,'#91e1dc');r(491,167,65,8,'#e5c071');
-r(506,138,28,28,'#e7c474');r(513,144,14,15,'#f9e9b0');
-}else if(room==='pawn'){
-// Old clocks, a golden anchor and glass antiques cases.
-r(66,159,42,43,'#ba9868');r(77,168,20,21,'#f5e6bc');r(87,168,2,13,'#554231');
-r(505,164,37,24,'#b4c2a7');r(512,169,23,13,'#dfca83');
-r(78,235,62,29,'#ddc3a0');r(86,241,46,17,'#8bb7b2');
-r(500,235,49,27,'#604935');r(510,239,28,14,'#deb76f');
 }else if(room==='fishshop'){
 // Ice display and fish trays.
 for(let i=0;i<4;i++){r(60+i*25,168,20,14,'#a9d5df');r(63+i*25,173,13,5,i%2?'#efbd77':'#dd9593')}
@@ -774,99 +595,14 @@ r(193,168,255,86,theme.trim);r(200,175,241,70,theme.accent);
 r(220,182,203,16,'#f3e5c0');
 if(room==='bait')t('FRESH BAIT',320,195,14,'#3f3628');
 if(room==='rod')t('RODS & REELS',320,195,14,'#293d45');
-if(room==='auction')t('PLACE YOUR BID',320,195,14,'#493147');
-if(room==='pawn')t('BUY • SELL • TRADE',320,195,14,'#443723');
 if(room==='fishshop')t('TODAY\'S CATCH',320,195,14,'#25464d');
 character(320,149,true);
 r(275,350,91,50,theme.trim);
 }
 
-function pawnFirstPerson(){
- // First-person viewpoint from behind YOUR counter, looking towards the entrance.
- r(0,0,640,400,'#493c3d');
- g.fillStyle='#625248';g.beginPath();g.moveTo(0,0);g.lineTo(155,100);g.lineTo(155,260);g.lineTo(0,400);g.fill();
- g.fillStyle='#5b4a41';g.beginPath();g.moveTo(640,0);g.lineTo(485,100);g.lineTo(485,260);g.lineTo(640,400);g.fill();
- r(155,99,330,161,'#806b59');
- g.fillStyle='#a58b69';g.beginPath();g.moveTo(155,260);g.lineTo(485,260);g.lineTo(640,400);g.lineTo(0,400);g.fill();
- // Perspective floorboards and rugs.
- for(let i=0;i<=8;i++){g.strokeStyle='#755a49';g.lineWidth=2;g.beginPath();g.moveTo(320,260);g.lineTo(i*80,400);g.stroke()}
- r(184,290,271,73,'#814b56');r(193,299,253,55,'#ab6d70');r(209,306,221,4,'#e2b47b');
- // Ceiling, beams and lantern.
- r(0,0,640,45,'#342e33');r(0,44,640,12,'#9d764e');r(309,37,20,38,'#9d764e');
- r(292,76,55,14,'#e7c26f');r(302,88,35,18,'#ffdf89');
- // Left antique shelves taper into the distance.
- r(10,91,133,222,'#4c382d');r(25,104,108,185,'#77563d');
- for(let j=0;j<3;j++)r(24,145+j*61,115,9,'#b18758');
- r(41,119,38,32,'#c7ad79');r(51,128,17,17,'#e9ddac');r(57,130,5,13,'#634b3a');
- r(84,186,31,21,'#73a9a1');r(45,249,61,26,'#d8ac69');
- // Right side display: gems and antique treasures.
- r(500,93,133,220,'#473830');r(509,104,113,187,'#765b44');
- for(let j=0;j<3;j++)r(506,147+j*59,122,9,'#b18758');
- r(543,120,39,32,'#c9a76b');r(553,125,20,22,'#fff0ab');
- r(527,177,43,30,'#6caccd');r(579,180,27,23,'#e899b8');
- r(545,244,50,27,'#e2ae63');r(558,251,24,13,'#eacb91');
- // Entrance is opposite the player, across the customer area.
- r(230,105,180,150,'#4d3a30');r(242,115,156,139,'#906d4d');
- r(250,120,139,125,'#6d8c86');r(256,126,127,112,'#90c3b4');
- r(296,136,51,70,'#b4dcc6');r(320,139,5,62,'#648479');
- r(346,209,7,7,'#f6d076');
- r(267,106,106,19,'#4d3326');t('WELCOME',320,120,13,'#ffe7aa');
- r(215,245,205,12,'#644b38');
- // Floor mat just inside the entrance.
- r(255,262,129,30,'#70534c');r(263,266,113,20,'#b08d69');
- drawPawnCustomer();
- // Cartoon robber with a loot sack.
- if(robberActive){
-  r(435,176,49,29,'#594035');r(443,190,34,33,'#d39b7b');r(444,198,32,10,'#2b3444');
-  r(432,224,58,58,'#353947');
-  for(let iy=229;iy<280;iy+=16)r(435,iy,52,6,'#e5d9c5');
-  r(436,281,19,25,'#4b4a53');r(467,281,18,25,'#4b4a53');
-  r(492,225,31,37,'#a68857');r(503,218,9,8,'#d6b985');
-  t('!',464,172,27,'#ff6d6d');
- }
- // Wide foreground counter: seen from behind, with your own till and ledger.
- r(0,308,640,28,'#4b3327');r(0,320,640,80,'#845a3c');
- r(0,312,640,12,'#cf9a63');r(0,349,640,5,'#68442e');
- r(105,293,105,39,'#373c3a');r(113,276,86,23,'#637b74');
- r(125,283,63,10,'#b9d1b7');r(127,307,58,14,'#a5a596');
- r(257,302,97,25,'#e5d1a0');r(263,296,85,8,'#c5a46e');
- for(let i=0;i<4;i++)r(271,306+i*4,60,1,'#ab8b5e');
- r(398,304,34,17,'#d5b15b');r(408,298,14,9,'#ffe199');
- // Appraisal workstation on the counter: loupe, magnet and gem tester.
- r(357,289,16,18,'#58798a');r(362,282,10,10,'#c5e8fa');
- r(365,285,4,4,'#537e98');r(356,301,9,5,'#b5bdba');
- r(455,291,20,14,'#b3444b');r(459,293,12,5,'#d8d8d8');
- r(223,288,27,19,'#4e5969');r(228,290,17,11,'#8cf0b9');
- r(231,303,10,4,'#e8d787');
- if(pawnCustomer&&pawnCustomer.progress>=1&&pawnCustomer.type==='pawn'){
-  const checked=pawnCustomer.tests.length;
-  t(checked>=2?(pawnCustomer.genuine?'REAL':'FAKE'):checked+'/2 TESTS',320,288,12,
-    checked>=2?(pawnCustomer.genuine?'#9affb2':'#ff9f95'):'#fff0ac');
- }
- t('YOUR COUNTER',320,375,14,'#ffe9b9');
- // Stylised toy-like first-person defence prop.
- if(pawnOwned){
-  r(483,338,130,21,'#30343c');r(520,359,44,37,'#272d34');
-  r(483,335,130,5,'#77828b');r(502,346,17,7,'#9da8a7');
-  if(performance.now()<defenceFlash){
-   r(446,327,34,13,'#fff2b0');r(427,322,18,22,'#ffd56b');r(413,330,18,7,'#ffef9c');
-  }
- }
- // First-person aiming reticle, positioned from mouse or touch.
- const reticleColour=performance.now()<shotMissUntil?'#ff6d6d':'#f7ffb6';
- r(aimX-17,aimY-1,11,2,reticleColour);r(aimX+6,aimY-1,11,2,reticleColour);
- r(aimX-1,aimY-17,2,11,reticleColour);r(aimX-1,aimY+6,2,11,reticleColour);
- r(aimX-2,aimY-2,4,4,reticleColour);
- // Reticle above is the sole aiming marker.
- r(0,350,67,50,'#d5a07c');r(573,350,67,50,'#d5a07c');
- // Move camera a little when the player walks, without showing the avatar.
- const sway=Math.round((x-319)*.13);
- if(sway!==0){r(Math.max(0,320+sway-3),392,6,4,'#e4bd83')}
-}
 function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
-if(room==='pawn'){pawnFirstPerson()}
-else if(room){interior();character(x,y)}
+if(room){interior();character(x,y)}
 else if(area==='lake'){lake();character(x,y)}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
@@ -875,7 +611,7 @@ else{
 }
 g.restore();
 }
-function hud(){$('pawn-shoot').hidden=room!=='pawn'||!pawnOwned;$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X with a steady rhythm. Let the tension drop between pulls.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -894,8 +630,8 @@ function panel(a,b,options=[]){$('heading').textContent=a;$('message').textConte
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
 function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;if(id==='pawn'){scheduleRobbery();scheduleCustomer()}hud();draw();visit()}
-function leave(){room='';shopping=false;robberActive=false;nextRobbery=0;pawnCustomer=null;nextCustomerAt=0;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
+function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
+function leave(){room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
 if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
@@ -905,28 +641,6 @@ if(after)after();
 hud();draw();visit();
 }
 function visit(){
-if(room==='pawn'){
- if(!pawnOwned){
-  panel('🏪 Pawn Shop — FOR SALE','This whole shop costs 10,000 coins. Explore the antique shelves!',[
-   ['🪙 Buy pawn shop — 10,000',()=>{if(coins<10000)return need(10000);coins-=10000;pawnOwned=true;hud();draw();visit()}],
-   ['🚪 Leave',leave]
-  ]);
- }else{
-  if(pawnCustomer&&pawnCustomer.progress>=1&&pawnCustomerMenu){
-   const customer=pawnCustomer;
-   panel('🧑 '+customer.name+' at your counter',customer.name+' wants to '+(customer.type==='pawn'?'pawn a '+customer.item+' for ':'buy a '+customer.item+' for ')+customer.value+' coins. '+appraisalDescription(customer),customerOptions());
-   return;
-  }
-  panel('🏪 Your Pawn Shop','Customers served: '+customerServed+'. Fakes refused: '+fakeDetected+'. Test jewellery with the loupe, magnet and gem scanner before buying. Press X if a robber appears! Robbers stopped: '+robbersStopped+'.',[
-   [bid?'💎 Sell Pearl Compass — +400':'💎 Pearl Compass unavailable',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
-   [treasureOwned?'⚓ Golden Anchor — owned':'⚓ Golden Anchor — 2,000',()=>{if(treasureOwned)return;buyItem('anchor','Golden Anchor',2000,()=>{treasureOwned=true})}],
-   [collectibles.has('clock')?'🕰️ Antique Clock — owned':'🕰️ Antique Clock — 350',()=>buyItem('clock','Antique Clock',350)],
-   [collectibles.has('chest')?'📦 Mystery Chest — owned':'📦 Mystery Chest — 800',()=>buyItem('chest','Mystery Chest',800)],
-   ['🚪 Exit',leave]
-  ]);
- }
- return;
-}
 const p=places.find(v=>v.id===room);
 if(p&&p.cost){
  const mine=owned.has(room);
@@ -960,18 +674,9 @@ if(room==='rod'){
   ['🚪 Exit',leave]
  ]);return;
 }
-if(room==='auction'){
- panel('🔨 Bidding House','Bid on the Pearl Compass or buy something special!',[
-  [bid?'💎 Pearl Compass — owned':'💎 Bid for Pearl Compass — 120',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;discoveredTreasures.add('compass');hud();visit()}],
-  [collectibles.has('pearl')?'🦪 Giant Pearl — owned':'🦪 Giant Pearl — 325',()=>buyItem('pearl','Giant Pearl',325)],
-  [collectibles.has('trophy')?'🏆 Captain Finn Trophy — owned':'🏆 Captain Finn Trophy — 600',()=>buyItem('trophy','Captain Finn Trophy',600)],
-  ['🚪 Exit',leave]
- ]);return;
-}
 }
 function backpack(){
 const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Olive Bucket Hat',cap:'Navy Fishing Cap',beanie:'Cosy Red Beanie',crown:'Mythic Crown',raincoat:'Yellow Raincoat',hoodie:'Purple Hoodie',vest:'Explorer Vest',mythiccoat:'Mythic Star Coat',boots:'Brown Boots',goldboots:'Golden Boots',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
-if(bid)items.push('Pearl Compass');
 panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 let celebrationTimer=null;
 function celebrateFish(f){
@@ -1080,8 +785,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(room==='pawn'){if(!shopping){shopping=true;pawnCustomerMenu=true;visit()}else menuSelect();return}
-if(room){
+function interact(){if(room){
  if(shopping){menuSelect();return}
  if(y>337){leave();return}
  if(y<=305&&y>=253&&x>=185&&x<=455){shopping=true;visit();return}
@@ -1089,7 +793,7 @@ if(room){
  return
 }let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
- if(k==='x'){if(room==='pawn')firePawn();else fishAction()}
+ if(k==='x')fishAction()
  else if(k==='a')interact();
  else if(k==='y'){if(room)shopping=true;backpack()}
  else if(k==='b'){
@@ -1116,9 +820,6 @@ function move(dir){
 }
 
 
-$('pawn-shoot').onclick=firePawn;
-$('world').addEventListener('pointermove',e=>{if(room==='pawn')aimFromPointer(e)});
-$('world').addEventListener('pointerdown',e=>{if(room==='pawn'){e.preventDefault();aimFromPointer(e);firePawn()}});
 document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset.key));
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
@@ -1137,12 +838,11 @@ function saveGame(automatic=false){
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
-   owned:[...owned],bid,pawnOwned,treasureOwned,
+   owned:[...owned],
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
    equipped:{...equipped},shopName,shopColor,
-   customerServed,authenticAppraisals,fakeDetected,robbersStopped
-  };
+     };
   localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot));
   showSaveStatus((automatic?'Autosaved ':'Saved ')+new Date(snapshot.savedAt).toLocaleTimeString());
   return true;
@@ -1162,7 +862,6 @@ function loadGame(manual=false){
  }catch(error){showSaveStatus('Could not read saved game');return false}
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
- robberActive=false;nextRobbery=0;pawnCustomer=null;nextCustomerAt=0;
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':'lake';
  x=Math.max(12,Math.min(area==='village'?VILLAGE_W-12:625,Number(data.x)||430));
@@ -1173,7 +872,6 @@ function loadGame(manual=false){
  const knownFish=new Map([...fish,...mythicFish].map(([name,value])=>[name,value]));
  bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- bid=Boolean(data.bid);pawnOwned=Boolean(data.pawnOwned);treasureOwned=Boolean(data.treasureOwned);
  const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium']);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
@@ -1188,10 +886,6 @@ function loadGame(manual=false){
  }
  shopName=typeof data.shopName==='string'?data.shopName:'The Lucky Minnow';
  shopColor=typeof data.shopColor==='string'?data.shopColor:'#587b63';
- customerServed=Math.max(0,Math.floor(Number(data.customerServed)||0));
- authenticAppraisals=Math.max(0,Math.floor(Number(data.authenticAppraisals)||0));
- fakeDetected=Math.max(0,Math.floor(Number(data.fakeDetected)||0));
- robbersStopped=Math.max(0,Math.floor(Number(data.robbersStopped)||0));
  hud();draw();panel('📂 Game loaded!', 'Welcome back! Your coins, fish, rods, clothes, homes, treasures and achievements are restored.');
  showSaveStatus('Loaded '+new Date(data.savedAt||Date.now()).toLocaleTimeString());
  return true;
@@ -1206,7 +900,7 @@ $('delete-save').onclick=()=>{
   showSaveStatus('Save deleted. Press Save to save again.');
  }catch(error){showSaveStatus('Could not delete saved game')}
 };
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;checkRobbery(time);updateCustomers(time,dt);if(room==='pawn'&&(robberActive||pawnCustomer||time<defenceFlash||time<shotMissUntil))draw();if(phase==='timing'){
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
  if(needle<=0){needle=0;direction=1}
