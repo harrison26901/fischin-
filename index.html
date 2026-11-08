@@ -135,6 +135,10 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .collection-footer button{padding:8px 11px}
 .collection-footer button:disabled{opacity:.4;cursor:default}
 @media(max-width:650px){.collection-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-card{min-height:130px}.collection-book{max-height:95%}#collection-open{top:8px;right:56px;font-size:11px;padding:6px}#captain-tools{top:84px}}
+#pawn-shoot{position:absolute;z-index:8;right:20px;bottom:145px;background:#a63b3e;border:3px solid #ffd49f;color:white;font-size:20px;box-shadow:0 5px 16px #0009}
+#pawn-shoot[hidden]{display:none}
+#pawn-shoot:active{transform:scale(.95)}
+@media(max-width:900px){#pawn-shoot{right:8px;bottom:150px;font-size:15px;padding:8px}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -181,6 +185,7 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
  </section>
 </div>
 <canvas id="world" width="640" height="400" tabindex="0" aria-label="Fishing game map"></canvas>
+<button id="pawn-shoot" type="button" hidden aria-label="Shoot in pawn shop">🎯 SHOOT (X)</button>
 <div class="card" id="fishingPanel"><b id="phase">🎣 Easy fishing mini-game</b><p id="instruction">Press X to cast your line.</p>
 <div id="timing"><div class="meter"><div class="target" id="target"></div><div class="needle" id="needle"></div></div><small>Press X when the white marker is inside green!</small></div>
 <div id="reeling"><p id="reelstatus">Reel 0 / 3</p><progress id="progress" value="0" max="3" style="width:100%;height:20px"></progress></div>
@@ -316,6 +321,25 @@ let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,ree
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
 let robberActive=false,robberAt=0,nextRobbery=0,defenceFlash=0,robbersStopped=0;
+let aimX=461,aimY=243,lastShotAt=0,shotMissUntil=0;
+function firePawn(){
+ if(room!=='pawn'||!pawnOwned)return;
+ const now=performance.now();
+ if(now-lastShotAt<250)return;
+ lastShotAt=now;defenceFlash=now+230;
+ if(robberActive&&aimX>=430&&aimX<=493&&aimY>=173&&aimY<=311)stopRobber();
+ else{
+  shotMissUntil=now+500;
+  if(robberActive)panel('🎯 MISSED!','Move the crosshair onto the robber and shoot again. Mouse/touch to aim; X, Space or SHOOT to fire.');
+  draw();
+ }
+}
+function aimFromPointer(e){
+ const rect=$('world').getBoundingClientRect();
+ aimX=Math.max(0,Math.min(640,(e.clientX-rect.left)/rect.width*640));
+ aimY=Math.max(0,Math.min(400,(e.clientY-rect.top)/rect.height*400));
+ draw();
+}
 function scheduleRobbery(){nextRobbery=performance.now()+18000+Math.random()*16000}
 function stopRobber(){
  if(room!=='pawn'||!robberActive)return;
@@ -329,7 +353,7 @@ function checkRobbery(now){
  if(!nextRobbery)scheduleRobbery();
  if(!robberActive&&now>=nextRobbery){
   robberActive=true;robberAt=now;
-  panel('🚨 ROBBER IN THE PAWN SHOP!','A cartoon robber is stealing your antiques! Press X to use your arcade defence tool and scare them away!');
+  panel('🚨 ROBBER IN THE PAWN SHOP!','Aim at the robber with your mouse or touch, then click, press X/Space, or tap SHOOT!');
  }
  if(robberActive&&now-robberAt>7000){
   robberActive=false;
@@ -622,6 +646,11 @@ function pawnFirstPerson(){
    r(446,327,34,13,'#fff2b0');r(427,322,18,22,'#ffd56b');r(413,330,18,7,'#ffef9c');
   }
  }
+ // First-person aiming reticle, positioned from mouse or touch.
+ const reticleColour=performance.now()<shotMissUntil?'#ff6d6d':'#f7ffb6';
+ r(aimX-17,aimY-1,11,2,reticleColour);r(aimX+6,aimY-1,11,2,reticleColour);
+ r(aimX-1,aimY-17,2,11,reticleColour);r(aimX-1,aimY+6,2,11,reticleColour);
+ r(aimX-2,aimY-2,4,4,reticleColour);
  // Small aiming crosshair and player hands at screen edge.
  r(315,187,10,2,'#fff9dc');r(319,183,2,10,'#fff9dc');
  r(0,350,67,50,'#d5a07c');r(573,350,67,50,'#d5a07c');
@@ -641,7 +670,7 @@ else{
 }
 g.restore();
 }
-function hud(){$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/'+(infiniteBag?'∞':'15');$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
+function hud(){$('pawn-shoot').hidden=room!=='pawn'||!pawnOwned;$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/'+(infiniteBag?'∞':'15');$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/4';
 $('fishingPanel').style.display=area==='lake'&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'Press X when the moving white marker is in the BIG green zone.',reeling:'Press X three times to reel your fish in.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -822,7 +851,7 @@ if(room){
  return
 }let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
- if(k==='x'){if(room==='pawn')stopRobber();else fishAction()}
+ if(k==='x'){if(room==='pawn')firePawn();else fishAction()}
  else if(k==='a')interact();
  else if(k==='y'){if(room)shopping=true;backpack()}
  else if(k==='b'){
@@ -849,13 +878,16 @@ function move(dir){
 }
 
 
+$('pawn-shoot').onclick=firePawn;
+$('world').addEventListener('pointermove',e=>{if(room==='pawn')aimFromPointer(e)});
+$('world').addEventListener('pointerdown',e=>{if(room==='pawn'){e.preventDefault();aimFromPointer(e);firePawn()}});
 document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset.key));
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;function frame(time){checkRobbery(time);if(room==='pawn'&&(robberActive||time<defenceFlash))draw();let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
+let prior=0;function frame(time){checkRobbery(time);if(room==='pawn'&&(robberActive||time<defenceFlash||time<shotMissUntil))draw();let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
 function adminCommand(raw){
  if(!adminMode)return;
