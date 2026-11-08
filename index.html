@@ -591,12 +591,33 @@ function volcanoDungeonScene(){
   r(bx,by,39,35,(row+col)%3===0?'#b64a35':(row+col)%3===1?'#9c382e':'#a94131');
   r(bx,by+32,37,2,'#792a29');
  }
+ // Jagged obsidian veins with animated molten cores, embedded in the red stone.
+ g.save();g.lineCap='round';g.lineJoin='round';
+ for(let i=0;i<7;i++){
+  const startX=52+i*87,startY=118+(i%3)*88;
+  g.beginPath();g.moveTo(startX,startY);
+  for(let j=1;j<=5;j++)g.lineTo(startX+(j%2?12:-8)+j*8,startY+j*19);
+  g.strokeStyle='#51212a';g.lineWidth=12;g.stroke();
+  g.strokeStyle='#ff692c';g.lineWidth=5;g.stroke();
+  g.strokeStyle='#ffce59';g.lineWidth=1.5;g.stroke();
+ }
+ g.restore();
+ // Dark volcanic rocks are rooted in the floor, with glowing crystal tips.
+ for(let i=0;i<18;i++){
+  const px=52+(i*113)%535,py=83+(i*71)%261;
+  if(d.traps.some(([tx,ty])=>Math.hypot(px-tx,py-ty)<47))continue;
+  r(px-9,py+7,24,5,'#62292c');r(px-6,py,17,11,'#513038');
+  r(px-2,py-9,8,12,i%3===0?'#ff9b43':'#d65b39');
+  r(px,py-13,3,7,'#ffdd76');
+ }
  // Rock walls have dark contact edges where they meet the floor.
  r(0,0,640,43,'#6a4140');r(0,35,640,9,'#281f28');
  r(0,0,30,400,'#6a4140');r(27,0,8,400,'#29222b');
  r(610,0,30,400,'#6a4140');r(605,0,8,400,'#29222b');
  r(0,375,640,25,'#6a4140');r(0,370,640,7,'#29222b');
  for(let i=0;i<13;i++){const px=i*50;r(px,11,45,19,'#82534a');r(px+4,30,40,4,'#a76a4d')}
+ // Glowing floor vents send up sparks without becoming new gameplay hazards.
+ for(let i=0;i<7;i++){const px=73+i*78,py=291+(i%2)*35;r(px-14,py,29,7,'#54242b');r(px-10,py+1,21,4,'#ff8c35');r(px-3,py-8-Math.sin(sec*4+i)*3,5,7,'#ffd16b')}
  // Grounded lava cracks and inlaid trap pools, preserving trap coordinates.
  for(let i=0;i<9;i++){
   const px=43+i*70,py=355+(i%2)*6;
@@ -635,6 +656,7 @@ function volcanoDungeonScene(){
   r(px-8,94,33,9,'#2e262d');r(px-6,88,29,10,'#856157');
   r(px,47,17,45,'#46323a');r(px-5,42,27,11,'#8b5446');
   r(px+4,53,4,34,'#a36c51');
+  if(i%3===0){r(px+5,55,7,9,'#ff913e');r(px+7,50+Math.sin(sec*5+i)*3,3,8,'#ffe28a')}
  }
  for(let i=0;i<22;i++){const px=(i*67+sec*9)%640,py=45+(i*43)%300;r(px,py,3,4,i%2?'#ffcb70':'#e87d4d')}
  r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');
