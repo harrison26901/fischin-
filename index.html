@@ -464,6 +464,27 @@ function skyScene(){
  skyTree(43,215,.7);skyTree(315,201,.66);skyTree(568,204,.78);skyTree(595,237,.56);
  function crystal(cx,cy,h,color){const w=Math.max(6,h*.35);g.fillStyle=color;g.beginPath();g.moveTo(cx,cy-h);g.lineTo(cx+w,cy-h*.5);g.lineTo(cx+w,cy);g.lineTo(cx-w,cy);g.lineTo(cx-w,cy-h*.5);g.closePath();g.fill();r(cx-2,cy-h*.7,4,h*.5,'#e7ffff');islandGlow(cx,cy-h,'#efffff',2)}
  for(const [px,py,h,col] of [[327,221,24,'#9c9aee'],[341,228,15,'#8cdeec'],[551,225,29,'#b09af1'],[575,234,18,'#8fe2e9'],[69,231,14,'#b8a9f5']])crystal(px,py,h,col);
+ // New sky-garden details: rainbow, cloud stepping stones, flowers and fireflies.
+ g.save();g.globalAlpha=.32;
+ for(let k=0;k<5;k++){g.strokeStyle=['#f5a2b5','#ffd39b','#fff1a4','#a8e6c6','#a6c5fa'][k];g.lineWidth=5;g.beginPath();g.arc(290,107,87+k*7,Math.PI*1.12,Math.PI*1.89);g.stroke()}
+ g.restore();
+ // Small cloud stepping stones curve from the pond toward the castle.
+ for(let i=0;i<6;i++){const sx=272+i*17,sy=183+Math.sin(i*.8)*9;r(sx-5,sy,19,7,'#eaf9ef');r(sx,sy-5,12,8,'#ffffff');r(sx+5,sy+4,8,3,'#c3e4db')}
+ // Tiny flowers and butterflies make the grassy floor feel alive.
+ for(let i=0;i<26;i++){
+  const fx=42+(i*47)%553,fy=143+(i*31)%99;
+  if((fx>67&&fx<270&&fy>135&&fy<239)||(fx>345&&fx<462&&fy<221))continue;
+  r(fx,fy,3,5,'#5b9e76');r(fx-2,fy-3,7,5,['#ffe9a4','#f6b3dc','#c8b6ff'][i%3]);r(fx,fy-5,3,3,'#fff9d9');
+ }
+ for(let i=0;i<8;i++){
+  const bx=62+(i*73)%520+Math.sin(sec*1.2+i)*5,by=107+(i*29)%113+Math.cos(sec*1.6+i)*4;
+  r(bx-5,by,5,4,i%2?'#f7d5f3':'#fff0ae');r(bx+2,by,5,4,i%2?'#f7d5f3':'#fff0ae');r(bx,by+2,3,4,'#fff9ee');
+ }
+ // Floating lanterns and glitter over the castle gardens.
+ for(let i=0;i<7;i++){
+  const lx=315+i*39,ly=58+(i%3)*18+Math.sin(sec+i)*5;
+  islandGlow(lx,ly,'#fff5bf',3);r(lx-2,ly-3,5,7,'#ffe8a0');
+ }
  // Phoenix nest remains at (490,158) with the same interaction and quest.
  r(461,175,67,31,'#a28cbd');r(470,164,49,22,'#c6a3c7');
  r(478,146,30,26,'#e8a15b');r(483,134,21,19,'#ffdc7e');r(489,127+Math.sin(sec*4)*3,11,14,'#fff3b0');
