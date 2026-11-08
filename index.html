@@ -97,7 +97,7 @@ const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:595,y:70,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:350,y:530,col:'#836948'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900]];
 const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500]];
-let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),bid=false,pawnOwned=false,treasureOwned=false,collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
@@ -215,12 +215,63 @@ r(516,348,13,10,'#eabc52');r(576,305,3,66,'#776043');
 for(const p of [[20,35],[275,42],[533,45],[790,44],[1030,48],[24,590],[285,705],[535,715],[795,710],[1023,700]])tree(p[0],p[1]);
 places.forEach(building);
 }
-function interior(){r(0,0,640,400,'#b58a56');for(let yy=0;yy<400;yy+=24)r(0,yy,640,3,'#805a36');r(0,0,640,105,'#785133');for(let xx=0;xx<640;xx+=30)r(xx,0,4,105,'#5b3a25');
-let p=places.find(b=>b.id===room);let name=room==='fishshop'?shopName:p?p.name:'SHOP';
-r(114,22,410,73,'#705037');r(128,33,383,48,'#92694a');
-for(let xx of [52,462]){r(xx,145,128,154,'#604029');for(let yy of [180,220,262])r(xx+9,yy,109,6,'#c18e57')}
-r(193,168,255,86,'#573a28');r(199,175,243,70,'#c08952');character(320,149);
-r(275,350,91,50,'#62432a')}
+function interior(){
+const themes={
+bait:{wall:'#9a7146',floor:'#ddbc83',accent:'#79ac65',trim:'#4d6f40',label:'WORM & TACKLE'},
+rod:{wall:'#355d68',floor:'#a6794e',accent:'#84b6bf',trim:'#23444d',label:'THE ROD WORKSHOP'},
+auction:{wall:'#655278',floor:'#aa8e72',accent:'#e5c071',trim:'#41344e',label:'TREASURE AUCTION'},
+pawn:{wall:'#56534a',floor:'#8a7660',accent:'#cfaa67',trim:'#383c34',label:pawnOwned?'YOUR PAWN SHOP':'THE PAWNBROKER'},
+fishshop:{wall:'#456c70',floor:'#d8b98a',accent:'#89bec7',trim:'#274850',label:'FRESH FISH MARKET'}
+};
+const theme=themes[room]||{wall:'#75513b',floor:'#bb956c',accent:'#c9a56d',trim:'#583925',label:'COSY COTTAGE'};
+r(0,0,640,400,theme.floor);
+for(let yy=110;yy<400;yy+=22){r(0,yy,640,2,theme.trim);for(let xx=(yy%44?0:17);xx<640;xx+=50)r(xx,yy,2,21,'#eee0be')}
+r(0,0,640,115,theme.wall);
+for(let xx=0;xx<640;xx+=45)r(xx,0,4,110,theme.trim);
+r(150,18,340,65,theme.trim);r(159,27,322,47,theme.accent);
+t(theme.label,320,57,room==='pawn'?17:20,'#fff2d0');
+// Side shelves with room-specific goods.
+for(const sx of [48,467]){
+r(sx,145,124,155,theme.trim);
+for(const sy of [180,225,270])r(sx+7,sy,110,7,theme.accent);
+}
+if(room==='bait'){
+// Bait jars, buckets and a hanging fishing net.
+for(let i=0;i<4;i++){r(62+i*25,156,17,20,'#9dc5aa');r(66+i*25,160,9,10,'#cd8f7b');r(60+i*25,154,21,4,'#eee1b3')}
+r(498,193,57,32,'#4a7481');r(505,188,43,6,'#dde3cc');
+for(let i=0;i<5;i++){r(494+i*16,253,10,17,'#b7804b');r(496+i*16,261,6,4,'#f0d07d')}
+}else if(room==='rod'){
+// Vertical rods on the left and reels on the right.
+for(let i=0;i<6;i++){r(67+i*17,149,3,117,'#d7ba7f');r(65+i*17,153,7,5,'#8bc5d0')}
+for(let i=0;i<4;i++){const sx=484+i*23;r(sx,191,17,22,'#e4c679');r(sx+4,195,9,9,'#355d68')}
+r(210,264,225,12,'#5b3e27');
+}else if(room==='auction'){
+// Glowing display plinths and velvet carpet.
+r(210,265,220,112,'#7e4160');for(let i=0;i<12;i++)r(215+i*18,273,11,5,'#aa6883');
+r(72,169,77,11,'#e5c071');r(94,144,34,24,'#91e1dc');r(491,167,65,8,'#e5c071');
+r(506,138,28,28,'#e7c474');r(513,144,14,15,'#f9e9b0');
+}else if(room==='pawn'){
+// Old clocks, a golden anchor and glass antiques cases.
+r(66,159,42,43,'#ba9868');r(77,168,20,21,'#f5e6bc');r(87,168,2,13,'#554231');
+r(505,164,37,24,'#b4c2a7');r(512,169,23,13,'#dfca83');
+r(78,235,62,29,'#ddc3a0');r(86,241,46,17,'#8bb7b2');
+r(500,235,49,27,'#604935');r(510,239,28,14,'#deb76f');
+}else if(room==='fishshop'){
+// Ice display and fish trays.
+for(let i=0;i<4;i++){r(60+i*25,168,20,14,'#a9d5df');r(63+i*25,173,13,5,i%2?'#efbd77':'#dd9593')}
+for(let i=0;i<4;i++){r(484+i*23,190,17,10,'#8cc6d5');r(489+i*23,192,7,4,'#f7d88c')}
+}
+// Each shop keeps the same counter footprint and interaction flow.
+r(193,168,255,86,theme.trim);r(200,175,241,70,theme.accent);
+r(220,182,203,16,'#f3e5c0');
+if(room==='bait')t('FRESH BAIT',320,195,14,'#3f3628');
+if(room==='rod')t('RODS & REELS',320,195,14,'#293d45');
+if(room==='auction')t('PLACE YOUR BID',320,195,14,'#493147');
+if(room==='pawn')t('BUY • SELL • TRADE',320,195,14,'#443723');
+if(room==='fishshop')t('TODAY\'S CATCH',320,195,14,'#25464d');
+character(320,149);
+r(275,350,91,50,theme.trim);
+}
 function draw(){
 g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,640,400);
 if(room){interior();character(x,y)}
@@ -246,28 +297,77 @@ function tab(name){token++;phase='ready';room='';area=name==='village'?'village'
 function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
 function leave(){room='';x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
+function buyItem(id,label,cost,after){
+if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
+if(coins<cost)return need(cost);
+coins-=cost;collectibles.add(id);
+if(after)after();
+hud();draw();visit();
+}
 function visit(){
 if(room==='pawn'){
-  if(!pawnOwned){
-    panel('🏪 Pawn Shop — FOR SALE','Buy this pawn shop for 10,000 coins. Once it is yours, you can trade treasures.',[
-      ['🪙 Buy pawn shop — 10,000',()=>{if(coins<10000)return need(10000);coins-=10000;pawnOwned=true;hud();draw();visit()}],
-      ['🚪 Leave',leave]
-    ]);
-  }else{
-    panel('🏪 Your Pawn Shop','You own the pawn shop! Trade rare collectibles with the pawnbroker.',[
-      [bid?'💎 Pawn Pearl Compass — 400':'💎 No compass to pawn',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
-      [treasureOwned?'🏆 Golden Anchor owned':'⚓ Buy Golden Anchor — 2,000',()=>{if(treasureOwned)return;if(coins<2000)return need(2000);coins-=2000;treasureOwned=true;hud();visit()}],
-      ['🚪 Leave',leave]
-    ]);
-  }
-  return;
+ if(!pawnOwned){
+  panel('🏪 Pawn Shop — FOR SALE','This whole shop costs 10,000 coins. Explore the antique shelves!',[
+   ['🪙 Buy pawn shop — 10,000',()=>{if(coins<10000)return need(10000);coins-=10000;pawnOwned=true;hud();draw();visit()}],
+   ['🚪 Leave',leave]
+  ]);
+ }else{
+  panel('🏪 Your Pawn Shop','You own the shop! Buy rare collectibles and trade your treasures.',[
+   [bid?'💎 Sell Pearl Compass — +400':'💎 Pearl Compass unavailable',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
+   [treasureOwned?'⚓ Golden Anchor — owned':'⚓ Golden Anchor — 2,000',()=>{if(treasureOwned)return;buyItem('anchor','Golden Anchor',2000,()=>{treasureOwned=true})}],
+   [collectibles.has('clock')?'🕰️ Antique Clock — owned':'🕰️ Antique Clock — 350',()=>buyItem('clock','Antique Clock',350)],
+   [collectibles.has('chest')?'📦 Mystery Chest — owned':'📦 Mystery Chest — 800',()=>buyItem('chest','Mystery Chest',800)],
+   ['🚪 Exit',leave]
+  ]);
+ }
+ return;
 }
-let p=places.find(v=>v.id===room);if(p&&p.cost){let mine=owned.has(room);panel('🏠 '+p.name,mine?'Welcome home!':'This house costs '+p.cost+' coins.',[[mine?'☕ Relax':'Buy for '+p.cost,()=>{if(!mine){if(coins<p.cost)return need(p.cost);coins-=p.cost;owned.add(room);hud()}visit()}],['🚪 Exit',leave]]);return}
-if(room==='fishshop'){let total=bag.reduce((sum,f)=>sum+f[1],0);panel('🐟 '+shopName,'Sell your '+bag.length+' fish for '+total+' coins.',[['🪙 Sell all — '+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],['🎒 Backpack',backpack],['🚪 Exit',leave]]);return}
-if(room==='bait')panel('🪱 Bait Shop','Bait: '+bait,[['Buy 5 — 30 coins',()=>{if(coins<30)return need(30);coins-=30;bait+=5;hud();visit()}],['Exit',leave]]);
-if(room==='rod'){let next=rods[rod+1];panel('🎣 Rod Shop','Current rod: '+rods[rod][0],[[next?'Buy '+next[0]+' — '+next[1]:'Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],['Exit',leave]])}
-if(room==='auction')panel('🔨 Bidding House',bid?'You own the Pearl Compass!':'Bid 120 coins for the Pearl Compass.',[[bid?'🏆 Prize collected':'Bid 120 coins',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;hud();visit()}],['Exit',leave]])}
-function backpack(){panel('🎒 Backpack',bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'Your backpack is empty.',[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
+const p=places.find(v=>v.id===room);
+if(p&&p.cost){
+ const mine=owned.has(room);
+ panel('🏠 '+p.name,mine?'Welcome home!':'This house costs '+p.cost+' coins.',[
+  [mine?'☕ Relax':'🏠 Buy for '+p.cost,()=>{if(!mine){if(coins<p.cost)return need(p.cost);coins-=p.cost;owned.add(room);hud()}visit()}],['🚪 Exit',leave]
+ ]);return;
+}
+if(room==='fishshop'){
+ const total=bag.reduce((sum,f)=>sum+f[1],0);
+ panel('🐟 Fresh Fish Market','Your '+bag.length+' fish are worth '+total+' coins. Pick a service!',[
+  ['🪙 Sell all fish — +'+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],
+  ['🪱 Buy 3 bait — 20',()=>{if(coins<20)return need(20);coins-=20;bait+=3;hud();visit()}],
+  [collectibles.has('aquarium')?'🐠 Aquarium — owned':'🐠 Aquarium — 250',()=>buyItem('aquarium','Aquarium',250)],
+  ['🎒 Backpack',backpack],['🚪 Exit',leave]
+ ]);return;
+}
+if(room==='bait'){
+ panel('🪱 Bait Shop','Stock up before your next fishing trip. Current bait: '+bait,[
+  ['🪱 Buy 5 bait — 30',()=>{if(coins<30)return need(30);coins-=30;bait+=5;hud();visit()}],
+  ['🪱 Buy 20 bait — 100',()=>{if(coins<100)return need(100);coins-=100;bait+=20;hud();visit()}],
+  [collectibles.has('baitbox')?'🧰 Bait Box — owned':'🧰 Bait Box — 180',()=>buyItem('baitbox','Bait Box',180,()=>{bait+=10})],
+  ['🚪 Exit',leave]
+ ]);return;
+}
+if(room==='rod'){
+ const next=rods[rod+1];
+ panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider!',[
+  [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
+  [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
+  [collectibles.has('hat')?'🧢 Fishing Hat — owned':'🧢 Fishing Hat — 75',()=>buyItem('hat','Fishing Hat',75)],
+  ['🚪 Exit',leave]
+ ]);return;
+}
+if(room==='auction'){
+ panel('🔨 Bidding House','Bid on the Pearl Compass or buy something special!',[
+  [bid?'💎 Pearl Compass — owned':'💎 Bid for Pearl Compass — 120',()=>{if(bid)return;if(coins<120)return need(120);coins-=120;bid=true;hud();visit()}],
+  [collectibles.has('pearl')?'🦪 Giant Pearl — owned':'🦪 Giant Pearl — 325',()=>buyItem('pearl','Giant Pearl',325)],
+  [collectibles.has('trophy')?'🏆 Captain Finn Trophy — owned':'🏆 Captain Finn Trophy — 600',()=>buyItem('trophy','Captain Finn Trophy',600)],
+  ['🚪 Exit',leave]
+ ]);return;
+}
+}
+function backpack(){
+const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Fishing Hat',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
+if(bid)items.push('Pearl Compass');
+panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
 if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';panel('🎉 '+pending[0]+' caught!','Worth '+pending[1]+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
