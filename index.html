@@ -209,6 +209,28 @@ let area='lake',room='',x=430,y=307,coins=adminMode?Infinity:100,bait=8,rod=0,ba
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 const VILLAGE_W=1100,VILLAGE_H=780;
 let outdoorX=35,outdoorY=350;
+let robberActive=false,robberAt=0,nextRobbery=0,defenceFlash=0,robbersStopped=0;
+function scheduleRobbery(){nextRobbery=performance.now()+18000+Math.random()*16000}
+function stopRobber(){
+ if(room!=='pawn'||!robberActive)return;
+ robberActive=false;defenceFlash=performance.now()+400;robbersStopped++;
+ coins+=500;
+ panel('🛡️ PAWN SHOP SAVED!','You scared the robber away! +500 coins. Robbers stopped: '+robbersStopped+'.');
+ scheduleRobbery();hud();draw();
+}
+function checkRobbery(now){
+ if(room!=='pawn'||!pawnOwned)return;
+ if(!nextRobbery)scheduleRobbery();
+ if(!robberActive&&now>=nextRobbery){
+  robberActive=true;robberAt=now;
+  panel('🚨 ROBBER IN THE PAWN SHOP!','A cartoon robber is stealing your antiques! Press X to use your arcade defence tool and scare them away!');
+ }
+ if(robberActive&&now-robberAt>7000){
+  robberActive=false;
+  panel('💨 ROBBER ESCAPED!','The robber ran away! Press X faster next time.');
+  scheduleRobbery();
+ }
+}
 const keys=new Set();
 function r(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
 function t(s,x,y,n=13,c='#fff3cf'){g.fillStyle='#493222';g.font='bold '+n+'px monospace';g.textAlign='center';g.fillText(s,x+1,y+2);g.fillStyle=c;g.fillText(s,x,y)}
@@ -475,6 +497,23 @@ function pawnFirstPerson(){
  r(295,176,49,37,'#e4af7b');r(300,165,39,16,'#503a2e');r(288,211,64,38,'#647563');
  r(231,234,178,17,'#503929');r(208,250,224,52,'#956943');r(219,263,201,21,'#bf9261');
  t('BUY  •  SELL  •  TRADE',320,278,13,'#fff2cc');
+ // Cartoon robber with a loot sack.
+ if(robberActive){
+  r(435,176,49,29,'#594035');r(443,190,34,33,'#d39b7b');r(444,198,32,10,'#2b3444');
+  r(432,224,58,58,'#353947');
+  for(let iy=229;iy<280;iy+=16)r(435,iy,52,6,'#e5d9c5');
+  r(436,281,19,25,'#4b4a53');r(467,281,18,25,'#4b4a53');
+  r(492,225,31,37,'#a68857');r(503,218,9,8,'#d6b985');
+  t('!',464,172,27,'#ff6d6d');
+ }
+ // Stylised toy-like first-person defence prop.
+ if(pawnOwned){
+  r(483,338,130,21,'#30343c');r(520,359,44,37,'#272d34');
+  r(483,335,130,5,'#77828b');r(502,346,17,7,'#9da8a7');
+  if(performance.now()<defenceFlash){
+   r(446,327,34,13,'#fff2b0');r(427,322,18,22,'#ffd56b');r(413,330,18,7,'#ffef9c');
+  }
+ }
  // Small aiming crosshair and player hands at screen edge.
  r(315,187,10,2,'#fff9dc');r(319,183,2,10,'#fff9dc');
  r(0,350,67,50,'#d5a07c');r(573,350,67,50,'#d5a07c');
@@ -513,8 +552,8 @@ function panel(a,b,options=[]){$('heading').textContent=a;$('message').textConte
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
 function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;hud();draw();visit()}
-function leave(){room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
+function enter(id){outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=id==='pawn';x=319;y=317;if(id==='pawn')scheduleRobbery();hud();draw();visit()}
+function leave(){room='';shopping=false;robberActive=false;nextRobbery=0;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
 if(collectibles.has(id))return panel('✅ Already owned',label+' is already in your collection.',[['Back',visit]]);
@@ -531,7 +570,7 @@ if(room==='pawn'){
    ['🚪 Leave',leave]
   ]);
  }else{
-  panel('🏪 Your Pawn Shop','You own the shop! Buy rare collectibles and trade your treasures.',[
+  panel('🏪 Your Pawn Shop','Buy antiques or guard your shop! Press X if a robber appears. Robbers stopped: '+robbersStopped+'.',[
    [bid?'💎 Sell Pearl Compass — +400':'💎 Pearl Compass unavailable',()=>{if(!bid)return;bid=false;coins+=400;hud();visit()}],
    [treasureOwned?'⚓ Golden Anchor — owned':'⚓ Golden Anchor — 2,000',()=>{if(treasureOwned)return;buyItem('anchor','Golden Anchor',2000,()=>{treasureOwned=true})}],
    [collectibles.has('clock')?'🕰️ Antique Clock — owned':'🕰️ Antique Clock — 350',()=>buyItem('clock','Antique Clock',350)],
@@ -675,7 +714,7 @@ if(room){
  return
 }let n=near();if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
- if(k==='x')fishAction();
+ if(k==='x'){if(room==='pawn')stopRobber();else fishAction()}
  else if(k==='a')interact();
  else if(k==='y'){if(room)shopping=true;backpack()}
  else if(k==='b'){
@@ -708,7 +747,7 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>mov
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
-let prior=0;function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
+let prior=0;function frame(time){checkRobbery(time);if(room==='pawn'&&(robberActive||time<defenceFlash))draw();let dt=Math.min(50,prior?time-prior:16);prior=time;if(phase==='timing'){needle+=direction*dt*.037;if(needle>=99){needle=99;direction=-1}if(needle<=0){needle=0;direction=1}$('needle').style.left=needle+'%'}for(let k of keys)move(k);requestAnimationFrame(frame)}
 
 function adminCommand(raw){
  if(!adminMode)return;
