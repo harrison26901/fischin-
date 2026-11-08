@@ -598,7 +598,7 @@ r(275,350,91,50,theme.trim);
 }
 
 function pawnFirstPerson(){
- // A first-person pixel-art shop, with depth toward the back counter.
+ // First-person viewpoint from behind YOUR counter, looking towards the entrance.
  r(0,0,640,400,'#493c3d');
  g.fillStyle='#625248';g.beginPath();g.moveTo(0,0);g.lineTo(155,100);g.lineTo(155,260);g.lineTo(0,400);g.fill();
  g.fillStyle='#5b4a41';g.beginPath();g.moveTo(640,0);g.lineTo(485,100);g.lineTo(485,260);g.lineTo(640,400);g.fill();
@@ -621,14 +621,15 @@ function pawnFirstPerson(){
  r(543,120,39,32,'#c9a76b');r(553,125,20,22,'#fff0ab');
  r(527,177,43,30,'#6caccd');r(579,180,27,23,'#e899b8');
  r(545,244,50,27,'#e2ae63');r(558,251,24,13,'#eacb91');
- // Empty counter: you are the pawnbroker, looking out from behind it.
- r(211,112,218,52,'#48372e');r(218,119,204,38,'#dfbe83');
- t(pawnOwned?'YOUR PAWN SHOP':'PAWN SHOP',320,145,19,'#382d27');
- r(231,234,178,17,'#503929');r(208,250,224,52,'#956943');r(219,263,201,21,'#bf9261');
- // Till and ledger on your side of the counter.
- r(268,231,54,19,'#403d3a');r(275,222,41,12,'#6d827e');r(279,225,33,5,'#b4d1ae');
- r(341,238,41,11,'#e9d9af');r(345,235,35,3,'#c8aa6f');
- t('BUY  •  SELL  •  TRADE',320,278,13,'#fff2cc');
+ // Entrance is opposite the player, across the customer area.
+ r(230,105,180,150,'#4d3a30');r(242,115,156,139,'#906d4d');
+ r(250,120,139,125,'#6d8c86');r(256,126,127,112,'#90c3b4');
+ r(296,136,51,70,'#b4dcc6');r(320,139,5,62,'#648479');
+ r(346,209,7,7,'#f6d076');
+ r(267,106,106,19,'#4d3326');t('WELCOME',320,120,13,'#ffe7aa');
+ r(215,245,205,12,'#644b38');
+ // Floor mat just inside the entrance.
+ r(255,262,129,30,'#70534c');r(263,266,113,20,'#b08d69');
  // Cartoon robber with a loot sack.
  if(robberActive){
   r(435,176,49,29,'#594035');r(443,190,34,33,'#d39b7b');r(444,198,32,10,'#2b3444');
@@ -638,6 +639,15 @@ function pawnFirstPerson(){
   r(492,225,31,37,'#a68857');r(503,218,9,8,'#d6b985');
   t('!',464,172,27,'#ff6d6d');
  }
+ // Wide foreground counter: seen from behind, with your own till and ledger.
+ r(0,308,640,28,'#4b3327');r(0,320,640,80,'#845a3c');
+ r(0,312,640,12,'#cf9a63');r(0,349,640,5,'#68442e');
+ r(105,293,105,39,'#373c3a');r(113,276,86,23,'#637b74');
+ r(125,283,63,10,'#b9d1b7');r(127,307,58,14,'#a5a596');
+ r(257,302,97,25,'#e5d1a0');r(263,296,85,8,'#c5a46e');
+ for(let i=0;i<4;i++)r(271,306+i*4,60,1,'#ab8b5e');
+ r(398,304,34,17,'#d5b15b');r(408,298,14,9,'#ffe199');
+ t('YOUR COUNTER',320,375,14,'#ffe9b9');
  // Stylised toy-like first-person defence prop.
  if(pawnOwned){
   r(483,338,130,21,'#30343c');r(520,359,44,37,'#272d34');
@@ -651,8 +661,7 @@ function pawnFirstPerson(){
  r(aimX-17,aimY-1,11,2,reticleColour);r(aimX+6,aimY-1,11,2,reticleColour);
  r(aimX-1,aimY-17,2,11,reticleColour);r(aimX-1,aimY+6,2,11,reticleColour);
  r(aimX-2,aimY-2,4,4,reticleColour);
- // Small aiming crosshair and player hands at screen edge.
- r(315,187,10,2,'#fff9dc');r(319,183,2,10,'#fff9dc');
+ // Reticle above is the sole aiming marker.
  r(0,350,67,50,'#d5a07c');r(573,350,67,50,'#d5a07c');
  // Move camera a little when the player walks, without showing the avatar.
  const sway=Math.round((x-319)*.13);
