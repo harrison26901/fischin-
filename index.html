@@ -210,7 +210,7 @@ const home=[{id:'red',name:'RED COTTAGE',x:100,y:70,col:'#b65a4d',cost:300},{id:
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'},{id:'auction',name:'BIDDING HOUSE',x:595,y:70,col:'#846094'},{id:'pawn',name:'PAWN SHOP',x:350,y:530,col:'#836948'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
-const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000]];
+const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000],['Poseidon',400000],['Nebula',550000],['Inferno',750000],['Frostbite',1000000],['Voidwalker',1400000],['Galaxy',2000000],['Ocean King',2750000],['Eternal',3500000],['God of the Sea',5000000]];
 const clothes=[
  {id:'hat',name:'Olive Bucket Hat',slot:'head',price:75,color:'#638b5a',icon:'👒'},
  {id:'cap',name:'Navy Fishing Cap',slot:'head',price:120,color:'#416f9b',icon:'🧢'},
@@ -517,7 +517,10 @@ const rodPaint=[
  ['#d5a441','#fff0a1'],['#62b8e3','#d6fbff'],['#29a97d','#a3ffd0'],
  ['#d35069','#ffc1cf'],['#9ecff3','#f6faff'],['#457aaf','#c5f5fc'],
  ['#ca6545','#fdb76c'],['#b5a2ff','#fff4c4'],['#6d53c4','#80ffed'],
- ['#eea63d','#f9eea0']
+ ['#eea63d','#f9eea0'],
+ ['#31a9cf','#c9f4ff'],['#7652cc','#e2c7ff'],['#d14428','#ffcb65'],
+ ['#71d5ed','#e8fcff'],['#282044','#b49dff'],['#6961e0','#ffe4fa'],
+ ['#1679a3','#a0fbf4'],['#eccfa0','#ffffff'],['#e9c24b','#bffbff']
 ];
 function drawHeldRod(px,py){
  const colour=rodPaint[Math.min(rod,rodPaint.length-1)];
@@ -943,7 +946,7 @@ if(room==='bait'){
 }
 if(room==='rod'){
  const next=rods[rod+1];
- panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider! Final rod: Big Bertha Hunter — 300,000 coins.',[
+ panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider! Ultimate rod: God of the Sea — 5,000,000 coins.',[
   [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
   [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
   ['👕 Browse clothing & outfits',clothingMenu],
@@ -1013,7 +1016,7 @@ function fishAction(){
  if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
  if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
  phase='waiting';needle=0;direction=1;lineTension=0;reelProgress=0;
- targetWidth=Math.min(76,38+rod*3);
+ targetWidth=Math.min(88,38+rod*3);
  target=8+Math.random()*(84-targetWidth);
  const roll=Math.random();
  pending=roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
