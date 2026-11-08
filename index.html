@@ -66,6 +66,24 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
  #fishingPanel{top:auto;bottom:165px;right:7px;width:calc(100% - 14px);max-height:19vh}
  #game-screen .controls{bottom:4px}
 }
+
+/* Celebrations for rare, legendary and mythic catches */
+#rare-celebration{position:absolute;inset:0;z-index:15;pointer-events:none;display:none;align-items:center;justify-content:center;overflow:hidden;background:#09293265}
+#rare-celebration.show{display:flex;animation:rare-flash .5s ease-out}
+#rare-celebration .rare-panel{text-align:center;position:relative;z-index:2;padding:25px 30px;min-width:min(450px,90vw);border:4px solid #f9d375;background:linear-gradient(130deg,#163e43ee,#254b47ee);box-shadow:0 0 35px #ffda69a8,0 12px 30px #051c23b8;border-radius:22px;animation:rare-pop .7s cubic-bezier(.18,1.5,.42,1)}
+#rare-celebration .rare-tier{font-size:clamp(20px,4vw,35px);font-weight:1000;letter-spacing:3px;text-shadow:0 3px 3px #1e292b}
+#rare-celebration .rare-fish{font-size:clamp(60px,11vw,105px);display:block;animation:rare-bob .65s infinite alternate ease-in-out}
+#rare-celebration .rare-name{font-size:clamp(22px,5vw,47px);font-weight:1000;margin:10px auto;color:#fff6d1}
+#rare-celebration .rare-value{font-size:clamp(16px,3vw,26px);font-weight:900;color:#ffdf76}
+#rare-celebration .sparkle{position:absolute;left:50%;top:50%;width:8px;height:8px;background:#fff5b7;box-shadow:0 0 11px #ffe484;border-radius:2px;animation:rare-burst 1.5s ease-out forwards;animation-delay:var(--delay);opacity:0}
+#rare-celebration.legendary .rare-panel{border-color:#92d8f6;box-shadow:0 0 50px #8bc9f1}
+#rare-celebration.mythic{background:#34115e9c}
+#rare-celebration.mythic .rare-panel{border-color:#ffdc58;background:linear-gradient(145deg,#4a277bfa,#224c67f5);box-shadow:0 0 95px #e4a5ff,0 0 28px #ffdd77}
+@keyframes rare-pop{from{transform:scale(.25) rotate(-8deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes rare-bob{from{transform:translateY(4px) rotate(-8deg)}to{transform:translateY(-9px) rotate(8deg)}}
+@keyframes rare-flash{from{background:#fff9c4c9}to{background:#09293265}}
+@keyframes rare-burst{0%{opacity:0;transform:translate(0,0) scale(.2) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.6) rotate(160deg)}}
+@media(prefers-reduced-motion:reduce){#rare-celebration *,#rare-celebration{animation:none!important}}
 </style></head><body>
 <div id="fish-loader" role="status" aria-live="polite" aria-label="Loading Little Fishing Village">
   <div class="loader-card">
@@ -77,6 +95,15 @@ html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:no
   </div>
 </div>
 <main id="game-screen">
+<div id="rare-celebration" aria-live="polite" role="status" aria-atomic="true">
+ <div class="rare-panel">
+  <div class="rare-tier" id="rare-tier">RARE CATCH!</div>
+  <span class="rare-fish" id="rare-emoji" aria-hidden="true">🐠</span>
+  <div class="rare-name" id="rare-name">Golden Koi</div>
+  <div class="rare-value" id="rare-value">200 coins</div>
+ </div>
+</div>
+
 <h1 class="game-title">🎣 Little Fishing Village</h1><button type="button" id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
 <div class="hud"><span>🪙 <b id="coins">100</b></span><span>🎒 <b id="bag">0/15</b></span><span>🪱 <b id="bait">8</b></span><span>🎣 <b id="rod">Wood</b></span><span>🏠 <b id="homes">0/4</b></span></div>
 
@@ -483,9 +510,32 @@ function backpack(){
 const items=[...collectibles].map(id=>({baitbox:'Bait Box',reel:'Silver Reel',hat:'Bucket Hat',pearl:'Giant Pearl',trophy:'Captain Finn Trophy',clock:'Antique Clock',chest:'Mystery Chest',anchor:'Golden Anchor',aquarium:'Aquarium'})[id]||id);
 if(bid)items.push('Pearl Compass');
 panel('🎒 Backpack',(bag.length?bag.map(f=>f[0]+' ('+f[1]+' coins)').join(' · '):'No fish caught yet.')+(items.length?' | Treasures: '+items.join(', '):''),[['Back',()=>room?visit():panel('🎣 Adventure','Keep exploring!')]])}
+let celebrationTimer=null;
+function celebrateFish(f){
+ if(!f||f[1]<200)return;
+ const overlay=$('rare-celebration');
+ if(celebrationTimer)clearTimeout(celebrationTimer);
+ overlay.className='';
+ overlay.querySelectorAll('.sparkle').forEach(el=>el.remove());
+ const mythic=f[0]==='Big Bertha',legendary=f[0]==='Legendary Shark';
+ overlay.className='show '+(mythic?'mythic':legendary?'legendary':'rare');
+ $('rare-tier').textContent=mythic?'🌟 MYTHIC DISCOVERY! 🌟':legendary?'⚡ LEGENDARY CATCH! ⚡':'✨ RARE FIND! ✨';
+ $('rare-emoji').textContent=mythic?'🐋':legendary?'🦈':'🐠';
+ $('rare-name').textContent=f[0];
+ $('rare-value').textContent=f[1].toLocaleString('en-GB')+' COINS';
+ for(let i=0;i<(mythic?38:legendary?26:18);i++){
+  const star=document.createElement('span');star.className='sparkle';
+  const angle=(i*137.5)*Math.PI/180,dist=90+(i%7)*30;
+  star.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+  star.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+  star.style.setProperty('--delay',(i%7)*.065+'s');
+  overlay.appendChild(star);
+ }
+ celebrationTimer=setTimeout(()=>{overlay.className='';overlay.querySelectorAll('.sparkle').forEach(el=>el.remove())},mythic?4300:legendary?3200:2300);
+}
 function fishAction(){if(room||area!=='lake')return;if(phase==='waiting')return;
 if(phase==='timing'){if(needle>=target-3&&needle<=target+targetWidth+3){phase='reeling';reels=0;panel('🎯 Hooked!','Three presses of X to reel it in!')}else{phase='missed';panel('💦 Close one!','Your next try costs no bait.')}hud();return}
-if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';panel(pending[0]==='Big Bertha'?'🌟 MYTHIC! BIG BERTHA! 🌟':'🎉 '+pending[0]+' caught!',pending[0]==='Big Bertha'?'A once-in-a-lifetime catch worth 200,000 coins!':'Worth '+pending[1]+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
+if(phase==='reeling'){reels++;if(reels>=3){bag.push(pending);phase='caught';celebrateFish(pending);panel(pending[0]==='Big Bertha'?'🌟 MYTHIC! BIG BERTHA! 🌟':'🎉 '+pending[0]+' caught!',pending[0]==='Big Bertha'?'A once-in-a-lifetime catch worth 200,000 coins!':'Worth '+pending[1]+' coins.',[['Fish again',fishAction],['Sell fish',()=>tab('shop')]])}hud();return}
 if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches first.',[['Visit shop',()=>tab('shop')]]);
 if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
 phase='waiting';needle=0;direction=1;targetWidth=Math.min(74,54+rod*4);target=10+Math.random()*(80-targetWidth);const roll=Math.random();pending=fish[roll<.47?0:roll<.74?1:roll<.9?2:roll<.98?3:roll<.999?4:5];const id=++token;hud();draw();panel('🎣 Casting!','Waiting for a bite...');
