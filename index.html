@@ -1213,8 +1213,15 @@ function press(k){
  else if(k==='a')interact();
  else if(k==='y'){if(room)shopping=true;backpack()}
  else if(k==='b'){
-  if(room){if(shopping){shopping=false;visit();return}leave()}
-  else if(menu.length)panel('🌿 Explore','Keep walking to discover the village.');
+  // B is BACK/CANCEL, never a forced exit from the game or building.
+  // Boss fights use B for dodging in the handler above.
+  if(room){
+   if(shopping){shopping=false;visit();return}
+   panel('🏠 Still inside','Press A to use the counter, or choose the 🚪 Exit option to leave this building.',[['🚪 Exit',leave]]);
+   return;
+  }
+  if(area==='sea')panel('🚤 Still sailing','B will not kick you out of the sea. Sail to the harbour to return home.');
+  else panel('🌿 Keep exploring','B closes the current message. Press A to interact or X to fish.');
  }
 }
 function move(dir){
@@ -1241,12 +1248,12 @@ function move(dir){
 }
 
 
-document.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>press(b.dataset.key));
+document.querySelectorAll('[data-key]').forEach(b=>{b.type='button';b.onclick=e=>{e.preventDefault();press(b.dataset.key)}});
 document.querySelectorAll('[data-dir]').forEach(b=>{let timer;const step=()=>move(b.dataset.dir);b.onpointerdown=e=>{e.preventDefault();step();timer=setInterval(step,85);b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=()=>clearInterval(timer)});
 
 const keys=new Set();
 const keyMap={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape')press('b')});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('collection-modal').hidden){e.preventDefault();toggleCollection(false);return}if(!$('collection-modal').hidden)return;if(e.target&&e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='c'){e.preventDefault();toggleCollection(true);return}let k=e.key.toLowerCase();if(keyMap[k]){e.preventDefault();keys.add(keyMap[k])}else if(k===' '){e.preventDefault();press('x')}else if(k==='e'||k==='enter')press('a');else if(k==='tab'){e.preventDefault();press('y')}else if(k==='escape'||k==='b'){e.preventDefault();press('b')}});
 window.addEventListener('keyup',e=>keys.delete(keyMap[e.key.toLowerCase()]));
 let prior=0,lastWaterDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
