@@ -371,6 +371,61 @@ let boatTier=0,discoveredIslands=new Set(),weatherIndex=0,lastWeatherChange=perf
 
 const frozenFish=[['Snowflake Minnow',180],['Frostfin Trout',450],['Glacier Eel',950],['Aurora Koi',2200],['Ice Crown Shark',5000]];
 let frozenFishCaught=new Set(),frostDragonDefeated=false,frostDragonBattle=null,frozenChestOpened=false;
+
+const skyFish=[['Cloud Guppy',220],['Rainbow Ray',650],['Thunder Eel',1200],['Starfin',2600],['Celestial Whale',6200]];
+let airshipOwned=false,skyFishCaught=new Set(),skyChestOpened=false,skyPhoenixUnlocked=false;
+function skyAirshipMenu(){
+ panel('☁️ Sky Island Airship',airshipOwned?'Your airship is ready!':'Purchase an airship for 2,500 coins to fly to Sky Island.',[
+ ...(airshipOwned?[['🚀 Fly to Sky Island',travelToSkyIsland]]:[['🪙 Buy airship — 2,500 coins',()=>{if(coins<2500)return need(2500);coins-=2500;airshipOwned=true;hud();saveGame(true);skyAirshipMenu()}]]),
+ ['🚤 Harbourmaster',boatShop]]);
+}
+function travelToSkyIsland(){
+ if(!airshipOwned)return skyAirshipMenu();
+ token++;phase='ready';pending=null;room='';area='sky';x=310;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();saveGame(true);
+ panel('☁️ SKY ISLAND!','Fly through the clouds! Walk using WASD or arrows. Press A near the cloud lake, star chest and Phoenix nest. Press B to fly home.');
+}
+function leaveSkyIsland(){area='lake';room='';x=142;y=309;keys.clear();hud();draw();saveGame(true);panel('🚀 Home again','Your sky discoveries are saved!')}
+function skyInteract(){
+ if(Math.hypot(x-165,y-180)<75)return cloudFishing();
+ if(Math.hypot(x-490,y-158)<75)return skyPhoenixQuest();
+ if(Math.hypot(x-495,y-316)<65)return skyTreasure();
+ panel('☁️ Sky Island','Explore the cloud lake, star chest and Phoenix nest. Press B to fly home.');
+}
+function cloudFishing(){
+ if(Math.hypot(x-165,y-180)>=75)return panel('🎣 Cloud Lake','Walk to the cloud lake on the left side first.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Bag full','Sell fish at Sunshine Lake to make room.');
+ if(bait<=0)return panel('🪱 No bait','Buy bait from the village.');
+ const f=skyFish[Math.floor(Math.random()*skyFish.length)];
+ bait--;bag.push([...f]);discoveredFish.add(f[0]);skyFishCaught.add(f[0]);hud();draw();saveGame(true);
+ panel('🌈 '+f[0]+' CAUGHT!','Worth '+f[1]+' coins. '+skyFishCaught.size+'/5 cloud fish discovered.',[['🎣 Fish again',cloudFishing],['☁️ Explore',()=>panel('☁️ Sky Island','Discover the Phoenix nest and star chest!')]]);
+}
+function skyTreasure(){
+ if(skyChestOpened)return panel('⭐ Star Chest','You have already found the Stardust Crown.');
+ skyChestOpened=true;coins+=2300;collectibles.add('sky-stardust-crown');discoveredTreasures.add('sky-stardust-crown');hud();draw();saveGame(true);
+ panel('⭐ STARDUST CROWN FOUND!','You discovered a Stardust Crown and earned 2,300 coins!');
+}
+function skyPhoenixQuest(){
+ if(skyPhoenixUnlocked)return panel('🔥 Phoenix Nest','Sol the Phoenix is yours! Equip Sol at the Pet Adoption Centre.');
+ if(skyFishCaught.size<5)return panel('🐦 Legendary Phoenix','Catch all five cloud fish species to awaken Sol the Phoenix! Progress: '+skyFishCaught.size+'/5.');
+ skyPhoenixUnlocked=true;adoptedPets.add('phoenix');collectibles.add('sky-phoenix-feather');discoveredTreasures.add('sky-phoenix-feather');hud();draw();saveGame(true);
+ panel('🔥 PHOENIX UNLOCKED!','Sol the legendary Phoenix has joined your pets! Equip Sol at the Pet Adoption Centre.');
+}
+function skyScene(){
+ const sec=performance.now()/1000;r(0,0,640,400,'#81c9f0');
+ for(let i=0;i<22;i++){const px=(i*97+sec*6)%720-70,py=(i*71)%380;r(px,py,75,17,'#e8f9ff');r(px+18,py-13,43,17,'#fff')}
+ r(18,258,606,142,'#9fd4a4');r(39,244,558,30,'#effff9');
+ r(80,130,174,112,'#9ceaf5');r(98,147,139,82,'#65c3e6');
+ for(let i=0;i<9;i++)r(104+i*15,160+i%3*12,11,3,'#dcfaff');
+ t('🎣 CLOUD FISHING',166,261,13,'#305b7c');
+ r(437,110,107,95,'#a9bbdf');r(447,91,85,30,'#f8e4bb');
+ r(475,117,39,56,'#ed8d4e');r(481,103,27,26,'#ffd56a');r(484,94,21,16,'#fff0ab');
+ t(skyPhoenixUnlocked?'✓ PHOENIX FOUND':'🔥 PHOENIX NEST',489,225,12,'#684c80');
+ r(459,288,80,64,'#b4a5d9');r(478,306,43,44,'#806db4');
+ if(!skyChestOpened){r(480,328,33,17,'#eec66c');r(488,321,17,11,'#fff1b3')}
+ t(skyChestOpened?'✓ TREASURE FOUND':'⭐ STAR CHEST',495,374,12,'#574d8b');
+ r(283,343,73,16,'#8b694c');r(301,328,37,15,'#c8a36a');r(317,303,5,26,'#f8e9c5');
+ drawPet();character(x,y);
+}
 function travelToFrozenIsland(){
  if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
  token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
@@ -547,6 +602,7 @@ function boatShop(){
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
   ['❄️ Travel to Frozen Island',travelToFrozenIsland],
+  ['☁️ Sky Island Airship',skyAirshipMenu],
   ['🐾 Adopt a Pet',petShop],
   ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
   ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
@@ -1368,7 +1424,8 @@ const petTypes=[
  {id:'dragon',name:'Ember the Dragon',price:1800,color:'#73b782',emoji:'🐉'},
  {id:'golden-dragon',name:'Aurelia the Golden Dragon',price:0,color:'#f5d76c',emoji:'🐲',legendary:true,requirement:'Defeat all 3 pirate ships'},
  {id:'ghost-fox',name:'Luna the Ghost Fox',price:0,color:'#b9e8f6',emoji:'🦊',legendary:true,requirement:'Find all 4 scuba treasures'},
- {id:'star-unicorn',name:'Nova the Star Unicorn',price:0,color:'#e6baf6',emoji:'🦄',legendary:true,requirement:'Win all 3 fishing tournaments'}
+ {id:'star-unicorn',name:'Nova the Star Unicorn',price:0,color:'#e6baf6',emoji:'🦄',legendary:true,requirement:'Win all 3 fishing tournaments'},
+ {id:'phoenix',name:'Sol the Phoenix',price:0,color:'#f6a351',emoji:'🔥',legendary:true,requirement:'Discover all 5 cloud fish on Sky Island'}
 ];
 let adoptedPets=new Set(),activePet=null,petX=0,petY=0;
 function unlockLegendaryPets(announce=false){
@@ -1388,6 +1445,7 @@ function legendaryPetProgress(id){
  if(id==='golden-dragon')return pirateShips.filter(p=>pirateWins.has(p.id)).length+'/3 pirate ships defeated';
  if(id==='ghost-fox')return diveSites.filter(s=>diveDiscoveries.has(s.id)).length+'/4 scuba treasures discovered';
  if(id==='star-unicorn')return tournamentTiers.filter((_,i)=>tournamentWins.has(i)).length+'/3 tournament trophies earned';
+ if(id==='phoenix')return skyFishCaught.size+'/5 cloud fish discovered';
  return '';
 }
 function petShop(){
@@ -1422,6 +1480,7 @@ function drawPet(){
  if(p.id==='dragon'||p.id==='golden-dragon'){r(px+10,py-2,13,7,p.legendary?'#ffe8a4':'#b8e28a');r(px-4,py-20,8,9,p.legendary?'#fff0ba':'#d9f2ac')}
  if(p.id==='ghost-fox'){r(px-14,py-19,8,13,'#e9faff');r(px+7,py-19,8,13,'#e9faff');r(px+9,py+1,16,7,'#b9e8f6')}
  if(p.id==='star-unicorn'){r(px-2,py-25,5,13,'#fff3a4');r(px+10,py+1,13,5,'#f4d2fc')}
+ if(p.id==='phoenix'){r(px-20,py-9,13,16,'#f8cc67');r(px+8,py-9,13,16,'#f8cc67');r(px-5,py-24,10,15,'#ffdf8a')}
  if(p.legendary){const sparkle=Math.sin(performance.now()/240);r(px-17,py-22+sparkle*2,4,4,'#fff6bf');r(px+15,py-19-sparkle*2,4,4,'#ffffff')}
  if(p.id==='penguin')r(px-6,py-2,12,11,'#e9f0e5');
  if(p.id==='dog')r(px+9,py+1,11,4,'#b48a5d');
@@ -1441,6 +1500,7 @@ else if(area==='lake'){lake();drawPet();character(x,y)}
 else if(area==='sea'){seaScene()}
 else if(area==='dive'){scubaScene()}
 else if(area==='frozen'){frozenScene()}
+else if(area==='sky'){skyScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1634,7 +1694,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive'||area==='frozen')return false;
+  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1658,7 +1718,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='sky'){skyInteract();return}if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1673,6 +1733,7 @@ function interact(){if(area==='frozen'){frozenInteract();return}if(area==='dive'
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='sky'){if(k==='a'||k==='x')skyInteract();else if(k==='b')leaveSkyIsland();else if(k==='y')backpack();return}
  if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a'||k==='x')frozenInteract();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
  if(area==='dive'){if(k==='b')surfaceFromDive();else if(k==='a'||k==='x')exploreDiveSite();else if(k==='y')panel('🤿 Dive progress',diveDiscoveries.size+'/4 treasures found. Oxygen '+Math.ceil(diveOxygen)+'%. Press B to surface.');return}
  if(pirateBattle){if(k==='a'||k==='x')pirateTurn('fire');else if(k==='b')pirateTurn('brace');else if(k==='y')pirateMenu();return}
@@ -1806,6 +1867,7 @@ function saveGame(automatic=false){
    openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],diveDiscoveries:[...diveDiscoveries],
    adoptedPets:[...adoptedPets],activePet,
    frozenFishCaught:[...frozenFishCaught],frostDragonDefeated,frozenChestOpened,
+   airshipOwned,skyFishCaught:[...skyFishCaught],skyChestOpened,skyPhoenixUnlocked,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1833,10 +1895,13 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':data.area==='sky'?'sky':'lake';
+ airshipOwned=data.airshipOwned===true;skyFishCaught=new Set((Array.isArray(data.skyFishCaught)?data.skyFishCaught:[]).filter(id=>skyFish.some(f=>f[0]===id)));
+ skyChestOpened=data.skyChestOpened===true||data.collectibles.includes('sky-stardust-crown');skyPhoenixUnlocked=data.skyPhoenixUnlocked===true||data.collectibles.includes('sky-phoenix-feather');
  frozenFishCaught=new Set((Array.isArray(data.frozenFishCaught)?data.frozenFishCaught:[]).filter(id=>frozenFish.some(f=>f[0]===id)));
  frostDragonDefeated=data.frostDragonDefeated===true||data.collectibles.includes('frost-dragon-trophy');frozenChestOpened=data.frozenChestOpened===true||data.collectibles.includes('frozen-crown');frostDragonBattle=null;
  adoptedPets=new Set((Array.isArray(data.adoptedPets)?data.adoptedPets:[]).filter(id=>petTypes.some(p=>p.id===id)));
+ if(skyPhoenixUnlocked)adoptedPets.add('phoenix');
  activePet=adoptedPets.has(data.activePet)?data.activePet:null;petX=x-24;petY=y+14;
  diveDiscoveries=new Set((Array.isArray(data.diveDiscoveries)?data.diveDiscoveries:[]).filter(id=>diveSites.some(s=>s.id===id)));
  for(const site of diveSites)if(data.collectibles.includes('scuba-'+site.id))diveDiscoveries.add(site.id);
