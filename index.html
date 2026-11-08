@@ -583,26 +583,62 @@ function fireGolemTurn(move){
 }
 function volcanoDungeonScene(){
  const sec=performance.now()/1000,d=volcanoDungeonRooms[dungeonRoom];
- r(0,0,640,400,'#392b32');
- for(let i=0;i<14;i++){r(i*49,30,42,30,'#5c3b39');r(i*49,358,42,35,'#5c3b39')}
- for(let i=0;i<9;i++){r(0,i*48,30,42,'#63413a');r(610,i*48,30,42,'#63413a')}
- for(let i=0;i<44;i++)r((i*83)%600+20,(i*67)%300+50,12,7,i%3===0?'#725044':'#4b3738');
- for(const [tx,ty] of d.traps){r(tx-24,ty-17,48,36,'#b34b25');r(tx-18,ty-11,36,24,Math.sin(sec*5+tx)>0?'#ff9c35':'#ee6327');r(tx-7,ty-7,14,12,'#ffe08a')}
+ // Solid stone floor across the entire chamber: no disconnected platforms.
+ r(0,0,640,400,'#30282d');
+ r(27,42,586,335,'#514044');
+ for(let row=0;row<9;row++)for(let col=0;col<14;col++){
+  const bx=30+col*42+(row%2)*12,by=45+row*38;
+  r(bx,by,39,35,(row+col)%3===0?'#594449':(row+col)%3===1?'#4e3d43':'#554147');
+  r(bx,by+32,37,2,'#3c3037');
+ }
+ // Rock walls have dark contact edges where they meet the floor.
+ r(0,0,640,43,'#6a4140');r(0,35,640,9,'#281f28');
+ r(0,0,30,400,'#6a4140');r(27,0,8,400,'#29222b');
+ r(610,0,30,400,'#6a4140');r(605,0,8,400,'#29222b');
+ r(0,375,640,25,'#6a4140');r(0,370,640,7,'#29222b');
+ for(let i=0;i<13;i++){const px=i*50;r(px,11,45,19,'#82534a');r(px+4,30,40,4,'#a76a4d')}
+ // Grounded lava cracks and inlaid trap pools, preserving trap coordinates.
+ for(let i=0;i<9;i++){
+  const px=43+i*70,py=355+(i%2)*6;
+  r(px,py,51,5,'#9b3e2c');r(px+9,py+1,25,3,'#ff9138');
+ }
+ for(const [tx,ty] of d.traps){
+  r(tx-27,ty-20,54,42,'#281e27');r(tx-24,ty-17,48,36,'#a13d27');
+  r(tx-18,ty-11,36,24,Math.sin(sec*5+tx)>0?'#ff9c35':'#ee6327');
+  r(tx-7,ty-7,14,12,'#ffe08a');
+ }
+ // Treasure chest rests on a floor plinth, not in mid-air.
  const [cx,cy]=d.chest;
+ r(cx-24,cy+11,48,8,'#30272c');r(cx-22,cy+7,44,7,'#80605a');
  r(cx-17,cy-11,34,25,dungeonChests.has('volcano-dungeon-'+dungeonRoom)?'#62584d':'#b88740');
  r(cx-17,cy-16,34,10,dungeonChests.has('volcano-dungeon-'+dungeonRoom)?'#867969':'#f1c96d');
  r(cx-4,cy-9,8,12,'#fff0a8');
- const [ex,ey]=d.exit;r(ex-29,ey-45,58,75,'#a95730');r(ex-21,ey-37,42,65,'#f5a047');r(ex-13,ey-30,26,58,'#583746');
+ // Doorway rises from a stone threshold attached to the floor.
+ const [ex,ey]=d.exit;
+ r(ex-39,ey+23,78,12,'#30272c');r(ex-34,ey+18,68,9,'#8e6455');
+ r(ex-29,ey-45,58,75,'#a95730');r(ex-21,ey-37,42,65,'#f5a047');r(ex-13,ey-30,26,58,'#583746');
+ r(ex-24,ey+27,48,5,'#b57951');
  t(dungeonRoom===2?'GOLEM GATE':'NEXT CHAMBER',ex,ey-55,12,'#ffe1a0');
  if(dungeonRoom===2){
-  r(413,156,49,54,'#b84c36');r(420,140,35,26,'#dc6b3b');r(416,135,11,13,'#e5a056');r(449,135,11,13,'#e5a056');
-  r(427,155,8,7,'#ffe387');r(443,155,8,7,'#ffe387');r(408,205,15,17,'#e9783a');r(452,205,15,17,'#e9783a');
+  // Fire Golem's legs and shadow visibly connect its body to the floor.
+  r(404,215,69,10,'#2e252a');
+  r(415,197,17,23,'#8e4034');r(443,197,17,23,'#8e4034');
+  r(410,216,25,8,'#e9783a');r(441,216,25,8,'#e9783a');
+  r(413,156,49,54,'#b84c36');r(420,140,35,26,'#dc6b3b');
+  r(416,135,11,13,'#e5a056');r(449,135,11,13,'#e5a056');
+  r(427,155,8,7,'#ffe387');r(443,155,8,7,'#ffe387');
+  r(408,184,12,28,'#e9783a');r(455,184,12,28,'#e9783a');
  }
- // Molten river, stone columns and drifting embers (away from the walkable traps).
- for(let i=0;i<12;i++){const px=28+i*51;r(px,47,17,49,'#46323a');r(px-5,42,27,11,'#8b5446');r(px+4,53,4,34,'#a36c51')}
+ // Pillars sit on floor bases, with wall-mounted flames and floating embers.
+ for(let i=0;i<12;i++){
+  const px=36+i*51;
+  r(px-8,94,33,9,'#2e262d');r(px-6,88,29,10,'#856157');
+  r(px,47,17,45,'#46323a');r(px-5,42,27,11,'#8b5446');
+  r(px+4,53,4,34,'#a36c51');
+ }
  for(let i=0;i<22;i++){const px=(i*67+sec*9)%640,py=45+(i*43)%300;r(px,py,3,4,i%2?'#ffcb70':'#e87d4d')}
- for(let i=0;i<8;i++){const px=i*84,py=377;r(px,py,62,9,'#a64c30');r(px+9,py+2,30,4,'#ffb24e')}
- r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');t('❤️ '+dungeonHealth+'/100   🌋 '+d.name,185,34,13,'#ffe8c4');
+ r(34,12,Math.max(0,dungeonHealth)*2,9,'#e56a47');
+ t('❤️ '+dungeonHealth+'/100   🌋 '+d.name,185,34,13,'#ffe8c4');
  drawPet();character(x,y);
 }
 
