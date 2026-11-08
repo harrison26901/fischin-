@@ -2514,7 +2514,7 @@ $('delete-save').onclick=()=>{
 };
 $('scuba-button').addEventListener('click',beginScubaDive);
 $('surface-button').addEventListener('click',()=>surfaceFromDive());
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||area==='frozen'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
