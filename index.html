@@ -267,7 +267,7 @@ function clothingMenu(){
  ['🎣 Back to Rod Shop',visit]
  ]);
 }
-let area='lake',room='',x=430,y=307,coins=1000,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=100,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 
 const boats=[['No boat',0,0],['Rowboat',300,5],['Sailboat',1500,7],['Speedboat',8000,10]];
 const islands=[
@@ -1320,7 +1320,7 @@ let prior=0,lastWaterDraw=0;
 const SAVE_KEY='little-fishing-village-save-v1';
 // This is a bearer-link unlock for this static browser game, not strong account authentication.
 // Keep the private unlock link secret. The GitHub source contains only its SHA-256 digest.
-const OWNER_HASH='67dffbb03e6228d595078bb53a95e5ffef5adf03288cc5ca34b7cf0be01d7c55';
+const OWNER_HASH='38e91388f68884ebaccc8ef45eab25aae3c3e810afde8d5cc45b852d1a711848';
 const OWNER_LOCAL_KEY='little-fishing-village-owner-unlock-v1';
 const OWNER_COINS=Number('111111111111111111111');
 let ownerAccess=false,ownerPreviousRod=0;
@@ -1393,10 +1393,9 @@ function loadGame(manual=false){
  y=Math.max(30,Math.min(area==='village'?VILLAGE_H-30:365,Number(data.y)||307));
  coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
  // Remove the old public jackpot from non-owner saves without touching possessions.
- if(!ownerAccess&&coins>=1e19)coins=1000;
- // One-time 1,000-coin gift for existing saves; never overwrites larger balances.
- oneGrandGiftClaimed=!!data.oneGrandGiftClaimed;
- if(!oneGrandGiftClaimed){coins=Math.max(coins,1000);oneGrandGiftClaimed=true;}
+ if(!ownerAccess&&coins>=1e19)coins=100;
+ // Public coin gifts are disabled. Preserve ordinary earned balances and progress.
+ oneGrandGiftClaimed=true;
  megaGiftClaimed=ownerAccess;
  if(ownerAccess)coins=Math.max(coins,OWNER_COINS);
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
