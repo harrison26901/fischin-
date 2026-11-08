@@ -266,7 +266,7 @@ function clothingMenu(){
  ['🎣 Back to Rod Shop',visit]
  ]);
 }
-let area='lake',room='',x=430,y=307,coins=1000,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=Number('111111111111111111111'),bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 
 const boats=[['No boat',0,0],['Rowboat',300,5],['Sailboat',1500,7],['Speedboat',8000,10]];
 const islands=[
@@ -1018,7 +1018,7 @@ else{
 }
 g.restore();drawWeather();drawBossOverlay();
 }
-function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
+function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=megaGiftClaimed&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
 $('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=(phase==='reeling'||phase==='boss')?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',boss:'⚔️ GIANT FISH BOSS BATTLE!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X to damage the boss! Press B to dodge the red danger warning.',boss:'X attacks. B dodges giant splashes. Defeat the boss to earn a trophy!',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -1298,7 +1298,7 @@ function pollGamepads(time){
 let prior=0,lastWaterDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
 const SAVE_KEY='little-fishing-village-save-v1';
-let saveReady=false,oneGrandGiftClaimed=true;
+let saveReady=false,oneGrandGiftClaimed=true,megaGiftClaimed=true;
 function showSaveStatus(message){$('save-status').textContent=message}
 function saveGame(automatic=false){
  if(!saveReady)return false;
@@ -1306,7 +1306,7 @@ function saveGame(automatic=false){
   const snapshot={
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
-   coins,bait,rod,oneGrandGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
+   coins,bait,rod,oneGrandGiftClaimed,megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1347,6 +1347,8 @@ function loadGame(manual=false){
  // One-time 1,000-coin gift for existing saves; never overwrites larger balances.
  oneGrandGiftClaimed=!!data.oneGrandGiftClaimed;
  if(!oneGrandGiftClaimed){coins=Math.max(coins,1000);oneGrandGiftClaimed=true;}
+ megaGiftClaimed=!!data.megaGiftClaimed;
+ if(!megaGiftClaimed){coins=Math.max(coins,Number('111111111111111111111'));megaGiftClaimed=true;}
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
  rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
  const knownFish=new Map([...fish,...mythicFish,...allIslandFish].map(([name,value])=>[name,value]));
