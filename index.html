@@ -468,6 +468,20 @@ function skyScene(){
  g.restore();
  for(let i=0;i<14;i++){const px=fallX-14+(i*19)%85,py=367+(i%3)*8;r(px,py,9,3,'#ffffffaa')}
  for(let i=0;i<9;i++){const px=fallX+Math.sin(sec*2+i)*24+25,py=245+(i*29+sec*21)%155;r(px,py,4,5,'#e9ffff')}
+ // Enchanted sky castle behind the Phoenix sanctuary, with glowing windows and flags.
+ r(358,99,84,110,'#778ab7');r(369,84,62,25,'#b6b9e2');
+ r(349,65,23,142,'#91a4cf');r(428,65,23,142,'#91a4cf');
+ r(380,42,38,155,'#a3b3db');r(385,29,28,18,'#e4d8ee');
+ for(const cx of [349,428]){r(cx-4,54,31,14,'#d9d6ed');for(let i=0;i<3;i++)r(cx-3+i*10,46,7,12,'#f0e6f6')}
+ for(let i=0;i<3;i++)r(384+i*11,24,7,12,'#f7e9f6');
+ r(396,3,4,24,'#f9f1d4');r(400,4,24,12,'#f2b6d6');r(403,7,16,5,'#ffe6a5');
+ for(const [wx,wy] of [[361,100],[436,100],[389,80],[411,80],[365,145],[433,145]]){
+  r(wx,wy,9,16,'#4c608f');r(wx+2,wy+3,5,11,'#fff0ae');r(wx+3,wy+5,3,5,'#ffffff');
+ }
+ r(387,149,27,58,'#536b9e');r(392,156,17,51,'#293e70');
+ r(396,160,8,11,'#f5dc9b');r(404,183,4,4,'#eec879');
+ for(let i=0;i<9;i++){const bx=354+i*11;r(bx,205,8,6,i%2?'#d9d7ed':'#9daed2')}
+ t('🏰 SKY CASTLE',397,222,11,'#fff0ce');
  // Phoenix sanctuary and its golden flame.
  r(424,111,128,102,'#9eacd8');r(435,94,106,23,'#e8dbf1');
  r(466,128,51,63,'#a17eb0');r(477,115,30,31,'#eab06e');
