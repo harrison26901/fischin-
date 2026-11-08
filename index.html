@@ -779,7 +779,7 @@ function pebbledPath(px,py,w,h){
 }
 function drawKirstysGarden(){
  // Kirsty's lovingly chaotic garden: effort 10/10, green fingers 0/10.
- const gx=782,gy=455;
+ const gx=1000,gy=420;
  r(gx,gy,130,105,'#7b8253');
  r(gx+6,gy+6,118,93,'#b1ac76');
  // Patchy soil, a few weeds and some very unfortunate plants.
@@ -1047,7 +1047,7 @@ function near(){
     if(x>=201&&x<=495&&y>=136&&y<=260)return 'fish';
     return '';
   }
-  if(x>=766&&x<=941&&y>=443&&y<=577)return 'kirstygarden';
+  if(x>=985&&x<=1140&&y>=405&&y<=539)return 'kirstygarden';
   const v=nearbyVillager();if(v)return 'villager:'+v.id;
  if(x>490&&x<610&&y>297&&y<420)return 'statue';
   // Stand beside a building or outside its doorway and press A.
