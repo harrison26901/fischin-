@@ -428,7 +428,7 @@ function aquariumMenu(){
   aquariumFish.length?'Your tank holds '+aquariumFish.length+'/30 fish: '+aquariumFish.map(f=>f[0]).join(', '):'Your tank is empty. Put fish from your backpack in it to keep them forever!',
  [
   ...bag.map((f,i)=>['🐟 Keep '+f[0]+' in tank',()=>{if(aquariumFish.length>=30)return panel('🐠 Aquarium full','You can keep up to 30 fish.',[['Back',aquariumMenu]]);aquariumFish.push(bag.splice(i,1)[0]);hud();draw();aquariumMenu()}]),
-  ...aquariumFish.map((f,i)=>['↩️ Take '+f[0]+' out',()=>{if(bag.length>=15)return panel('🎒 Backpack full','Sell fish before taking any out of your aquarium.',[['Back',aquariumMenu]]);bag.push(aquariumFish.splice(i,1)[0]);hud();draw();aquariumMenu()}]),
+  ...aquariumFish.map((f,i)=>['↩️ Take '+f[0]+' out',()=>{if(bag.length>=backpackCapacity())return panel('🎒 Backpack full','Sell fish before taking any out of your aquarium.',[['Back',aquariumMenu]]);bag.push(aquariumFish.splice(i,1)[0]);hud();draw();aquariumMenu()}]),
   ['🚪 Back to fish shop',()=>{aquariumViewing=false;visit()}]
  ]);
 }
@@ -1037,7 +1037,7 @@ else{
 }
 g.restore();drawWeather();drawBossOverlay();
 }
-function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=ownerAccess&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins.toLocaleString('en-GB'):'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
+function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=ownerAccess&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins.toLocaleString('en-GB'):'∞';$('bag').textContent=bag.length+'/'+backpackCapacity();$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
 $('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=(phase==='reeling'||phase==='boss')?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',boss:'⚔️ GIANT FISH BOSS BATTLE!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X to damage the boss! Press B to dodge the red danger warning.',boss:'X attacks. B dodges giant splashes. Defeat the boss to earn a trophy!',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -1076,9 +1076,10 @@ if(p&&p.cost){
  ]);return;
 }
 if(room==='fishshop'){
- const total=bag.reduce((sum,f)=>sum+f[1],0);
- panel('🐟 Fresh Fish Market','Your '+bag.length+' fish are worth '+total+' coins. Pick a service!',[
-  ['🪙 Sell all fish — +'+total,()=>{if(bag.length){coins+=total;bag=[];hud()}visit()}],
+ const sellable=bag.filter(f=>!isOwnerGiftFish(f));
+ const total=sellable.reduce((sum,f)=>sum+f[1],0);
+ panel('🐟 Fresh Fish Market','You have '+bag.length+' fish. Sellable catches: '+sellable.length+' worth '+total+' coins. Your owner mythic gifts are protected!',[
+  ['🪙 Sell catches — +'+total,()=>{if(sellable.length){coins+=total;bag=bag.filter(isOwnerGiftFish);hud()}visit()}],
   ['🪱 Buy 3 bait — 20',()=>{if(coins<20)return need(20);coins-=20;bait+=3;hud();visit()}],
   [collectibles.has('aquarium')?'🐠 Aquarium — owned':'🐠 Aquarium — 250',()=>buyItem('aquarium','Aquarium',250)],
   ['🐠 Aquarium',aquariumMenu],['🎒 Backpack',backpack],['🚪 Exit',leave]
@@ -1104,13 +1105,24 @@ if(room==='rod'){
 }
 }
 // The owner's mythic vault is virtual: it never uses bag slots or changes public saves.
+// Owner mythic fish live in the actual backpack, without using normal-player slots.
+function isOwnerGiftFish(f){return ownerAccess&&(f[0]==='Big Bertha'||mythicFish.some(m=>m[0]===f[0]));}
+function backpackCapacity(){return ownerAccess?200:15;}
+function grantOwnerMythicFish(){
+ if(!ownerAccess)return;
+ const existing=new Set([...bag,...aquariumFish].map(f=>f[0]));
+ for(const f of [fish[5],...mythicFish]){
+  if(!existing.has(f[0])){bag.push([f[0],f[1]]);existing.add(f[0]);}
+  discoveredFish.add(f[0]);
+ }
+}
 function ownerMythicVault(page=0){
  if(!ownerAccess)return panel('🔒 Owner only','The Mythic Vault is exclusive to Owner Mode.');
  const vault=[fish[5],...mythicFish];
  const perPage=10, pages=Math.ceil(vault.length/perPage),p=Math.max(0,Math.min(pages-1,page));
  const section=vault.slice(p*perPage,(p+1)*perPage);
  panel('👑 MYTHIC VAULT '+(p+1)+'/'+pages,
-  'You own all '+vault.length+' mythic fish! These are displayed in your Collector’s Book too and do not fill your backpack.\n'+section.map(f=>'🌟 '+f[0]).join(' · '),[
+  'You own all '+vault.length+' mythic fish! They are stored in your Backpack (and Collector’s Book).\n'+section.map(f=>'🌟 '+f[0]).join(' · '),[
    ...(p>0?[['◀ Previous page',()=>ownerMythicVault(p-1)]]:[]),
    ...(p<pages-1?[['Next page ▶',()=>ownerMythicVault(p+1)]]:[]),
    ['🎒 Back to backpack',backpack]
@@ -1168,7 +1180,7 @@ function fishAction(){
   if(reelProgress>=100){landFish();return}
   updateFishingDisplay();return;
  }
- if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
  if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
  phase='waiting';needle=0;direction=1;lineTension=0;reelProgress=0;
  targetWidth=ownerAccess&&rod===OWNER_ROD_INDEX?90:Math.min(88,38+rod*3);
@@ -1351,11 +1363,12 @@ async function redeemOwnerLink(){
   coins=Math.max(coins,OWNER_COINS);
   if(rod!==OWNER_ROD_INDEX)ownerPreviousRod=Math.max(0,Math.min(PUBLIC_ROD_COUNT-1,rod));
   rod=OWNER_ROD_INDEX;
+  grantOwnerMythicFish();
   try{localStorage.setItem(OWNER_LOCAL_KEY,'yes')}catch(e){}
   // Remove the token from the URL after redeeming, so it is not copied accidentally.
   try{window.history?.replaceState(null,'',window.location.pathname+window.location.search)}catch(e){}
   hud();draw();saveGame(false);
-  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod, private coin gift and ALL '+(mythicFish.length+1)+' mythic fish are ready! Press Y for Backpack, then open your Owner Mythic Vault. You can also see every mythic in the Collector’s Book.',[['🌟 Open Mythic Vault',()=>ownerMythicVault(0)]]);
+  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod, private coin gift and ALL '+(mythicFish.length+1)+' mythic fish are in your Backpack! Press Y to see them. You can also see every mythic in the Collector’s Book.',[['🌟 Open Mythic Vault',()=>ownerMythicVault(0)]]);
  }catch(e){panel('🔒 Owner unlock','Could not verify the private unlock link in this browser.')}
 }
 
@@ -1416,8 +1429,9 @@ function loadGame(manual=false){
  rod=Math.max(0,Math.min(ownerAccess?OWNER_ROD_INDEX:PUBLIC_ROD_COUNT-1,Math.floor(Number(data.rod)||0)));
  if(ownerAccess)rod=OWNER_ROD_INDEX;
  const knownFish=new Map([...fish,...mythicFish,...allIslandFish].map(([name,value])=>[name,value]));
- bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
+ bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,backpackCapacity()).map(v=>[v[0],knownFish.get(v[0])]);
  aquariumFish=(Array.isArray(data.aquariumFish)?data.aquariumFish:[]).filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,30).map(v=>[v[0],knownFish.get(v[0])]);
+ grantOwnerMythicFish();
  for(const key of Object.keys(villagerQuests))delete villagerQuests[key];
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
@@ -1482,7 +1496,7 @@ $('fullscreenToggle').onclick=e=>{
 };
 saveReady=true;
 if(!loadGame(false)){
- if(ownerAccess){coins=OWNER_COINS;rod=OWNER_ROD_INDEX;megaGiftClaimed=true;}
+ if(ownerAccess){coins=OWNER_COINS;rod=OWNER_ROD_INDEX;megaGiftClaimed=true;grantOwnerMythicFish();}
  hud();draw();
 }
 redeemOwnerLink();
