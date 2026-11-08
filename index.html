@@ -235,7 +235,8 @@ const home=[
 const places=[...home,{id:'bait',name:'BAIT SHOP',x:350,y:70,col:'#af7a43'},{id:'rod',name:'ROD SHOP',x:600,y:530,col:'#b48150'}];
 const fish=[['Minnow',12],['Sea Bass',30],['Rainbow Trout',65],['Golden Koi',200],['Legendary Shark',900],['Big Bertha',200000]];
 const mythicFish=[["Ancient Kraken",12000],["Ancient Manta",13300],["Ancient Sturgeon",14600],["Ancient Seahorse",15900],["Ancient Marlin",17200],["Ancient Eel",18500],["Ancient Koi",19800],["Ancient Sunfish",21100],["Ancient Swordfish",22400],["Ancient Catfish",23700],["Radiant Kraken",19800],["Radiant Manta",21100],["Radiant Sturgeon",22400],["Radiant Seahorse",23700],["Radiant Marlin",25000],["Radiant Eel",26300],["Radiant Koi",27600],["Radiant Sunfish",28900],["Radiant Swordfish",30200],["Radiant Catfish",31500],["Frozen Kraken",27600],["Frozen Manta",28900],["Frozen Sturgeon",30200],["Frozen Seahorse",31500],["Frozen Marlin",32800],["Frozen Eel",34100],["Frozen Koi",35400],["Frozen Sunfish",36700],["Frozen Swordfish",38000],["Frozen Catfish",39300],["Ember Kraken",35400],["Ember Manta",36700],["Ember Sturgeon",38000],["Ember Seahorse",39300],["Ember Marlin",40600],["Ember Eel",41900],["Ember Koi",43200],["Ember Sunfish",44500],["Ember Swordfish",45800],["Ember Catfish",47100],["Royal Kraken",43200],["Royal Manta",44500],["Royal Sturgeon",45800],["Royal Seahorse",47100],["Royal Marlin",48400],["Royal Eel",49700],["Royal Koi",51000],["Royal Sunfish",52300],["Royal Swordfish",53600],["Royal Catfish",54900],["Shadow Kraken",51000],["Shadow Manta",52300],["Shadow Sturgeon",53600],["Shadow Seahorse",54900],["Shadow Marlin",56200],["Shadow Eel",57500],["Shadow Koi",58800],["Shadow Sunfish",60100],["Shadow Swordfish",61400],["Shadow Catfish",62700],["Prismatic Kraken",58800],["Prismatic Manta",60100],["Prismatic Sturgeon",61400],["Prismatic Seahorse",62700],["Prismatic Marlin",64000],["Prismatic Eel",65300],["Prismatic Koi",66600],["Prismatic Sunfish",67900],["Prismatic Swordfish",69200],["Prismatic Catfish",70500],["Celestial Kraken",66600],["Celestial Manta",67900],["Celestial Sturgeon",69200],["Celestial Seahorse",70500],["Celestial Marlin",71800],["Celestial Eel",73100],["Celestial Koi",74400],["Celestial Sunfish",75700],["Celestial Swordfish",77000],["Celestial Catfish",78300],["Enchanted Kraken",74400],["Enchanted Manta",75700],["Enchanted Sturgeon",77000],["Enchanted Seahorse",78300],["Enchanted Marlin",79600],["Enchanted Eel",80900],["Enchanted Koi",82200],["Enchanted Sunfish",83500],["Enchanted Swordfish",84800],["Enchanted Catfish",86100],["Eternal Kraken",82200],["Eternal Manta",83500],["Eternal Sturgeon",84800],["Eternal Seahorse",86100],["Eternal Marlin",87400],["Eternal Eel",88700],["Eternal Koi",90000],["Eternal Sunfish",91300],["Eternal Swordfish",92600],["Eternal Catfish",93900]];
-const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000],['Poseidon',400000],['Nebula',550000],['Inferno',750000],['Frostbite',1000000],['Voidwalker',1400000],['Galaxy',2000000],['Ocean King',2750000],['Eternal',3500000],['God of the Sea',5000000]];
+const rods=[['Wood',0],['Bamboo',150],['Steel',450],['Golden',1200],['Diamond',3500],['Emerald',7500],['Ruby',15000],['Crystal',30000],['Stormbreaker',55000],['Dragon',90000],['Celestial',150000],['Leviathan',225000],['Big Bertha Hunter',300000],['Poseidon',400000],['Nebula',550000],['Inferno',750000],['Frostbite',1000000],['Voidwalker',1400000],['Galaxy',2000000],['Ocean King',2750000],['Eternal',3500000],['God of the Sea',5000000],['👑 Owner’s Infinity Rod',0]];
+const PUBLIC_ROD_COUNT=rods.length-1,OWNER_ROD_INDEX=PUBLIC_ROD_COUNT;
 const clothes=[
  {id:'hat',name:'Olive Bucket Hat',slot:'head',price:75,color:'#638b5a',icon:'👒'},
  {id:'cap',name:'Navy Fishing Cap',slot:'head',price:120,color:'#416f9b',icon:'🧢'},
@@ -266,7 +267,7 @@ function clothingMenu(){
  ['🎣 Back to Rod Shop',visit]
  ]);
 }
-let area='lake',room='',x=430,y=307,coins=Number('111111111111111111111'),bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
+let area='lake',room='',x=430,y=307,coins=1000,bait=8,rod=0,bag=[],owned=new Set(),collectibles=new Set(),shopName="The Lucky Minnow",shopColor="#587b63";
 
 const boats=[['No boat',0,0],['Rowboat',300,5],['Sailboat',1500,7],['Speedboat',8000,10]];
 const islands=[
@@ -581,7 +582,7 @@ function bossInput(key){
  }else if(key==='x'){
   if(now-bossLastHit<170)return;
   bossLastHit=now;
-  const power=6+rod*1.2;
+  const power=ownerAccess&&rod===OWNER_ROD_INDEX?95:6+rod*1.2;
   bossHP=Math.max(0,bossHP-power);
   reelProgress=Math.max(0,100*(1-bossHP/b.health));
   lineTension=Math.min(100,lineTension+3.5);
@@ -712,7 +713,7 @@ const rodPaint=[
  ['#eea63d','#f9eea0'],
  ['#31a9cf','#c9f4ff'],['#7652cc','#e2c7ff'],['#d14428','#ffcb65'],
  ['#71d5ed','#e8fcff'],['#282044','#b49dff'],['#6961e0','#ffe4fa'],
- ['#1679a3','#a0fbf4'],['#eccfa0','#ffffff'],['#e9c24b','#bffbff']
+ ['#1679a3','#a0fbf4'],['#eccfa0','#ffffff'],['#e9c24b','#bffbff'],['#aa63ff','#ffe67a']
 ];
 function drawHeldRod(px,py){
  const colour=rodPaint[Math.min(rod,rodPaint.length-1)];
@@ -737,6 +738,10 @@ function drawHeldRod(px,py){
  r(handleX-5,handleY-13,11,9,'#343b46');
  r(handleX-2,handleY-11,6,5,colour[1]);
  r(handleX-7,handleY-7,7,3,'#d8a76f');
+ if(ownerAccess&&rod===OWNER_ROD_INDEX){
+  r(tipX-11,tipY-12,22,18,'#8d55d7');r(tipX-8,tipY-9,16,12,'#ffde6c');
+  r(tipX-3,tipY-15,6,6,'#f9f3ff');r(handleX-8,handleY-14,16,5,'#b781ec');
+ }
  if(rod>=4){r(tipX-3,tipY-4,7,7,colour[1]);r(tipX-1,tipY-7,3,13,'#fff6d0')}
  if(rod>=9){r(tipX-7,tipY-1,15,2,colour[1]);r(tipX-1,tipY-8,2,15,colour[1])}
  // The fishing line hangs from the rod when not casting.
@@ -1018,7 +1023,7 @@ else{
 }
 g.restore();drawWeather();drawBossOverlay();
 }
-function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=megaGiftClaimed&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
+function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=ownerAccess&&coins>=1e20?'111,111,111,111,111,111,111':Number.isFinite(coins)?coins.toLocaleString('en-GB'):'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
 $('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=(phase==='reeling'||phase==='boss')?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
 $('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',boss:'⚔️ GIANT FISH BOSS BATTLE!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
 $('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X to damage the boss! Press B to dodge the red danger warning.',boss:'X attacks. B dodges giant splashes. Defeat the boss to earn a trophy!',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
@@ -1074,10 +1079,11 @@ if(room==='bait'){
  ]);return;
 }
 if(room==='rod'){
- const next=rods[rod+1];
+ const next=rod<PUBLIC_ROD_COUNT-1?rods[rod+1]:null;
  panel('🎣 Rod Workshop','Current rod: '+rods[rod][0]+'. Better rods make the timing zone wider! Ultimate rod: God of the Sea — 5,000,000 coins.',[
   [next?'🎣 Upgrade to '+next[0]+' — '+next[1]:'🏆 Best rod owned',()=>{if(!next)return;if(coins<next[1])return need(next[1]);coins-=next[1];rod++;hud();visit()}],
   [collectibles.has('reel')?'⚙️ Silver Reel — owned':'⚙️ Silver Reel — 225',()=>buyItem('reel','Silver Reel',225)],
+  ...(ownerAccess?[[rod===OWNER_ROD_INDEX?'👑 OWNER ROD EQUIPPED':'👑 Equip Owner’s Infinity Rod',()=>{if(rod!==OWNER_ROD_INDEX){ownerPreviousRod=rod;rod=OWNER_ROD_INDEX;}hud();draw();visit()}],['🎣 Switch back to normal rod',()=>{rod=Math.max(0,Math.min(PUBLIC_ROD_COUNT-1,ownerPreviousRod));hud();draw();visit()}]]:[]),
   ['👕 Browse clothing & outfits',clothingMenu],
   ['🚪 Exit',leave]
  ]);return;
@@ -1128,7 +1134,7 @@ function fishAction(){
   const delay=now-lastReelPress;
   if(delay<115){lineTension=Math.min(100,lineTension+18*fishResistance);updateFishingDisplay();return}
   lastReelPress=now;
-  const power=Math.max(3,11+rod*.75-fishResistance*2);
+  const power=ownerAccess&&rod===OWNER_ROD_INDEX?75:Math.max(3,11+rod*.75-fishResistance*2);
   reelProgress=Math.min(100,reelProgress+power);
   lineTension=Math.min(105,lineTension+(delay<240?21:11)*fishResistance);
   if(lineTension>=100){loseFish('The line snapped from too much tension!');return}
@@ -1138,7 +1144,7 @@ function fishAction(){
  if(bag.length>=15)return panel('🎒 Backpack full','Sell your catches at the Fish Shop before fishing again.');
  if(phase!=='missed'){if(!bait)return panel('🪱 No bait','Buy worms at the Bait Shop.',[['Bait shop',()=>{tab('village');enter('bait')}] ]);bait--}
  phase='waiting';needle=0;direction=1;lineTension=0;reelProgress=0;
- targetWidth=Math.min(88,38+rod*3);
+ targetWidth=ownerAccess&&rod===OWNER_ROD_INDEX?90:Math.min(88,38+rod*3);
  target=8+Math.random()*(84-targetWidth);
  const roll=Math.random();
  pending=area==='sea'?islandFish[nearbyIsland()][roll<.62?0:roll<.9?1:2]:roll<.45?fish[0]:roll<.72?fish[1]:roll<.87?fish[2]:roll<.96?fish[3]:roll<.989?fish[4]:roll<.99?fish[5]:mythicFish[Math.floor(Math.random()*mythicFish.length)];
@@ -1298,7 +1304,35 @@ function pollGamepads(time){
 let prior=0,lastWaterDraw=0;
 // Local-only game saves. Inventory and unlocks survive a reload in this browser.
 const SAVE_KEY='little-fishing-village-save-v1';
-let saveReady=false,oneGrandGiftClaimed=true,megaGiftClaimed=true;
+// This is a bearer-link unlock for this static browser game, not strong account authentication.
+// Keep the private unlock link secret. The GitHub source contains only its SHA-256 digest.
+const OWNER_HASH='6cceaaeb5119caa2e9eda8b3dc72c1bb078d70fbd79455e2606cbd5cef8e75f0';
+const OWNER_LOCAL_KEY='little-fishing-village-owner-unlock-v1';
+const OWNER_COINS=Number('111111111111111111111');
+let ownerAccess=false,ownerPreviousRod=0;
+try{ownerAccess=localStorage.getItem(OWNER_LOCAL_KEY)==='yes'}catch(e){}
+async function redeemOwnerLink(){
+ const match=(window.location?.hash||'').match(/^#owner=([A-Za-z0-9_-]+)$/);
+ if(!match)return;
+ try{
+  if(!window.crypto?.subtle||typeof TextEncoder==='undefined')return;
+  const input=new TextEncoder().encode(match[1]);
+  const digest=await window.crypto.subtle.digest('SHA-256',input);
+  const hash=Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
+  if(hash!==OWNER_HASH){panel('🔒 Private rod','That owner link is not valid.');return}
+  ownerAccess=true;megaGiftClaimed=true;
+  coins=Math.max(coins,OWNER_COINS);
+  if(rod!==OWNER_ROD_INDEX)ownerPreviousRod=Math.max(0,Math.min(PUBLIC_ROD_COUNT-1,rod));
+  rod=OWNER_ROD_INDEX;
+  try{localStorage.setItem(OWNER_LOCAL_KEY,'yes')}catch(e){}
+  // Remove the token from the URL after redeeming, so it is not copied accidentally.
+  try{window.history?.replaceState(null,'',window.location.pathname+window.location.search)}catch(e){}
+  hud();draw();saveGame(false);
+  panel('👑 OWNER MODE UNLOCKED!','Your Infinity Rod is equipped! Only this browser has your owner unlock. You also have your special coin balance. The purple-and-gold rod makes fishing easier and boss battles quicker.');
+ }catch(e){panel('🔒 Owner unlock','Could not verify the private unlock link in this browser.')}
+}
+
+let saveReady=false,oneGrandGiftClaimed=true,megaGiftClaimed=false;
 function showSaveStatus(message){$('save-status').textContent=message}
 function saveGame(automatic=false){
  if(!saveReady)return false;
@@ -1306,7 +1340,7 @@ function saveGame(automatic=false){
   const snapshot={
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
-   coins,bait,rod,oneGrandGiftClaimed,megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
+   coins,bait,rod:ownerAccess?rod:Math.min(rod,PUBLIC_ROD_COUNT-1),ownerPreviousRod,oneGrandGiftClaimed,megaGiftClaimed:ownerAccess&&megaGiftClaimed,bag:bag.map(f=>[f[0],f[1]]),
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1344,13 +1378,17 @@ function loadGame(manual=false){
  x=Math.max(12,Math.min(area==='village'?VILLAGE_W-12:625,Number(data.x)||430));
  y=Math.max(30,Math.min(area==='village'?VILLAGE_H-30:365,Number(data.y)||307));
  coins=Number.isFinite(data.coins)?Math.max(0,data.coins):100;
+ // Remove the old public jackpot from non-owner saves without touching possessions.
+ if(!ownerAccess&&coins>=1e19)coins=1000;
  // One-time 1,000-coin gift for existing saves; never overwrites larger balances.
  oneGrandGiftClaimed=!!data.oneGrandGiftClaimed;
  if(!oneGrandGiftClaimed){coins=Math.max(coins,1000);oneGrandGiftClaimed=true;}
- megaGiftClaimed=!!data.megaGiftClaimed;
- if(!megaGiftClaimed){coins=Math.max(coins,Number('111111111111111111111'));megaGiftClaimed=true;}
+ megaGiftClaimed=ownerAccess;
+ if(ownerAccess)coins=Math.max(coins,OWNER_COINS);
  bait=Math.max(0,Math.floor(Number(data.bait)||0));
- rod=Math.max(0,Math.min(rods.length-1,Math.floor(Number(data.rod)||0)));
+ ownerPreviousRod=Math.max(0,Math.min(PUBLIC_ROD_COUNT-1,Math.floor(Number(data.ownerPreviousRod)||0)));
+ rod=Math.max(0,Math.min(ownerAccess?OWNER_ROD_INDEX:PUBLIC_ROD_COUNT-1,Math.floor(Number(data.rod)||0)));
+ if(ownerAccess)rod=OWNER_ROD_INDEX;
  const knownFish=new Map([...fish,...mythicFish,...allIslandFish].map(([name,value])=>[name,value]));
  bag=data.bag.filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,15).map(v=>[v[0],knownFish.get(v[0])]);
  aquariumFish=(Array.isArray(data.aquariumFish)?data.aquariumFish:[]).filter(v=>Array.isArray(v)&&knownFish.has(v[0])).slice(0,30).map(v=>[v[0],knownFish.get(v[0])]);
@@ -1418,6 +1456,7 @@ $('fullscreenToggle').onclick=e=>{
 };
 saveReady=true;
 if(!loadGame(false)){hud();draw()}
+redeemOwnerLink();
 setInterval(()=>saveGame(true),10000);
 window.addEventListener('pagehide',()=>saveGame(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveGame(true)});
