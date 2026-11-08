@@ -861,6 +861,21 @@ function mermaidScene(){
  g.save();g.globalAlpha=.35;
  for(let i=0;i<9;i++){const px=i*83-25,peak=120+(i%3)*34;g.fillStyle=i%2?'#1d7188':'#287c91';g.beginPath();g.moveTo(px-31,295);g.lineTo(px,peak);g.lineTo(px+31,295);g.closePath();g.fill()}
  g.restore();
+ // A second, ancient pearl palace sits far behind the kingdom, softened by water.
+ g.save();g.globalAlpha=.47;
+ r(249,164,139,112,'#397eaa');r(264,146,110,119,'#5c9cbb');
+ for(const [px,top] of [[247,123],[293,91],[350,119]]){
+  r(px,top,30,150-top+111,'#75b4ce');
+  r(px-5,top+12,40,8,'#a6d6e4');
+  r(px+7,top-16,16,19,'#b9e6e9');
+  r(px+12,top-24,6,10,'#e5faf0');
+  r(px+11,top+42,9,17,'#a9f9ed');
+ }
+ r(279,184,78,77,'#86c3d9');r(297,207,42,56,'#286b98');
+ for(let i=0;i<5;i++){const px=273+i*19;r(px,172,10,14,'#b8f4ee')}
+ r(235,263,167,12,'#478ea6');
+ g.restore();
+ // The foreground reef and paths will cover its base, keeping it distant.
  // Continuous sand connects reef, palace and shrine.
  r(0,289,640,111,'#78c5bb');r(0,306,640,94,'#a6d8b9');
  for(let i=0;i<22;i++){const px=(i*53)%640,py=315+(i*31)%79;r(px,py,26,4,i%2?'#c5e6c6':'#83bcb0')}
