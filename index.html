@@ -368,6 +368,96 @@ function underwaterChestAction(i){
 
 const weatherTypes=[['Sunny','☀️'],['Cloudy','☁️'],['Rainy','🌧️'],['Stormy','⛈️']];
 let boatTier=0,discoveredIslands=new Set(),weatherIndex=0,lastWeatherChange=performance.now(),lastIslandNearby=-1;
+
+const frozenFish=[['Snowflake Minnow',180],['Frostfin Trout',450],['Glacier Eel',950],['Aurora Koi',2200],['Ice Crown Shark',5000]];
+let frozenFishCaught=new Set(),frostDragonDefeated=false,frostDragonBattle=null,frozenChestOpened=false;
+function travelToFrozenIsland(){
+ if(!boatTier)return panel('🚤 Boat required','Buy a boat from the Harbourmaster before visiting Frozen Island.');
+ token++;phase='ready';pending=null;pirateBattle=null;room='';area='frozen';x=305;y=310;petX=x-23;petY=y+17;keys.clear();hud();draw();
+ panel('❄️ FROZEN ISLAND DISCOVERED!','Welcome to the snowy north! Walk with WASD or arrow keys. Press A near the frozen fishing hole, crystal cave, or Ice Dragon. Press B to sail home.');
+ saveGame(true);
+}
+function leaveFrozenIsland(){
+ if(frostDragonBattle)return panel('🐉 Ice Dragon battle','Finish the fight or choose Retreat before leaving.');
+ area='lake';room='';x=142;y=309;keys.clear();hud();draw();saveGame(true);
+ panel('🚤 Back at Sunshine Lake','Your Frozen Island catches, treasures and victories are saved.');
+}
+function frozenNearby(){
+ if(Math.hypot(x-170,y-185)<72)return 'fish';
+ if(Math.hypot(x-485,y-152)<72)return 'dragon';
+ if(Math.hypot(x-495,y-318)<65)return 'cave';
+ return '';
+}
+function frozenInteract(){
+ if(frostDragonBattle)return frostDragonTurn('attack');
+ const near=frozenNearby();
+ if(near==='fish')return iceFishing();
+ if(near==='dragon')return startFrostDragon();
+ if(near==='cave')return frozenCave();
+ panel('❄️ Frozen Island','Explore the blue fishing hole, glowing crystal cave and dragon mountain. Press B to sail home.',[['🎣 Ice fishing',iceFishing],['🚤 Return home',leaveFrozenIsland]]);
+}
+function iceFishing(){
+ if(area!=='frozen')return;
+ if(Math.hypot(x-170,y-185)>=72)return panel('🎣 Ice Fishing','Walk to the frozen fishing hole at the left of the island first.');
+ if(bag.length>=backpackCapacity())return panel('🎒 Bag full','Sell some fish at Sunshine Lake before catching more.');
+ if(bait<=0)return panel('🪱 Out of bait','Buy more bait at the village shop.');
+ const f=frozenFish[Math.min(frozenFish.length-1,Math.floor(Math.random()*frozenFish.length))];
+ bait--;bag.push([...f]);discoveredFish.add(f[0]);frozenFishCaught.add(f[0]);
+ hud();saveGame(true);draw();
+ panel('🎣 '+f[0]+' CAUGHT!','You ice-fished a '+f[0]+' worth '+f[1]+' coins! '+frozenFishCaught.size+'/5 Frozen Island species discovered.',[['🎣 Fish again',iceFishing],['❄️ Explore island',()=>panel('❄️ Frozen Island','Look for the crystal cave and Ice Dragon!')]]);
+}
+function frozenCave(){
+ if(frozenChestOpened)return panel('💎 Crystal Cave','You already collected the Frozen Crown treasure here.');
+ frozenChestOpened=true;coins+=1750;collectibles.add('frozen-crown');discoveredTreasures.add('frozen-crown');
+ hud();draw();saveGame(true);
+ panel('👑 FROZEN CROWN FOUND!','You explored the glowing cave and found the Frozen Crown plus 1,750 coins!');
+}
+function startFrostDragon(){
+ if(frostDragonDefeated)return panel('🐉 Ice Dragon','You have already defeated the Ice Dragon and earned the Frost Dragon Trophy!');
+ frostDragonBattle={hp:240,playerHP:125,message:'The Ice Dragon awakens!'};
+ frostDragonMenu();
+}
+function frostDragonMenu(){
+ if(!frostDragonBattle)return;
+ const b=frostDragonBattle;
+ panel('🐉 ICE DRAGON — '+b.hp+' HP','Your health: '+b.playerHP+' HP. '+b.message+' Attack with A/X, shield with B, or retreat.',[
+  ['⚔️ Attack (A / X)',()=>frostDragonTurn('attack')],
+  ['🛡️ Ice Shield (B)',()=>frostDragonTurn('shield')],
+  ['🏃 Retreat',()=>{frostDragonBattle=null;panel('❄️ Safe retreat','You can challenge the Ice Dragon again whenever you like.')}]
+ ]);
+}
+function frostDragonTurn(move){
+ if(!frostDragonBattle)return;
+ const b=frostDragonBattle;
+ if(move==='attack'){const damage=24+(ownerAccess?40:0);b.hp=Math.max(0,b.hp-damage);b.message='You dealt '+damage+' damage!'}
+ else b.message='You raised your ice shield!';
+ if(b.hp===0){
+  frostDragonBattle=null;frostDragonDefeated=true;coins+=5000;
+  collectibles.add('frost-dragon-trophy');discoveredTreasures.add('frost-dragon-trophy');
+  hud();draw();saveGame(true);
+  return panel('🏆 ICE DRAGON DEFEATED!','You earned 5,000 coins and the Frost Dragon Trophy! The snowy island is safe!');
+ }
+ const hit=move==='shield'?5:17;b.playerHP=Math.max(0,b.playerHP-hit);
+ if(!b.playerHP){frostDragonBattle=null;return panel('💙 The dragon won','You escaped safely. Your coins and possessions are safe. Try again!')}
+ b.message+=' The dragon breathed ice for '+hit+' damage.';frostDragonMenu();
+}
+function frozenScene(){
+ const sec=performance.now()/1000;
+ r(0,0,640,400,'#ccecf5');r(0,260,640,140,'#eaf7fa');
+ for(let i=0;i<9;i++){const px=i*90-50;r(px,115+i%3*12,110,165,'#9ac8dc');r(px+12,102+i%3*12,80,32,'#f4fdff')}
+ for(let i=0;i<65;i++){const px=(i*79+sec*14)%655,py=(i*53+sec*23)%405;r(px,py,3,3,'#fff')}
+ r(93,133,154,106,'#a9dce9');r(106,145,127,81,'#5db0ce');
+ for(let i=0;i<8;i++)r(113+i*16,153+i%2*20,11,3,'#c6f7ff');
+ t('🎣 ICE FISHING',170,258,13,'#244f76');
+ r(430,90,119,102,'#8ba8c3');r(443,72,92,27,'#f7fbff');
+ r(480,116,29,53,'#81cbe8');r(465,99,25,20,'#8de0ef');r(502,99,21,22,'#8de0ef');
+ r(473,169,17,17,'#d6f9ff');r(510,169,18,17,'#d6f9ff');
+ t(frostDragonDefeated?'✓ DRAGON DEFEATED':'🐉 ICE DRAGON',490,215,12,'#3b527c');
+ r(460,290,77,62,'#8dbad0');r(479,308,41,44,'#527ea7');r(467,284,16,23,'#a8f2fa');r(522,282,13,25,'#b8f6fa');
+ if(!frozenChestOpened){r(483,333,29,14,'#d4ad65');r(490,326,14,11,'#fff1ae')}
+ t(frozenChestOpened?'✓ CAVE EXPLORED':'💎 CRYSTAL CAVE',493,372,12,'#3c6486');
+ drawPet();character(x,y);
+}
 function nearbyIsland(){
  if(area!=='sea')return -1;
  for(let i=0;i<islands.length;i++){
@@ -456,6 +546,7 @@ function boatShop(){
  panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
   ['🏆 Fishing Tournaments',tournamentMenu],
+  ['❄️ Travel to Frozen Island',travelToFrozenIsland],
   ['🐾 Adopt a Pet',petShop],
   ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
   ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
@@ -1349,6 +1440,7 @@ if(room){if(aquariumViewing&&room==='fishshop')aquariumScene();else {interior();
 else if(area==='lake'){lake();drawPet();character(x,y)}
 else if(area==='sea'){seaScene()}
 else if(area==='dive'){scubaScene()}
+else if(area==='frozen'){frozenScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
@@ -1542,7 +1634,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive')return false;
+  if(area==='sea'||area==='dive'||area==='frozen')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -1566,7 +1658,7 @@ function blocked(nx,ny){
   if(hitsBox(nx,ny,504,313,90,87))return true;
   return false;
 }
-function interact(){if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
+function interact(){if(area==='frozen'){frozenInteract();return}if(area==='dive'){exploreDiveSite();return}if(pirateBattle){pirateTurn('fire');return}if(!room&&area==='sea'){
  const pirate=nearbyPirateShip();if(pirate>=0){startPirateBattle(pirate);return}
  const chest=nearbyUnderwaterChest();if(chest>=0){underwaterChestAction(chest);return}
  const i=nearbyIsland();if(i>=0)discoverIsland(i);
@@ -1581,6 +1673,7 @@ function interact(){if(area==='dive'){exploreDiveSite();return}if(pirateBattle){
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='frozen'){if(frostDragonBattle){if(k==='a'||k==='x')frostDragonTurn('attack');else if(k==='b')frostDragonTurn('shield');else if(k==='y')frostDragonMenu();return}if(k==='a'||k==='x')frozenInteract();else if(k==='b')leaveFrozenIsland();else if(k==='y')backpack();return}
  if(area==='dive'){if(k==='b')surfaceFromDive();else if(k==='a'||k==='x')exploreDiveSite();else if(k==='y')panel('🤿 Dive progress',diveDiscoveries.size+'/4 treasures found. Oxygen '+Math.ceil(diveOxygen)+'%. Press B to surface.');return}
  if(pirateBattle){if(k==='a'||k==='x')pirateTurn('fire');else if(k==='b')pirateTurn('brace');else if(k==='y')pirateMenu();return}
  if(phase==='boss'&&(k==='x'||k==='b')){bossInput(k);return}
@@ -1600,7 +1693,7 @@ function press(k){
  }
 }
 function move(dir){
-  if(phase==='boss'||pirateBattle)return;
+  if(phase==='boss'||pirateBattle||frostDragonBattle)return;
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
   const step=area==='sea'?boats[boatTier][2]:area==='dive'?5:7;
   const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
@@ -1712,6 +1805,7 @@ function saveGame(automatic=false){
    owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    openedUnderwaterChests:[...openedUnderwaterChests],pirateWins:[...pirateWins],diveDiscoveries:[...diveDiscoveries],
    adoptedPets:[...adoptedPets],activePet,
+   frozenFishCaught:[...frozenFishCaught],frostDragonDefeated,frozenChestOpened,
    tournamentWins:[...tournamentWins],tournamentBest:[...tournamentBest],activeTournament:activeTournament?{...activeTournament}:null,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
@@ -1739,7 +1833,9 @@ function loadGame(manual=false){
  // Reset transient action states to avoid resuming in the middle of an encounter.
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
- area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':'lake';
+ area=data.area==='village'?'village':data.area==='sea'||data.area==='dive'?'sea':data.area==='frozen'?'frozen':'lake';
+ frozenFishCaught=new Set((Array.isArray(data.frozenFishCaught)?data.frozenFishCaught:[]).filter(id=>frozenFish.some(f=>f[0]===id)));
+ frostDragonDefeated=data.frostDragonDefeated===true||data.collectibles.includes('frost-dragon-trophy');frozenChestOpened=data.frozenChestOpened===true||data.collectibles.includes('frozen-crown');frostDragonBattle=null;
  adoptedPets=new Set((Array.isArray(data.adoptedPets)?data.adoptedPets:[]).filter(id=>petTypes.some(p=>p.id===id)));
  activePet=adoptedPets.has(data.activePet)?data.activePet:null;petX=x-24;petY=y+14;
  diveDiscoveries=new Set((Array.isArray(data.diveDiscoveries)?data.diveDiscoveries:[]).filter(id=>diveSites.some(s=>s.id===id)));
