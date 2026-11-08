@@ -126,7 +126,7 @@ if(phase==='waiting'||phase==='timing'||phase==='reeling'){g.strokeStyle='#f3edd
 }
 function village(){grass();r(283,121,72,167,'#d4b98e');r(159,193,328,44,'#d3b586');r(227,151,195,122,'#e5d0b0');
 r(275,164,94,95,'#85aeb5');r(284,171,76,80,'#6fb6c6');r(294,225,55,19,'#8d9993');r(304,191,34,33,'#92a49a');r(312,169,19,22,'#9eb4a6');r(304,162,35,8,'#738c80');r(298,198,14,10,'#eabc52');r(342,143,3,68,'#776043');
-tree(170,38);tree(582,43);tree(170,318);tree(395,327);places.forEach(building);if(pawnOwned){r(39,242,103,18,'#e6c883');t('SOLD!',90,256,13,'#49321e')}r(1,192,80,31,'#f2ddad');t('← LAKE',41,212,14,'#49301e')}
+tree(170,38);tree(582,43);tree(170,318);tree(395,327);r(0,139,215,20,'#d4b88a');r(0,144,215,8,'#e9d0a2');places.forEach(building);if(pawnOwned){r(39,242,103,18,'#e6c883');t('SOLD!',90,256,13,'#49321e')}r(1,192,80,31,'#f2ddad');t('← LAKE',41,212,14,'#49301e')}
 function interior(){r(0,0,640,400,'#b58a56');for(let yy=0;yy<400;yy+=24)r(0,yy,640,3,'#805a36');r(0,0,640,105,'#785133');for(let xx=0;xx<640;xx+=30)r(xx,0,4,105,'#5b3a25');
 let p=places.find(b=>b.id===room);let name=room==='fishshop'?shopName:p?p.name:'SHOP';
 r(114,22,410,73,'#473324');r(123,31,392,55,'#ffe1a6');t(name.toUpperCase(),319,63,name.length>17?17:22,'#39291b');
@@ -144,7 +144,7 @@ function redrawMenu(){let wrap=$('actions');wrap.replaceChildren();menu.forEach(
 function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:210;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'Walk to the LEFT edge to reach the lake. Walk beside a shop and press A to enter; walls are solid.')}
+function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:149;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'You entered through the clear path between the cottages. Walk right to reach the town square, or left to return to the lake. Press A by shops.')}
 function enter(id){token++;phase='ready';room=id;x=319;y=317;hud();draw();visit()}
 function leave(){room='';x=area==='lake'?530:405;y=308;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
