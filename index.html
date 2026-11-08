@@ -150,6 +150,10 @@ function building(p){
     r(x+7,y+44,w-14,31,'#513621');r(x+11,y+48,w-22,23,'#8ac4d0');
     r(x+Math.floor(w/2)-2,y+48,4,23,'#513621');
     r(x+13,y+84,33,23,'#513621');r(x+17,y+87,25,18,'#85c4d1');
+    // Cottage window boxes and a tiled roof make each home feel lived-in.
+    r(x+11,y+109,40,5,'#80543e');
+    r(x+15,y+104,6,6,'#69a668');r(x+27,y+103,6,6,'#e5a0b0');r(x+39,y+104,6,6,'#f0ca69');
+    for(let i=0;i<8;i++)r(x+5+i*18,y+19,12,3,i%2?'#f2c78c':'#71473f');
   }
   if(isShop){
     // Distinctive shop-coloured signs, all clearly labelled.
@@ -199,21 +203,73 @@ function cobblePath(px,py,w,h){
   }
   g.restore();
 }
+function flower(x,y,col='#e7839a'){
+  r(x-3,y+4,7,2,'#3e7947');r(x,y-3,2,10,'#4e8e51');
+  r(x-5,y-4,5,5,col);r(x+2,y-4,5,5,col);
+  r(x-1,y-7,5,5,col);r(x-1,y+1,5,4,col);
+  r(x,y-2,3,3,'#f5ce65');
+}
+function flowerBed(x,y,w,col){
+  r(x-4,y-5,w+8,20,'#477a49');
+  r(x,y+8,w,5,'#9e704d');
+  for(let i=0;i<Math.floor(w/17);i++)flower(x+9+i*17,y+3,i%3===0?'#f7bf66':i%2?'#e9a2c3':col);
+}
+function lantern(x,y){
+  r(x-3,y+2,6,44,'#405149');r(x-9,y-10,18,16,'#334b49');
+  r(x-6,y-7,12,11,'#ffe29d');r(x-11,y-12,22,4,'#29443e');
+  r(x-4,y-16,8,4,'#48625a');
+}
+function villageBench(x,y){
+  r(x,y,64,8,'#976742');r(x+3,y+3,58,3,'#c08d60');
+  r(x+3,y+13,58,6,'#9a6542');r(x+8,y+19,6,10,'#5b5545');r(x+52,y+19,6,10,'#5b5545');
+}
+function pebbledPath(px,py,w,h){
+  g.save();g.beginPath();g.rect(px,py,w,h);g.clip();
+  r(px,py,w,h,'#a5a092');
+  const shades=['#e1dbcc','#c5c1b5','#d3cdbf','#b4b0a4','#f1e8d6'];
+  for(let row=0,yy=py;yy<py+h;row++,yy+=10){
+    for(let col=0,xx=px-8+(row%2)*6;xx<px+w;col++,xx+=14){
+      r(xx+1,yy+2,9,6,'#858075');
+      r(xx+1,yy+1,8,5,shades[((row*3+col*7)%5+5)%5]);
+      r(xx+2,yy+1,4,1,'#f8f2e5');
+    }
+  }
+  g.restore();
+}
 function village(){
-r(0,0,VILLAGE_W,VILLAGE_H,'#8fbd75');
-for(let i=0;i<300;i++)r((i*79+12)%VILLAGE_W,(i*61+13)%VILLAGE_H,6,3,'#74aa64');
-// Staggered stone cobbles on every village path.
-cobblePath(0,335,VILLAGE_W,65);
-cobblePath(159,190,55,420);cobblePath(414,190,55,420);
-cobblePath(670,190,55,420);cobblePath(920,190,55,420);
-cobblePath(478,305,142,120);
-// Captain Finn's central fountain.
-r(504,313,90,87,'#85aeb5');r(511,320,76,73,'#6fb6c6');
-r(523,372,53,16,'#8d9993');r(538,339,23,29,'#92a49a');
-r(543,319,15,22,'#9eb4a6');r(535,310,30,9,'#738c80');
-r(516,348,13,10,'#eabc52');r(576,305,3,66,'#776043');
-for(const p of [[20,35],[275,42],[533,45],[790,44],[1030,48],[24,590],[285,705],[535,715],[795,710],[1023,700]])tree(p[0],p[1]);
-places.forEach(building);
+  // Warm grass, little clover patches and wildflowers.
+  r(0,0,VILLAGE_W,VILLAGE_H,'#8abb83');
+  for(let i=0;i<480;i++){
+    const gx=(i*173+17)%VILLAGE_W,gy=(i*101+27)%VILLAGE_H;
+    r(gx,gy,6,2,i%3?'#74ac6a':'#a6cb90');
+    if(i%13===0)r(gx+5,gy-4,3,3,'#fff2ca');
+  }
+  // Light pebble paths, with roomy crossings and an open square.
+  pebbledPath(0,335,VILLAGE_W,65);
+  for(const px of [159,414,670,920])pebbledPath(px,190,55,420);
+  pebbledPath(470,295,153,141);
+  // Garden borders and flowers beside buildings, away from the walking lanes.
+  for(const p of places){
+    flowerBed(p.x+15,p.y+127,p.id==='auction'?115:98,
+      p.id==='pawn'?'#e7c377':p.id==='bait'?'#f8c072':p.id==='rod'?'#97d7e7':'#ee98bb');
+  }
+  for(const xy of [[266,220],[729,235],[266,468],[729,481],[34,280],[1037,442]]){
+    flowerBed(xy[0],xy[1],48,'#a68ae6');
+  }
+  for(const xy of [[244,302],[742,307],[244,430],[741,433],[82,323],[1005,323]])lantern(xy[0],xy[1]);
+  villageBench(295,422);villageBench(774,415);
+  // Flower planters around Captain Finn's fountain.
+  r(490,300,116,116,'#b7a48b');r(497,307,102,102,'#d9c9b0');
+  r(504,313,90,87,'#77969a');r(509,318,80,77,'#6ec2cd');
+  r(516,323,66,63,'#90d9df');r(523,372,53,16,'#87958e');
+  r(538,339,23,29,'#91a6a0');r(543,319,15,22,'#a9bdb4');
+  r(535,310,30,9,'#647a73');r(516,348,13,10,'#efc66a');
+  r(576,305,3,66,'#6a5b47');
+  for(const xy of [[486,302],[605,300],[482,416],[606,418]])flower(xy[0],xy[1],'#f3a0b5');
+  // Leafy trees frame the streets and stay clear of shop front doors.
+  for(const xy of [[20,35],[275,42],[533,45],[790,44],[1030,48],[24,590],[285,705],[535,715],[795,710],[1023,700]])tree(xy[0],xy[1]);
+  // Crisp shop fronts and colourful cottage roofs remain on top of landscaping.
+  places.forEach(building);
 }
 function interior(){
 const themes={
