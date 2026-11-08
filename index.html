@@ -300,6 +300,7 @@ function boatShop(){
  const next=boats[boatTier+1];
  panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
   ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
+  ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
   ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
     if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['Back',boatShop]]);
     coins-=next[1];boatTier++;hud();draw();boatShop();
@@ -362,7 +363,7 @@ function discoverIsland(i){
  panel(first?'🏝️ ISLAND DISCOVERED!':'🏝️ '+s.name,
   (first?'You found '+s.name+'! ':'Welcome back to '+s.name+'. ')+
   'Press X to fish for special island catches. Each island has its own fish!',
-  [['🎣 Fish here',fishAction],['⚓ Return to harbour',returnToHarbour]]);
+  [['🎣 Fish here',fishAction],['⚔️ Fight '+fishBosses[i+1].name,()=>bossChallenge(i+1)],['⚓ Return to harbour',returnToHarbour]]);
  draw();
 }
 
@@ -477,7 +478,11 @@ const treasureCards=[
  ['hat','Bucket Hat',75,'👒','Common'],
  ['aquarium','Aquarium',250,'🐠','Uncommon'],
  ['baitbox','Bait Box',180,'🧰','Common'],
- ['kirstyflower',"Kirsty's Lucky Flower",0,'🌷','Rare']
+ ['kirstyflower',"Kirsty's Lucky Flower",0,'🌷','Rare'],
+ ['boss-carp','Titan Carp Trophy',650,'🏆','Rare'],
+ ['boss-coral','Coral Colossus Trophy',1800,'🏆','Legendary'],
+ ['boss-crystal','Crystal Serpent Trophy',4000,'🏆','Legendary'],
+ ['boss-lava','Lava Leviathan Trophy',8500,'🏆','Mythic']
 ];
 let collectionType='fish',collectionPage=0;
 const cardsPerPage=12;
@@ -535,6 +540,100 @@ $('collection-prev').onclick=()=>{collectionPage--;renderCollection()};
 $('collection-next').onclick=()=>{collectionPage++;renderCollection()};
 let phase='ready',pending=null,needle=0,direction=1,target=22,targetWidth=54,reels=0,token=0;
 let reelProgress=0,lineTension=0,lastReelPress=0,fishResistance=1,lastBiteAt=0;
+
+const fishBosses=[
+ {name:'Titan Carp',emoji:'🐟',reward:650,health:90,color:'#e6af54',trophy:'boss-carp'},
+ {name:'Coral Colossus',emoji:'🦀',reward:1800,health:130,color:'#ea877e',trophy:'boss-coral'},
+ {name:'Crystal Serpent',emoji:'🐉',reward:4000,health:170,color:'#a4dbec',trophy:'boss-crystal'},
+ {name:'Lava Leviathan',emoji:'🐲',reward:8500,health:220,color:'#ee824f',trophy:'boss-lava'}
+];
+let currentBoss=-1,bossHP=0,bossLastHit=0,bossNextAttack=0,bossAttackUntil=0,bossDodged=false,bossWins=new Set();
+function bossChallenge(index){
+ if(room||phase==='boss')return;
+ if(phase==='waiting'||phase==='timing'||phase==='reeling'){
+  token++;pending=null;phase='ready';
+ }
+ const b=fishBosses[index];
+ panel('⚔️ GIANT FISH BOSS: '+b.name,
+ 'Reward: '+b.reward.toLocaleString('en-GB')+' coins and a special trophy! Press X to strike with your rod, and B to dodge when a red warning appears. Survive until the boss has no health.',
+ [['⚔️ START BATTLE',()=>beginBoss(index)],['Not yet',()=>panel('🎣 Fishing Village','You can come back when you are ready.')]]);
+}
+function beginBoss(index){
+ currentBoss=index;bossHP=fishBosses[index].health;
+ const now=performance.now();
+ bossLastHit=now-300;bossNextAttack=now+2800;bossAttackUntil=0;bossDodged=false;
+ token++;pending=null;phase='boss';lineTension=0;reelProgress=0;
+ hud();draw();panel('🐲 '+fishBosses[index].name+' APPEARS!', 'X = attack! Watch for DANGER and press B to dodge. If your tension hits 100, the boss escapes!');
+}
+function bossInput(key){
+ if(phase!=='boss'||currentBoss<0)return;
+ const now=performance.now(),b=fishBosses[currentBoss];
+ if(key==='b'){
+  if(bossAttackUntil>now&&!bossDodged){
+   bossDodged=true;lineTension=Math.max(0,lineTension-10);
+   panel('💨 PERFECT DODGE!',b.name+' missed! Keep attacking with X.');
+  }else panel('🛡️ Brace yourself','Dodge with B when the DANGER warning appears.');
+ }else if(key==='x'){
+  if(now-bossLastHit<170)return;
+  bossLastHit=now;
+  const power=6+rod*1.2;
+  bossHP=Math.max(0,bossHP-power);
+  reelProgress=Math.max(0,100*(1-bossHP/b.health));
+  lineTension=Math.min(100,lineTension+3.5);
+  if(bossHP<=0){winBoss();return;}
+ }
+ hud();draw();
+}
+function winBoss(){
+ const b=fishBosses[currentBoss],first=!bossWins.has(currentBoss);
+ bossWins.add(currentBoss);coins+=b.reward;
+ collectibles.add(b.trophy);discoveredTreasures.add(b.trophy);
+ phase='caught';currentBoss=-1;lineTension=0;reelProgress=100;
+ hud();draw();
+ panel('🏆 BOSS DEFEATED! '+b.name,
+ 'You won '+b.reward.toLocaleString('en-GB')+' coins'+(first?' and a brand-new trophy for your collection!':'! Your trophy is already in your collection.') ,
+ [['⚔️ Fight again',()=>bossChallenge(fishBosses.indexOf(b))],['🌊 Keep exploring',()=>panel('🎣 Victory!','Your boss trophy has been saved in the Collector’s Book.')]]);
+}
+function bossTick(now,dt){
+ if(phase!=='boss'||currentBoss<0)return;
+ const b=fishBosses[currentBoss];
+ lineTension=Math.max(0,lineTension-dt*.007);
+ if(!bossAttackUntil&&now>=bossNextAttack){
+  bossAttackUntil=now+1300;bossDodged=false;
+  panel('🚨 DANGER! '+b.name+' IS ATTACKING!', 'PRESS B NOW to dodge the giant splash! Keep your line tension below 100.');
+ }
+ if(bossAttackUntil&&now>=bossAttackUntil){
+  if(!bossDodged){
+   lineTension=Math.min(105,lineTension+32+currentBoss*7);
+   panel('💥 GIANT SPLASH!',b.name+' hit you! Press B on the next red warning. Keep attacking with X.');
+  }
+  bossAttackUntil=0;bossNextAttack=now+2600;
+  if(lineTension>=100){
+   phase='missed';currentBoss=-1;bossAttackUntil=0;
+   panel('💦 THE BOSS ESCAPED!', 'Your line tension broke! You can challenge the boss again with no penalty.');
+  }
+ }
+ updateFishingDisplay();
+}
+function drawBossOverlay(){
+ if(phase!=='boss'||currentBoss<0)return;
+ const b=fishBosses[currentBoss],now=performance.now(),pulse=Math.sin(now*.006)*4;
+ g.save();g.setTransform(1,0,0,1,0,0);
+ // Pixel-art boss in front of the water, visible even if fishing near shore.
+ const bx=325,by=106+pulse;
+ r(bx-73,by-21,146,53,'#234d65');r(bx-53,by-36,110,81,b.color);
+ r(bx-86,by-19,39,45,b.color);r(bx+53,by-19,39,45,b.color);
+ r(bx+28,by-12,13,13,'#fffdf2');r(bx+34,by-7,6,6,'#253d49');
+ r(bx-35,by+21,62,8,'#364451');
+ r(170,14,300,43,'#183638');r(179,39,282,10,'#644b43');
+ r(179,39,Math.max(0,282*bossHP/b.health),10,'#f0a35a');
+ t('BOSS: '+b.name.toUpperCase()+'  '+Math.ceil(bossHP)+' HP',320,32,14,'#fff2d5');
+ if(bossAttackUntil>now&&!bossDodged){
+  r(152,176,335,38,'#a7353c');t('DANGER! PRESS B TO DODGE!',320,201,18,'#fff7d9');
+ }
+ g.restore();
+}
+
 function updateFishingDisplay(){
  $('reel-percent').textContent=Math.round(reelProgress)+'%';
  $('reel-fill').style.width=Math.min(100,reelProgress)+'%';
@@ -912,13 +1011,13 @@ else{
  const cy=Math.max(0,Math.min(VILLAGE_H-400,y-200));
  g.translate(-cx,-cy);village();character(x,y);
 }
-g.restore();drawWeather();
+g.restore();drawWeather();drawBossOverlay();
 }
 function hud(){$('weather-hud').textContent=weatherTypes[weatherIndex][1]+' '+weatherTypes[weatherIndex][0]+(area==='sea'?' · 🚤 '+boats[boatTier][0]:'');$('coins').textContent=Number.isFinite(coins)?coins:'∞';$('bag').textContent=bag.length+'/15';$('bait').textContent=bait;$('rod').textContent=rods[rod][0];$('homes').textContent=owned.size+'/'+home.length;
-$('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=phase==='reeling'?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
-$('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
-$('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X with a steady rhythm. Let the tension drop between pulls.',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
-$('reelstatus').textContent=phase==='reeling'?'Reel the fish in!':'Get ready to reel';updateFishingDisplay()}
+$('fishingPanel').style.display=(area==='lake'||area==='sea')&&!room?'block':'none';$('timing').style.display=phase==='timing'?'block':'none';$('reeling').style.display=(phase==='reeling'||phase==='boss')?'block':'none';$('target').style.left=target+'%';$('target').style.width=targetWidth+'%';$('needle').style.left=needle+'%';
+$('phase').textContent={ready:'🎣 Easy fishing mini-game',waiting:'⏳ Waiting for a bite',timing:'🎯 Fish on!',reeling:'🐟 Reel it in!',boss:'⚔️ GIANT FISH BOSS BATTLE!',caught:'🎉 Fish caught!',missed:'💦 Almost! Try again'}[phase];
+$('instruction').textContent={ready:'Press X to cast your line.',waiting:'Waiting for a fish to bite...',timing:'BITE! Hit X in the green to hook it!',reeling:'Tap X to damage the boss! Press B to dodge the red danger warning.',boss:'X attacks. B dodges giant splashes. Defeat the boss to earn a trophy!',caught:'Fish added to your backpack!',missed:'You missed. Your next try uses no extra bait.'}[phase];
+$('reelstatus').textContent=phase==='boss'?'Boss health / danger!':phase==='reeling'?'Reel the fish in!':'Get ready to reel';updateFishingDisplay()}
 let menu=[],selection=0,shopping=false;
 function redrawMenu(){
  let wrap=$('actions');wrap.replaceChildren();
@@ -932,8 +1031,8 @@ function redrawMenu(){
 function panel(a,b,options=[]){$('heading').textContent=a;$('message').textContent=b;menu=options;selection=0;redrawMenu()}
 function menuSelect(){if(menu[selection])menu[selection][1]()}
 function menuStep(dir){if(!menu.length)return;selection=(selection+(dir==='down'?1:-1)+menu.length)%menu.length;redrawMenu()}
-function tab(name){token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
-function enter(id){aquariumViewing=false;outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
+function tab(name){currentBoss=-1;bossAttackUntil=0;token++;phase='ready';room='';area=name==='village'?'village':'lake';x=area==='lake'?600:35;y=area==='lake'?309:366;hud();draw();panel(area==='lake'?'🌊 Sunshine Lake':'🏡 Village',area==='lake'?'Walk onto the dock and use X to fish. Walk to the RIGHT edge to visit the village. Buildings and walls are solid.':'The village is bigger now! Explore the wide streets as the view follows you. Walk left to return to the lake; press A beside buildings.')}
+function enter(id){currentBoss=-1;bossAttackUntil=0;aquariumViewing=false;outdoorX=x;outdoorY=y;token++;phase='ready';room=id;shopping=false;x=319;y=317;hud();draw();visit()}
 function leave(){aquariumViewing=false;room='';shopping=false;x=outdoorX;y=outdoorY;hud();draw();panel('🌿 Outside','Explore more of the village.')}
 function need(n){panel('🪙 Not enough coins','You need '+n+' coins.',[['Back',visit]])}
 function buyItem(id,label,cost,after){
@@ -1006,6 +1105,7 @@ function celebrateFish(f){
  celebrationTimer=setTimeout(()=>{overlay.className='';overlay.querySelectorAll('.sparkle').forEach(el=>el.remove())},mythic?4800:legendary?3800:3000);
 }
 function fishAction(){
+ if(phase==='boss'){bossInput('x');return}
  if(room||(area!=='lake'&&area!=='sea'))return;
  if(area==='sea'&&nearbyIsland()<0){panel('🌊 Open water','Sail closer to an island before casting.');return}
  if(phase==='waiting')return;
@@ -1108,6 +1208,7 @@ function interact(){if(!room&&area==='sea'){
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(phase==='boss'&&(k==='x'||k==='b')){bossInput(k);return}
  if(k==='x')fishAction()
  else if(k==='a')interact();
  else if(k==='y'){if(room)shopping=true;backpack()}
@@ -1117,6 +1218,7 @@ function press(k){
  }
 }
 function move(dir){
+  if(phase==='boss')return;
   if(room&&shopping){if(dir==='up'||dir==='down')menuStep(dir);return}
   const step=area==='sea'?boats[boatTier][2]:7;
   const d={up:[0,-step],down:[0,step],left:[-step,0],right:[step,0]}[dir];
@@ -1158,7 +1260,7 @@ function saveGame(automatic=false){
    version:1,savedAt:Date.now(),area,
    x:room?outdoorX:x,y:room?outdoorY:y,
    coins,bait,rod,bag:bag.map(f=>[f[0],f[1]]),
-   owned:[...owned],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
+   owned:[...owned],bossWins:[...bossWins],boatTier,discoveredIslands:[...discoveredIslands],weatherIndex,
    collectibles:[...collectibles],discoveredFish:[...discoveredFish],
    discoveredTreasures:[...discoveredTreasures],
    equipped:{...equipped},shopName,shopColor,
@@ -1173,7 +1275,7 @@ function saveGame(automatic=false){
  }
 }
 function loadGame(manual=false){
- aquariumViewing=false;
+ aquariumViewing=false;currentBoss=-1;bossAttackUntil=0;
  let data;
  try{
   const raw=localStorage.getItem(SAVE_KEY);
@@ -1186,6 +1288,7 @@ function loadGame(manual=false){
  token++;phase='ready';pending=null;room='';shopping=false;menu=[];
  keys.clear();reelProgress=0;lineTension=0;
  area=data.area==='village'?'village':data.area==='sea'?'sea':'lake';
+ bossWins=new Set((Array.isArray(data.bossWins)?data.bossWins:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<fishBosses.length));
  boatTier=Math.min(boats.length-1,Math.max(0,Math.floor(Number(data.boatTier)||0)));
  discoveredIslands=new Set((Array.isArray(data.discoveredIslands)?data.discoveredIslands:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<islands.length));
  weatherIndex=Math.max(0,Math.min(weatherTypes.length-1,Math.floor(Number(data.weatherIndex)||0)));
@@ -1203,7 +1306,7 @@ function loadGame(manual=false){
  const savedQuests=data.villagerQuests&&typeof data.villagerQuests==='object'?data.villagerQuests:{};
  for(const v of villagers){const q=savedQuests[v.id];if(q&&typeof q==='object')villagerQuests[v.id]={accepted:!!q.accepted,count:Math.max(0,Math.min(v.count,Math.floor(Number(q.count)||0))),done:!!q.done};}
  owned=new Set(data.owned.filter(id=>home.some(h=>h.id===id)));
- const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower']);
+ const knownItemIds=new Set([...clothes.map(item=>item.id),'baitbox','reel','pearl','trophy','clock','chest','anchor','aquarium','kirstyflower',...fishBosses.map(b=>b.trophy)]);
  collectibles=new Set(data.collectibles.filter(id=>knownItemIds.has(id)));
  discoveredFish.clear();
  for(const id of (Array.isArray(data.discoveredFish)?data.discoveredFish:[]))if(knownFish.has(id))discoveredFish.add(id);
@@ -1239,6 +1342,7 @@ if(time-lastWeatherChange>52000){lastWeatherChange=time;weatherIndex=(weatherInd
  $('needle').style.left=needle+'%';
  if(time-lastBiteAt>4500)loseFish('You took too long to hook it!');
 }
+if(phase==='boss')bossTick(time,dt);
 if(phase==='reeling'){
  const rest=dt*.028;
  lineTension=Math.max(0,lineTension-rest*(1+rod*.07));
