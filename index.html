@@ -728,12 +728,24 @@ function leaveNightFestival(){
  panel('🌙 Festival memories','Your fish, prizes and festival progress have been saved!');
 }
 function festivalInteract(){
+ if(Math.hypot(x-35,y-270)<55)return festivalHauntedTree();
  if(Math.hypot(x-255,y-363)<49)return festivalDrinks();
  if(Math.hypot(x-160,y-170)<75)return festivalFishing();
  if(Math.hypot(x-480,y-140)<75)return festivalWheel();
  if(Math.hypot(x-155,y-315)<72)return festivalMarket();
  if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
  panel('🎆 Nighttime Festival','Explore the lantern lake, prize wheel, night market, fireworks stage and drinks stall beside the campfire!');
+}
+function festivalHauntedTree(){
+ const lines=[
+  'The roots remember every festival that ever happened here...',
+  'I have stood here for 300 years. You are my first visitor today!',
+  'At midnight, even the stars come down to hear my stories.',
+  'Psst... the half-dead bush knows more secrets than it tells.',
+  'I may look scary, but I only eat moonlight and fallen leaves.'
+ ];
+ const line=lines[Math.floor(Math.random()*lines.length)];
+ panel('🌳 THE HAUNTED TREE','👻 The glowing-eyed tree whispers: "'+line+'"',[['🌳 Ask another question',festivalHauntedTree],['🌙 Leave the tree',()=>panel('🌙 Festival','The tree waves a branch goodbye.')]]);
 }
 let festivalEffect='',festivalEffectUntil=0;
 function festivalDrinks(){
@@ -826,6 +838,23 @@ function festivalScene(){
  // A pale sand rim and rocky bank connect the pond to its grassy hill.
  g.fillStyle='#b4b99b';g.beginPath();g.ellipse(160,174,113,83,0,0,Math.PI*2);g.fill();
  for(let i=0;i<14;i++){const px=42+i*17,py=239+(i%3)*7;r(px,py,14,8,i%2?'#668c7b':'#769b87')}
+ // Haunted talking tree on the far-left lakeshore: trunk and roots touch the soil.
+ g.fillStyle='#243f37';g.beginPath();g.ellipse(36,270,39,9,0,0,Math.PI*2);g.fill();
+ r(25,207,22,60,'#624537');r(30,200,12,64,'#886045');
+ g.save();g.strokeStyle='#6b4939';g.lineWidth=8;g.lineCap='round';
+ for(const [ex,ey,mx,my] of [[5,194,21,213],[61,187,51,212],[16,174,28,199],[65,219,49,228]]){g.beginPath();g.moveTo(36,233);g.lineTo(mx,my);g.lineTo(ex,ey);g.stroke()}
+ g.restore();
+ for(const [cx,cy,rad] of [[17,190,23],[42,178,30],[63,199,23],[26,216,22]]){
+  g.fillStyle='#254e3e';g.beginPath();g.arc(cx,cy,rad,0,Math.PI*2);g.fill();
+ }
+ for(let i=0;i<15;i++){const px=7+(i*17)%65,py=168+(i*13)%53;r(px,py,5,4,i%2?'#4c8c57':'#396e4b')}
+ // The tree's eerie eyes blink and its crooked mouth glows.
+ const blink=Math.sin(sec*.8)> .97;
+ r(24,225,8,blink?2:8,'#aaff74');r(43,225,8,blink?2:8,'#aaff74');
+ if(!blink){r(27,227,3,4,'#203b29');r(46,227,3,4,'#203b29')}
+ r(30,241,18,3,'#bcdb80');r(33,244,12,2,'#a6c776');
+ islandGlow(36,229,'#7fff7c',8);
+ for(let i=0;i<5;i++){const px=7+i*13,py=253+(i%2)*9;r(px,py,12,5,'#73543d')}
  // Lake at the original night-fishing hotspot, embedded into the plaza.
  g.fillStyle='#86aaa9';g.beginPath();g.ellipse(160,171,104,77,0,0,Math.PI*2);g.fill();
  g.fillStyle='#224e83';g.beginPath();g.ellipse(160,169,91,64,0,0,Math.PI*2);g.fill();
