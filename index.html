@@ -887,6 +887,27 @@ function festivalScene(){
  for(let i=0;i<23;i++){const px=54+i*25,py=68+Math.sin(i/22*Math.PI*2)*32;r(px-4,py,10,13,['#ffd583','#ff9fc3','#9ee9ed'][i%3]);r(px-2,py+3,6,6,'#fff4c2');islandGlow(px,py+7,'#ffdb9d',3)}
  // Firework bursts in the upper sky, with twinkling sparks.
  for(let i=0;i<3;i++){const cx=100+i*218,cy=51+(i%2)*29;for(let j=0;j<12;j++){const angle=j*Math.PI/6+sec*.25,rad=18+Math.sin(sec*2+i)*4;r(cx+Math.cos(angle)*rad,cy+Math.sin(angle)*rad,4,4,['#ffdc87','#f6a5d3','#9adff2'][i%3])}islandGlow(cx,cy,'#fff1c6',5)}
+ // Huge split bush: lush green leaves on the left, dead bare branches on the right.
+ // Rooted in the grassy festival edge, away from the interactive stalls.
+ g.fillStyle='#263f35';g.beginPath();g.ellipse(577,330,57,11,0,0,Math.PI*2);g.fill();
+ r(569,272,16,60,'#694a37');r(575,266,8,67,'#8b6246');
+ // Bare dead half: crooked twigs without leaves.
+ g.save();g.strokeStyle='#80634c';g.lineWidth=6;g.lineCap='round';
+ for(const [ex,ey,mx,my] of [[611,214,592,247],[628,243,607,268],[602,188,591,225],[622,194,607,231]]){
+  g.beginPath();g.moveTo(581,288);g.lineTo(mx,my);g.lineTo(ex,ey);g.stroke();
+ }
+ g.lineWidth=3;
+ for(const [sx,sy,ex,ey] of [[598,235,608,219],[608,230,621,224],[611,213,620,203],[602,188,592,178],[619,197,629,187],[607,265,623,254]]){
+  g.beginPath();g.moveTo(sx,sy);g.lineTo(ex,ey);g.stroke();
+ }
+ g.restore();
+ // Full living half: layered leaves and little light-green highlights.
+ for(const [bx,by,rad,color] of [[555,267,31,'#216d43'],[540,246,31,'#2b8d4a'],[557,222,32,'#368f49'],[576,240,29,'#247e43'],[562,280,24,'#3a9a4d'],[531,271,23,'#277c43']]){
+  g.fillStyle=color;g.beginPath();g.arc(bx,by,rad,0,Math.PI*2);g.fill();
+ }
+ for(let i=0;i<31;i++){const px=525+(i*19)%66,py=205+(i*29)%80;r(px,py,7,5,i%3?'#64bc5c':'#a0dc6d')}
+ // A few fallen leaves show where the two halves meet.
+ for(let i=0;i<7;i++)r(555+i*8,325+(i%2)*5,6,3,i%2?'#b2a16c':'#4b9950');
  // Brief player animations after buying a drink or cigarettes.
  const remaining=festivalEffectUntil-performance.now();
  if(remaining>0){
