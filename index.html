@@ -1436,24 +1436,49 @@ function sailAway(){
  keys.clear();lastIslandNearby=-1;hud();draw();
  panel('⛵ The Open Sea','Steer with WASD or arrow keys. Look for glowing 🤿 CHEST markers and ☠ PIRATES ships! Press A near a pirate ship to battle it. Press A or X beside a chest to dive. Islands still have rare fish; A at the south-west harbour returns home.');
 }
+function harbourMenu(title,description,options){
+ panel(title,description,[...options,['⬅️ Back to Harbourmaster',boatShop]]);
+}
 function boatShop(){
  const next=boats[boatTier+1];
- panel('🚤 Harbourmaster','Boats let you explore three hidden islands and catch fish you cannot find at the regular dock.',[
-  ...(boatTier?[['⛵ Set sail in '+boats[boatTier][0],sailAway]]:[]),
+ const boatName=boats[boatTier]?.[0]||'No boat yet';
+ panel('⚓ HARBOURMASTER · MAIN DOCK','🚤 Current boat: '+boatName+'  •  🪙 '+coins.toLocaleString('en-GB')+' coins.\nWelcome aboard! Pick a section below:',[
+  ['⛵ BOATS & SAILING',harbourBoatsMenu],
+  ['🗺️ EXPLORE DESTINATIONS',harbourTravelMenu],
+  ['🎣 FISHING & CHALLENGES',harbourFishingMenu],
+  ['🎉 FESTIVAL & PETS',harbourExtrasMenu],
+  ['🌊 Leave the harbour',()=>panel('🌊 Sunshine Lake','Fish from the dock or explore the village.')]
+ ]);
+}
+function harbourBoatsMenu(){
+ const next=boats[boatTier+1];
+ harbourMenu('⛵ BOATS & SAILING','Upgrade your boat to explore the open sea. Your coins: '+coins.toLocaleString('en-GB')+'.',[
+  ...(boatTier?[['🌊 Set sail in '+boats[boatTier][0],sailAway]]:[]),
+  ...(next?[['🪙 Buy '+next[0]+' · '+next[1].toLocaleString('en-GB')+' coins',()=>{
+    if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['⬅️ Back to boats',harbourBoatsMenu]]);
+    coins-=next[1];boatTier++;hud();draw();saveGame(true);harbourBoatsMenu();
+  }]]:[['🏆 All boat upgrades unlocked!',()=>panel('🏆 Master Sailor','You own the best available boat!',[['⬅️ Back to boats',harbourBoatsMenu]])]])
+ ]);
+}
+function harbourTravelMenu(){
+ harbourMenu('🗺️ EXPLORE DESTINATIONS','Choose your next adventure. Some destinations need special equipment or a boat.',[
+  ['🧜‍♀️ Mermaid Kingdom',enterMermaidKingdom],
+  ['❄️ Frozen Island',travelToFrozenIsland],
+  ['🌋 Volcano Dungeon',enterVolcanoDungeon],
+  ['☁️ Sky Island Airship',skyAirshipMenu]
+ ]);
+}
+function harbourFishingMenu(){
+ harbourMenu('🎣 FISHING & CHALLENGES','Catch legendary fish, compete for trophies, or challenge a giant boss!',[
   ['🏆 Fishing Tournaments',tournamentMenu],
   ['🌟 Secret Mythic Fish Hunt',secretMythicJournal],
+  ['⚔️ Challenge Titan Carp',()=>bossChallenge(0)]
+ ]);
+}
+function harbourExtrasMenu(){
+ harbourMenu('🎉 FESTIVAL & PETS','Relax at the festival or find a new fishing companion.',[
   ['🎆 Nighttime Festival',festivalJournal],
-  ['🧜‍♀️ Mermaid Kingdom',enterMermaidKingdom],
-  ['❄️ Travel to Frozen Island',travelToFrozenIsland],
-  ['🌋 Explore Volcano Dungeon',enterVolcanoDungeon],
-  ['☁️ Sky Island Airship',skyAirshipMenu],
-  ['🐾 Adopt a Pet',petShop],
-  ['⚔️ Challenge Titan Carp (boss)',()=>bossChallenge(0)],
-  ...(next?[['🪙 Buy '+next[0]+' — '+next[1].toLocaleString('en-GB')+' coins',()=>{
-    if(coins<next[1])return panel('🪙 More coins needed','Catch and sell fish to afford '+next[0]+'.',[['Back',boatShop]]);
-    coins-=next[1];boatTier++;hud();draw();boatShop();
-  }]]:[]),
-  ['🌊 Back to lake',()=>panel('🌊 Sunshine Lake','Fish from the dock or explore the village.')]
+  ['🐾 Adopt a Pet',petShop]
  ]);
 }
 
