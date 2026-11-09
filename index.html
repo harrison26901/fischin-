@@ -728,7 +728,7 @@ function leaveNightFestival(){
  panel('🌙 Festival memories','Your fish, prizes and festival progress have been saved!');
 }
 function festivalInteract(){
- if(Math.hypot(x-315,y-251)<42)return festivalSecretPortal();
+ if(Math.hypot(x-350,y-204)<44)return festivalSecretPortal();
  if(Math.hypot(x-35,y-270)<55)return festivalHauntedTree();
  if(Math.hypot(x-255,y-363)<49)return festivalDrinks();
  if(Math.hypot(x-382,y-273)<37)return festivalCamping();
@@ -910,7 +910,10 @@ function festivalScene(){
  r(414,250,10,14,'#e8bd6d');r(417,253,4,8,'#fff3b5');
  islandGlow(419,255,'#ffe1a1',8);
  t('⛺ CAMP',382,303,11,'#fff0b3');
- // Secret portal: ancient stone arch anchored into the plaza, with animated magic.
+ // Secret portal moved to its own raised alcove, away from the campsite and path.
+ // Narrow stone support connects the alcove to the grassy plaza.
+ r(341,199,18,65,'#605775');r(337,259,26,8,'#847994');
+ g.save();g.translate(34,-65);
  g.fillStyle='#253f4b';g.beginPath();g.ellipse(316,267,36,10,0,0,Math.PI*2);g.fill();
  r(286,257,60,13,'#6b6489');r(292,261,48,8,'#aaa1b9');
  g.fillStyle='#685c89';g.beginPath();g.ellipse(316,215,33,48,0,0,Math.PI*2);g.fill();
@@ -924,6 +927,7 @@ function festivalScene(){
  for(let i=0;i<9;i++){const ang=sec*(.6+i*.07)+i*2.4,px=316+Math.cos(ang)*(23+i%3*5),py=215+Math.sin(ang)*(37+i%3*5);r(px,py,3+i%2,3+i%2,i%2?'#b5a3ff':'#9affec')}
  islandGlow(316,215,'#8df6eb',10);
  t('🌀 PORTAL',316,281,11,'#f3e8ff');
+ g.restore();
  // Night market has a proper counter, striped canopy and warm windows.
  r(86,350,141,27,'#654f55');r(90,371,133,8,'#95736c');
  r(90,302,133,55,'#835a65');r(94,315,125,34,'#ad776b');
