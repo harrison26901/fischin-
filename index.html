@@ -728,7 +728,7 @@ function leaveNightFestival(){
  panel('🌙 Festival memories','Your fish, prizes and festival progress have been saved!');
 }
 function festivalInteract(){
- if(Math.hypot(x-350,y-204)<44)return festivalSecretPortal();
+ if(Math.hypot(x-310,y-270)<34)return enterFestivalPortalClearing();
  if(Math.hypot(x-35,y-270)<55)return festivalHauntedTree();
  if(Math.hypot(x-255,y-363)<49)return festivalDrinks();
  if(Math.hypot(x-382,y-273)<37)return festivalCamping();
@@ -737,6 +737,46 @@ function festivalInteract(){
  if(Math.hypot(x-155,y-315)<72)return festivalMarket();
  if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
  panel('🎆 Nighttime Festival','Explore the lantern lake, prize wheel, night market, fireworks stage and drinks stall beside the campfire!');
+}
+function enterFestivalPortalClearing(){
+ area='festivalPortal';x=320;y=320;keys.clear();draw();
+ panel('🌀 SECRET PORTAL CLEARING','You followed the sign to a peaceful hidden clearing. Walk up to the glowing portal and press A. Press B to return to the festival.');
+}
+function leaveFestivalPortalClearing(){
+ area='festival';x=310;y=300;keys.clear();draw();
+ panel('🌙 Back to the festival','The busy festival is just beyond the trees.');
+}
+function festivalPortalClearingScene(){
+ const sec=performance.now()/1000;
+ const sky=g.createLinearGradient(0,0,0,400);sky.addColorStop(0,'#10173b');sky.addColorStop(1,'#34564e');g.fillStyle=sky;g.fillRect(0,0,640,400);
+ for(let i=0;i<45;i++)r((i*113)%640,(i*67)%230,2,2,'#c8d9db');
+ r(0,260,640,140,'#3d7357');r(0,291,640,109,'#497e59');
+ g.fillStyle='#9c8a7e';g.beginPath();g.ellipse(316,301,90,27,0,0,Math.PI*2);g.fill();
+ // Magical arch, standing alone with room to walk around it.
+ g.save();g.translate(0,10);
+
+ g.fillStyle='#253f4b';g.beginPath();g.ellipse(316,267,36,10,0,0,Math.PI*2);g.fill();
+ r(286,257,60,13,'#6b6489');r(292,261,48,8,'#aaa1b9');
+ g.fillStyle='#685c89';g.beginPath();g.ellipse(316,215,33,48,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#b7a8d4';g.beginPath();g.ellipse(316,214,26,40,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#20224f';g.beginPath();g.ellipse(316,215,20,34,0,0,Math.PI*2);g.fill();
+ const swirl=g.createRadialGradient(316,215,2,316,215,27);
+ swirl.addColorStop(0,'#9ef6e9');swirl.addColorStop(.45,'#7754c5');swirl.addColorStop(1,'#2d285d');
+ g.fillStyle=swirl;g.beginPath();g.ellipse(316,215,18,31,0,0,Math.PI*2);g.fill();
+ g.save();g.strokeStyle='#b8fff3';g.lineWidth=3;
+ g.beginPath();for(let i=0;i<=35;i++){const ang=i*.34+sec*1.3,rad=i*.43;const px=316+Math.cos(ang)*rad,py=215+Math.sin(ang)*rad*1.5;if(i===0)g.moveTo(px,py);else g.lineTo(px,py)}g.stroke();g.restore();
+ for(let i=0;i<9;i++){const ang=sec*(.6+i*.07)+i*2.4,px=316+Math.cos(ang)*(23+i%3*5),py=215+Math.sin(ang)*(37+i%3*5);r(px,py,3+i%2,3+i%2,i%2?'#b5a3ff':'#9affec')}
+ islandGlow(316,215,'#8df6eb',10);
+ t('🌀 PORTAL',316,281,11,'#f3e8ff');
+ 
+ g.restore();
+ // Two quiet trees frame the clearing without covering the portal.
+ for(const tx of [88,548]){
+  r(tx-11,187,22,95,'#765443');
+  for(const [dx,dy,rr] of [[-25,-15,35],[15,-36,39],[31,3,31]]){g.fillStyle='#275a49';g.beginPath();g.arc(tx+dx,192+dy,rr,0,Math.PI*2);g.fill()}
+ }
+ t('🌀 SECRET CLEARING',320,355,14,'#f5e8ff');
+ drawPet();character(x,y);
 }
 function festivalSecretPortal(){
  panel('🌀 SECRET MOON PORTAL','The swirling portal hums with magic. It leads to the hidden underwater Mermaid Kingdom! Enter it?',[
@@ -910,24 +950,9 @@ function festivalScene(){
  r(414,250,10,14,'#e8bd6d');r(417,253,4,8,'#fff3b5');
  islandGlow(419,255,'#ffe1a1',8);
  t('⛺ CAMP',382,303,11,'#fff0b3');
- // Secret portal moved to its own raised alcove, away from the campsite and path.
- // Narrow stone support connects the alcove to the grassy plaza.
- r(341,199,18,65,'#605775');r(337,259,26,8,'#847994');
- g.save();g.translate(34,-65);
- g.fillStyle='#253f4b';g.beginPath();g.ellipse(316,267,36,10,0,0,Math.PI*2);g.fill();
- r(286,257,60,13,'#6b6489');r(292,261,48,8,'#aaa1b9');
- g.fillStyle='#685c89';g.beginPath();g.ellipse(316,215,33,48,0,0,Math.PI*2);g.fill();
- g.fillStyle='#b7a8d4';g.beginPath();g.ellipse(316,214,26,40,0,0,Math.PI*2);g.fill();
- g.fillStyle='#20224f';g.beginPath();g.ellipse(316,215,20,34,0,0,Math.PI*2);g.fill();
- const swirl=g.createRadialGradient(316,215,2,316,215,27);
- swirl.addColorStop(0,'#9ef6e9');swirl.addColorStop(.45,'#7754c5');swirl.addColorStop(1,'#2d285d');
- g.fillStyle=swirl;g.beginPath();g.ellipse(316,215,18,31,0,0,Math.PI*2);g.fill();
- g.save();g.strokeStyle='#b8fff3';g.lineWidth=3;
- g.beginPath();for(let i=0;i<=35;i++){const ang=i*.34+sec*1.3,rad=i*.43;const px=316+Math.cos(ang)*rad,py=215+Math.sin(ang)*rad*1.5;if(i===0)g.moveTo(px,py);else g.lineTo(px,py)}g.stroke();g.restore();
- for(let i=0;i<9;i++){const ang=sec*(.6+i*.07)+i*2.4,px=316+Math.cos(ang)*(23+i%3*5),py=215+Math.sin(ang)*(37+i%3*5);r(px,py,3+i%2,3+i%2,i%2?'#b5a3ff':'#9affec')}
- islandGlow(316,215,'#8df6eb',10);
- t('🌀 PORTAL',316,281,11,'#f3e8ff');
- g.restore();
+ // Small sign leads to a separate portal clearing; no giant portal blocking the festival.
+ r(304,258,7,30,'#785744');r(287,244,43,17,'#b08b63');
+ t('🌀',308,257,14,'#fff0c5');
  // Night market has a proper counter, striped canopy and warm windows.
  r(86,350,141,27,'#654f55');r(90,371,133,8,'#95736c');
  r(90,302,133,55,'#835a65');r(94,315,125,34,'#ad776b');
@@ -2397,6 +2422,7 @@ else if(area==='frozen'){frozenScene()}
 else if(area==='sky'){skyScene()}
 else if(area==='dungeon'){volcanoDungeonScene()}
 else if(area==='festival'){festivalScene()}
+else if(area==='festivalPortal'){festivalPortalClearingScene()}
 else if(area==='mermaid'){mermaidScene()}
 else{
  const cx=Math.max(0,Math.min(VILLAGE_W-640,x-320));
@@ -2591,7 +2617,7 @@ function hitsBox(px,py,bx,by,bw,bh){
   return px+8>bx&&px-8<bx+bw&&py+4>by&&py-7<by+bh;
 }
 function blocked(nx,ny){
-  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon'||area==='festival'||area==='mermaid')return false;
+  if(area==='sea'||area==='dive'||area==='frozen'||area==='sky'||area==='dungeon'||area==='festival'||area==='festivalPortal'||area==='mermaid')return false;
   if(room){
     // Room walls and shop fittings; the bottom-centre exit stays open.
     if(nx<22||nx>618||ny<119||ny>367)return true;
@@ -2630,6 +2656,7 @@ function interact(){if(area==='mermaid'){mermaidInteract();return}if(area==='fes
  return
 }let n=near();if(n==='kirstygarden')visitKirstysGarden();else if(n&&n.startsWith('villager:'))talkToVillager(villagers.find(v=>v.id===n.slice(9)));else if(n==='harbour')boatShop();else if(n==='fish')fishAction();else if(n==='statue')panel('🏆 Captain Finn','The legendary village founder and his golden fish.');else if(n)enter(n);else panel('🌿 Explore','Walk up to the dock or a shop.')}
 function press(k){
+ if(area==='festivalPortal'){if(k==='a'||k==='x'){if(Math.hypot(x-316,y-225)<90)festivalSecretPortal();else panel('🌀 Portal clearing','Walk closer to the glowing arch!')}else if(k==='b')leaveFestivalPortalClearing();else if(k==='y')backpack();return}
  if(area==='mermaid'){if(k==='a'||k==='x')mermaidInteract();else if(k==='b')leaveMermaidKingdom();else if(k==='y')backpack();return}
  if(area==='festival'){if(k==='a'||k==='x')festivalInteract();else if(k==='b')leaveNightFestival();else if(k==='y')backpack();return}
  if(area==='dungeon'){if(fireGolemBattle){if(k==='a'||k==='x')fireGolemTurn('attack');else if(k==='b')fireGolemTurn('block');else if(k==='y')fireGolemMenu();return}if(k==='a'||k==='x')dungeonInteract();else if(k==='b')leaveVolcanoDungeon();else if(k==='y')backpack();return}
@@ -2896,7 +2923,7 @@ $('delete-save').onclick=()=>{
 };
 $('scuba-button').addEventListener('click',beginScubaDive);
 $('surface-button').addEventListener('click',()=>surfaceFromDive());
-function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||area==='frozen'||area==='festival'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
+function frame(time){let dt=Math.min(50,prior?time-prior:16);prior=time;updatePet(dt);scubaTick(dt);if(((!room&&(area==='lake'||area==='sea'||area==='sky'||area==='frozen'||area==='festival'||area==='festivalPortal'||(area==='village'&&ownerAccess&&rod===OWNER_ROD_INDEX)))||(room==='fishshop'&&aquariumViewing)||(room&&ownerAccess&&rod===OWNER_ROD_INDEX))&&time-lastWaterDraw>=100){draw();lastWaterDraw=time}
 if(time-lastWeatherChange>52000&&!pirateBattle){lastWeatherChange=time;weatherIndex=(weatherIndex+1+Math.floor(Math.random()*3))%weatherTypes.length;hud();draw();panel('🌦️ Weather changed!',weatherTypes[weatherIndex][1]+' The weather is now '+weatherTypes[weatherIndex][0].toLowerCase()+'.');}if(phase==='timing'){
  needle+=direction*dt*(.04+Math.min(rod,6)*.001);
  if(needle>=99){needle=99;direction=-1}
