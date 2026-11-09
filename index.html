@@ -887,9 +887,11 @@ function festivalScene(){
  for(let i=0;i<11;i++){const px=i*66-14,h=29+(i%3)*15;r(px,236-h,61,h,'#252849');g.fillStyle='#353253';g.beginPath();g.moveTo(px-6,236-h);g.lineTo(px+30,217-h);g.lineTo(px+67,236-h);g.fill();r(px+19,225-h,9,12,'#f6cb80')}
  // One continuous grassy plaza and lantern-lit paths.
  r(0,264,640,136,'#31594e');r(0,280,640,120,'#426c56');
- r(277,265,84,135,'#937e74');r(286,265,66,135,'#b29a83');
- r(62,261,515,14,'#8c7c75');
- for(let i=0;i<18;i++){const px=292+(i%3)*20,py=276+Math.floor(i/3)*21;r(px,py,12,3,'#d3b7a0')}
+ // Broad, unobstructed stone walkway leading straight to the secret portal sign.
+ r(293,262,45,138,'#847b79');r(298,262,35,138,'#c7b29c');
+ for(let i=0;i<6;i++)r(301,280+i*20,29,2,'#9c8d85');
+ // Side paths connect the attractions without cutting across the main route.
+ r(60,269,225,9,'#8b8178');r(349,269,209,9,'#8b8178');
  // Raised grassy lakeshore reaches the water instead of leaving it floating in the sky.
  g.fillStyle='#284d49';g.beginPath();g.moveTo(0,264);g.lineTo(0,149);g.quadraticCurveTo(55,86,155,91);g.quadraticCurveTo(268,94,285,175);g.lineTo(285,264);g.closePath();g.fill();
  g.fillStyle='#3d725e';g.beginPath();g.moveTo(0,264);g.lineTo(0,160);g.quadraticCurveTo(69,103,155,105);g.quadraticCurveTo(250,108,271,179);g.lineTo(271,264);g.closePath();g.fill();
@@ -951,8 +953,9 @@ function festivalScene(){
  islandGlow(419,255,'#ffe1a1',8);
  t('⛺ CAMP',382,303,11,'#fff0b3');
  // Small sign leads to a separate portal clearing; no giant portal blocking the festival.
- r(304,258,7,30,'#785744');r(287,244,43,17,'#b08b63');
- t('🌀',308,257,14,'#fff0c5');
+ // Sign sits at the top of the walkway, not in the walking lane.
+ r(335,249,6,30,'#785744');r(335,239,43,17,'#b08b63');
+ t('🌀',356,252,14,'#fff0c5');
  // Night market has a proper counter, striped canopy and warm windows.
  r(86,350,141,27,'#654f55');r(90,371,133,8,'#95736c');
  r(90,302,133,55,'#835a65');r(94,315,125,34,'#ad776b');
@@ -967,12 +970,13 @@ function festivalScene(){
  r(433,291,105,52,'#725286');r(440,279,92,15,'#cf93c4');
  for(let i=0;i<5;i++)r(446+i*18,305,11,23,i%2?'#f8ca9a':'#a8d5d9');
  t('🎆 FIREWORKS',482,378,12,'#fff0b3');
- // Small earth shadows pin the benches, fire and drinks counter to the ground.
+ // Campfire seating moved off the central path to keep a clear walking lane.
+ g.save();g.translate(65,0);
  g.fillStyle='#304b41';g.beginPath();g.ellipse(259,337,38,7,0,0,Math.PI*2);g.ellipse(389,337,33,7,0,0,Math.PI*2);g.ellipse(323,352,37,7,0,0,Math.PI*2);g.ellipse(257,379,45,6,0,0,Math.PI*2);g.fill();
  // Cosy campfire hangout with benches and a tiny festival beer stall.
  // Kept away from the four festival interaction hotspots.
- r(233,313,52,8,'#6c463b');r(239,320,6,15,'#805443');r(273,320,6,15,'#805443');
- r(363,313,48,8,'#6c463b');r(368,320,6,15,'#805443');r(401,320,6,15,'#805443');
+ 
+ 
  // Stone fire ring, glowing coals and crossed logs.
  g.fillStyle='#5c4a4b';g.beginPath();g.ellipse(323,339,30,13,0,0,Math.PI*2);g.fill();
  g.fillStyle='#c0a28c';g.beginPath();g.ellipse(323,337,24,9,0,0,Math.PI*2);g.fill();
@@ -983,6 +987,7 @@ function festivalScene(){
  g.fillStyle='#ffe47c';g.beginPath();g.moveTo(317,333);g.lineTo(323,315+flicker*.4);g.lineTo(331,333);g.closePath();g.fill();
  islandGlow(323,326,'#ff9d4c',18);
  for(let i=0;i<6;i++){const px=308+i*6,py=299-(i%3)*8-Math.sin(sec*2+i)*5;r(px,py,3,4,'#ffca7c')}
+ g.restore();
  // Mini refreshment counter with wooden posts and foamy mugs.
  r(221,357,72,20,'#7b5144');r(226,352,62,8,'#b87b5a');
  r(222,337,7,17,'#8d6051');r(284,337,7,17,'#8d6051');
