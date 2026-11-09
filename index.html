@@ -730,11 +730,19 @@ function leaveNightFestival(){
 function festivalInteract(){
  if(Math.hypot(x-35,y-270)<55)return festivalHauntedTree();
  if(Math.hypot(x-255,y-363)<49)return festivalDrinks();
+ if(Math.hypot(x-382,y-273)<37)return festivalCamping();
  if(Math.hypot(x-160,y-170)<75)return festivalFishing();
  if(Math.hypot(x-480,y-140)<75)return festivalWheel();
  if(Math.hypot(x-155,y-315)<72)return festivalMarket();
  if(Math.hypot(x-480,y-315)<72)return festivalFireworks();
  panel('🎆 Nighttime Festival','Explore the lantern lake, prize wheel, night market, fireworks stage and drinks stall beside the campfire!');
+}
+function festivalCamping(){
+ panel('⛺ MOONLIGHT CAMPSITE','Welcome to the cosy campsite! The tents are pitched, the lantern is glowing, and sleeping bags are ready.',[
+  ['😴 Rest in a sleeping bag',()=>panel('💤 Sweet dreams!','You snuggle into a sleeping bag under the stars. The festival sounds drift into the distance...', [['⛺ Wake up',festivalCamping],['🌙 Explore',()=>panel('🌙 Festival','Back to the moonlit festivities!')]])],
+  ['📖 Tell a campfire story',()=>panel('📖 Campfire story','They say the haunted tree once walked across the festival at midnight... but nobody has ever caught it moving.',[['⛺ Back to camp',festivalCamping]])],
+  ['🌙 Leave campsite',()=>panel('🌙 Festival','You leave the cosy tents behind.')]
+ ]);
 }
 function festivalHauntedTree(){
  const lines=[
@@ -873,6 +881,25 @@ function festivalScene(){
  g.fillStyle='#f7d99d';g.beginPath();g.arc(480,140,10,0,Math.PI*2);g.fill();
  r(477,137,6,6,'#e07b61');r(475,176,11,12,'#f0c38e');
  t('🎡 PRIZE WHEEL',480,223,12,'#ffe9b5');
+ // Moonlight campsite on the grass beside the central path, clear of stalls.
+ g.fillStyle='#294d43';g.beginPath();g.ellipse(379,280,44,9,0,0,Math.PI*2);g.fill();
+ // Main green A-frame tent with pegs and an open doorway.
+ g.fillStyle='#436d60';g.beginPath();g.moveTo(345,272);g.lineTo(375,220);g.lineTo(408,272);g.closePath();g.fill();
+ g.fillStyle='#7eb58b';g.beginPath();g.moveTo(345,272);g.lineTo(375,220);g.lineTo(375,272);g.closePath();g.fill();
+ g.fillStyle='#284e48';g.beginPath();g.moveTo(365,272);g.lineTo(375,245);g.lineTo(386,272);g.closePath();g.fill();
+ r(348,272,59,5,'#8b765d');
+ // Tent ropes attach to pegs on the actual ground.
+ g.save();g.strokeStyle='#d2c8a3';g.lineWidth=1.5;
+ for(const [sx,sy,ex,ey] of [[375,221,340,277],[375,221,413,277]]){g.beginPath();g.moveTo(sx,sy);g.lineTo(ex,ey);g.stroke()}
+ g.restore();r(338,276,5,5,'#a69a83');r(412,276,5,5,'#a69a83');
+ // Two rolled sleeping bags on the grass.
+ r(350,282,23,9,'#b77c9a');r(352,283,5,7,'#efb7c9');
+ r(384,283,23,9,'#6c9fc2');r(386,284,5,7,'#b7d8ec');
+ // Wooden lantern post with a flickering light.
+ r(416,247,5,35,'#76513d');r(412,245,13,5,'#9b7650');
+ r(414,250,10,14,'#e8bd6d');r(417,253,4,8,'#fff3b5');
+ islandGlow(419,255,'#ffe1a1',8);
+ t('⛺ CAMP',382,303,11,'#fff0b3');
  // Night market has a proper counter, striped canopy and warm windows.
  r(86,350,141,27,'#654f55');r(90,371,133,8,'#95736c');
  r(90,302,133,55,'#835a65');r(94,315,125,34,'#ad776b');
